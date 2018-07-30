@@ -5,7 +5,7 @@
  */
 namespace ReachDigital\InventoryOrderSourceReservationsApi\Model;
 
-interface AssignOrderSourceReservations
+interface AssignOrderSourceReservationsInterface
 {
 
     /**
