@@ -12,18 +12,18 @@
     ],
     "autoload": {
         "files": [
-            "InventoryOrderSourceReservations/registration.php",
-            "InventoryOrderSourceReservationsApi/registration.php",
-            "InventoryOrderSourceReservationsPriority/registration.php",
-            "InventoryOrderSourceReservationsPriorityAdminUI/registration.php",
-            "InventoryOrderSourceReservationsPriorityApi/registration.php"
+            "IOSReservations/registration.php",
+            "IOSReservationsApi/registration.php",
+            "IOSReservationsPriority/registration.php",
+            "IOSReservationsPriorityAdminUI/registration.php",
+            "IOSReservationsPriorityApi/registration.php"
         ],
         "psr-4": {
-            "ReachDigital\\InventoryOrderSourceReservations\\": "InventoryOrderSourceReservations",
-            "ReachDigital\\InventoryOrderSourceReservationsApi\\": "InventoryOrderSourceReservationsApi",
-            "ReachDigital\\InventoryOrderSourceReservationsPriority\\": "InventoryOrderSourceReservationsPriority",
-            "ReachDigital\\InventoryOrderSourceReservationsPriorityAdminUI\\": "InventoryOrderSourceReservationsPriorityAdminUI",
-            "ReachDigital\\InventoryOrderSourceReservationsPriorityApi\\": "InventoryOrderSourceReservationsPriorityApi"
+            "ReachDigital\\IOSReservations\\": "IOSReservations",
+            "ReachDigital\\IOSReservationsApi\\": "IOSReservationsApi",
+            "ReachDigital\\IOSReservationsPriority\\": "IOSReservationsPriority",
+            "ReachDigital\\IOSReservationsPriorityAdminUI\\": "IOSReservationsPriorityAdminUI",
+            "ReachDigital\\IOSReservationsPriorityApi\\": "IOSReservationsPriorityApi"
         }
     }
 }

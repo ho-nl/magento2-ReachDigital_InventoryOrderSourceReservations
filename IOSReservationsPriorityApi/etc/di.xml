@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="ReachDigital\IOSReservationsPriorityApi\Api\GetOrderSelectionSelectionAlgorithmListInterface" type="ReachDigital\IOSReservationsPriorityApi\Model\GetOrderSelectionSelectionAlgorithmList"/>
+    <type name="ReachDigital\IOSReservationsPriorityApi\Model\GetOrderSelectionSelectionAlgorithmList">
+        <arguments>
+            <argument name="availableAlgorithms" xsi:type="array">
+                <item name="byDatePlaced" xsi:type="array">
+                    <item xsi:type="string" name="code">byDatePlaced</item>
+                    <item xsi:type="string" name="title" translatable="true">By Date Placed Priority</item>
+                    <item xsi:type="string" name="description" translatable="true">Algorithm which provides orders by the date they are placed.</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
+</config>
