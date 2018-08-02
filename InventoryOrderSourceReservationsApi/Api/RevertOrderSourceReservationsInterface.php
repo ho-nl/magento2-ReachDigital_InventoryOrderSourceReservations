@@ -3,7 +3,10 @@
  * Copyright © Reach Digital (https://www.reachdigital.io/)
  * See LICENSE.txt for license details.
  */
-namespace ReachDigital\InventorySourceReservationsOrderApi\Model;
+
+declare(strict_types=1);
+
+namespace ReachDigital\InventorySourceReservationsOrderApi\Api;
 
 use ReachDigital\InventoryOrderSourceReservationsApi\Exception\SourceReservationForOrderInputException;
 
