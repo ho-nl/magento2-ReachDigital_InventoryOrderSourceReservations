@@ -121,4 +121,4 @@ Question: How often will this run? Because algorithm1 needs to run once per day,
 ❌ Data\SourceSelectionResultInterface
 
 # Model Interfaces
-SourceSelectionInterface < PriorityBasedAlgorithm
+✅ OrderSelectionInterface < ByDatePlacedAlgorithm

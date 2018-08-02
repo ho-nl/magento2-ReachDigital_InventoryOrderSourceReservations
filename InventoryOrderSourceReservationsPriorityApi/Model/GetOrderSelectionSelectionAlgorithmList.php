@@ -10,7 +10,6 @@ use ReachDigital\InventoryOrderSourceReservationsPriorityApi\Api\GetOrderSelecti
 
 class GetOrderSelectionSelectionAlgorithmList implements GetOrderSelectionSelectionAlgorithmListInterface
 {
-
     /**
      * @var array
      */

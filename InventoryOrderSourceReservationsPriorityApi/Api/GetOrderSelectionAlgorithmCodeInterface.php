@@ -8,7 +8,7 @@ namespace ReachDigital\InventoryOrderSourceReservationsPriorityApi;
 interface GetOrderSelectionAlgorithmCodeInterface
 {
     /**
-     * Get Default Algorithm code
+     * Get the configured Order Selection Algorithm Code
      *
      * @return string
      */
