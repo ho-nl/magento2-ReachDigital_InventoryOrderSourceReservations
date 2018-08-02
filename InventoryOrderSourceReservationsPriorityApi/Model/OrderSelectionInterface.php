@@ -16,5 +16,5 @@ interface OrderSelectionInterface
      * @param SearchCriteriaInterface $searchCriteria
      * @return OrderSearchResultInterface
      */
-    public function execute(SearchCriteriaInterface $searchCriteria): OrderSearchResultInterface;
+    public function execute(?SearchCriteriaInterface $searchCriteria): OrderSearchResultInterface;
 }

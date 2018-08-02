@@ -9,9 +9,9 @@
     <type name="ReachDigital\InventoryOrderSourceReservationsPriorityApi\Model\GetOrderSelectionSelectionAlgorithmList">
         <arguments>
             <argument name="availableAlgorithms" xsi:type="array">
-                <item name="byDatePlaced" xsi:type="array">
-                    <item xsi:type="string" name="code">byDatePlaced</item>
-                    <item xsi:type="string" name="title" translatable="true">By Date Placed Priority</item>
+                <item name="byDateCreated" xsi:type="array">
+                    <item xsi:type="string" name="code">byDateCreated</item>
+                    <item xsi:type="string" name="title" translatable="true">By Date Created Priority</item>
                     <item xsi:type="string" name="description" translatable="true">Algorithm which provides orders by the date they are placed.</item>
                 </item>
             </argument>

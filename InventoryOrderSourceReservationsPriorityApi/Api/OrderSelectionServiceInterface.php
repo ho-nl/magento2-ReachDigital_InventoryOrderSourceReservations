@@ -19,7 +19,7 @@ interface OrderSelectionServiceInterface
      * @return mixed
      */
     public function execute(
-        \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria,
+        ?\Magento\Framework\Api\SearchCriteriaInterface $searchCriteria,
         string $algorithmCode
     ): OrderSearchResultInterface;
 }
