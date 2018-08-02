@@ -3,6 +3,9 @@
  * Copyright © Reach Digital (https://www.reachdigital.io/)
  * See LICENSE.txt for license details.
  */
+
+declare(strict_types=1);
+
 namespace ReachDigital\InventoryOrderSourceReservationsPriorityAdminUI;
 
 use ReachDigital\InventoryOrderSourceReservationsPriorityApi\GetOrderSelectionAlgorithmCodeInterface;
@@ -17,6 +20,5 @@ class GetOrderSelectionAlgorithmCode implements GetOrderSelectionAlgorithmCodeIn
     public function execute(): string
     {
         return 'byDatePlaced';
-        // TODO: Implement execute() method.
     }
 }

@@ -19,6 +19,9 @@ class ByDateCreatedAlgorithm implements OrderSelectionInterface
      */
     public function execute(?SearchCriteriaInterface $searchCriteria): OrderSearchResultInterface
     {
+        //@todo should this be able to debounce orders? If an order cant be Sourced, should this always return something
+        //@todo it is the responsibility of this method to return orders based on the time of day / strategy.
+
         // TODO: Implement execute() method.
     }
 }

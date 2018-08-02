@@ -21,5 +21,11 @@ class OrderSelectionServiceTest extends \PHPUnit\Framework\TestCase
         /** @var OrderSelectionServiceInterface $orderSelectionService */
         $orderSelectionService = ObjectManager::getInstance()->get(OrderSelectionServiceInterface::class);
         $orderSelectionService->execute(null, 'byDateCreated');
+        //@todo
+    }
+
+    public function should_skip_sourced_orders(): void
+    {
+
     }
 }
