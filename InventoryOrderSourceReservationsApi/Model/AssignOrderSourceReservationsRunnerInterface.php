@@ -3,7 +3,7 @@
  * Copyright © Reach Digital (https://www.reachdigital.io/)
  * See LICENSE.txt for license details.
  */
-namespace ReachDigital\InventoryOrderSourceReservationsRunnerApi;
+namespace ReachDigital\InventoryOrderSourceReservationsApi;
 
 interface AssignOrderSourceReservationsRunnerInterface
 {

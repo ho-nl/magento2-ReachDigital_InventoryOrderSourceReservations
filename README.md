@@ -105,3 +105,20 @@ will only have a single implementation OrderSourceReservationByDate.
 
 Question: How often will this run? Because algorithm1 needs to run once per day, algorithm2 can run every 2 mins, etc.
 
+
+
+
+# Interfaces
+
+✅ OrderSelectionServiceInterface < ❓
+✅ GetOrderSelectionSelectionAlgorithmListInterface < ❓
+✅ GetDefaultOrderSelectionAlgorithmCodeInterface < ❓
+
+❌ Data\InventoryRequestInterface < InventoryRequest
+❌ Data\ItemRequestInterface < ItemRequest
+✅ Data\SourceSelectionAlgorithmInterface < SourceSelectionAlgorithm
+❌ Data\SourceSelectionItemInterface < SourceSelectionItem
+❌ Data\SourceSelectionResultInterface
+
+# Model Interfaces
+SourceSelectionInterface < PriorityBasedAlgorithm
