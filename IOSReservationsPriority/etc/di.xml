@@ -17,4 +17,11 @@
             </argument>
         </arguments>
     </type>
+    <type name="ReachDigital\IOSReservationsPriorityApi\Model\OrderSelectionService">
+        <arguments>
+            <argument name="orderSectionMethods" xsi:type="array">
+                <item name="byDateCreated" xsi:type="string">ReachDigital\IOSReservationsPriority\Model\Algorithms\ByDateCreatedAlgorithm</item>
+            </argument>
+        </arguments>
+    </type>
 </config>

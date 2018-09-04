@@ -10,11 +10,10 @@ use Magento\Sales\Api\Data\OrderSearchResultInterface;
 
 interface OrderSelectionInterface
 {
+
     /**
-     * @todo What are the $searchCriteria used for, isn't this the responsibility of this class to define its own criteria.
-     *
-     * @param SearchCriteriaInterface $searchCriteria
+     * @param int|null $limit
      * @return OrderSearchResultInterface
      */
-    public function execute(?SearchCriteriaInterface $searchCriteria): OrderSearchResultInterface;
+    public function execute(?int $limit): OrderSearchResultInterface;
 }
