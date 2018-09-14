@@ -51,13 +51,13 @@ class OrderSelectionService implements OrderSelectionServiceInterface
         }
         $sourceSelectionClassName = $this->orderSelectionMethods[$algorithmCode];
 
-        /** @var OrderSelectionInterface $sourceSelectionAlgorithm */
-        $sourceSelectionAlgorithm = $this->objectManager->create($sourceSelectionClassName);
-        if (false === $sourceSelectionAlgorithm instanceof OrderSelectionInterface) {
+        /** @var OrderSelectionInterface $selection */
+        $selection = $this->objectManager->create($sourceSelectionClassName);
+        if (false === $selection instanceof OrderSelectionInterface) {
             throw new \LogicException(
                 (string) __('%1 doesn\'t implement OrderSelectionInterface', $sourceSelectionClassName)
             );
         }
-        return $sourceSelectionAlgorithm->execute($searchCriteria);
+        return $selection->execute($searchCriteria);
     }
 }

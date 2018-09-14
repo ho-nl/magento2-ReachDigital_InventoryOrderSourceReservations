@@ -22,6 +22,8 @@ class AssignOrderSourceReservations implements AssignOrderSourceReservationsInte
      */
     public function execute(int $orderId, string $algorithmCode): SourceReservationResultInterface
     {
+        //Check if the order can be sourced, isn't it already sourced?
+
         //Revert Stock Reservations
         //Append Source Reservations
 
