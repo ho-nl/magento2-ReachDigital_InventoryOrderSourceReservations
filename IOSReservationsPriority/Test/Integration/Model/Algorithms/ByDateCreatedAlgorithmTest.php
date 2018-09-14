@@ -8,11 +8,36 @@ declare(strict_types=1);
 
 namespace ReachDigital\IOSReservationsPriority\Test\Integration\Model\Algorithms;
 
-use Magento\Framework\App\ObjectManager;
+use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\InvoiceOrderInterface;
+use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\TestFramework\Helper\Bootstrap;
 use ReachDigital\IOSReservationsPriorityApi\Api\OrderSelectionServiceInterface;
 
 class ByDateCreatedAlgorithmTest extends \PHPUnit\Framework\TestCase
 {
+
+    /** @var SearchCriteriaBuilder */
+    private $searchCriteriaBuilder;
+
+    /** @var OrderRepositoryInterface */
+    private $orderRepository;
+
+    /** @var InvoiceOrderInterface */
+    private $invoiceOrder;
+
+    /** @var OrderSelectionServiceInterface */
+    private $orderSelectionService;
+
+    protected function setUp()
+    {
+        $this->searchCriteriaBuilder = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
+        $this->orderRepository = Bootstrap::getObjectManager()->get(OrderRepositoryInterface::class);
+        $this->invoiceOrder = Bootstrap::getObjectManager()->get(InvoiceOrderInterface::class);
+        $this->orderSelectionService = Bootstrap::getObjectManager()->get(OrderSelectionServiceInterface::class);
+    }
+
     /**
      * @test
      *
@@ -23,13 +48,18 @@ class ByDateCreatedAlgorithmTest extends \PHPUnit\Framework\TestCase
      * @magentoDataFixture ../../../../app/code/Magento/InventoryShipping/Test/_files/products_bundle.php
      * @magentoDataFixture ../../../../app/code/Magento/InventoryShipping/Test/_files/order_bundle_products.php
      * @magentoDataFixture ../../../../app/code/Magento/InventoryIndexer/Test/_files/reindex_inventory.php
-     *
-     * @magentoDbIsolation disabled
      */
     public function should_retrieve_unsourced_orders_by_date(): void
     {
+        $searchCriteria = $this->searchCriteriaBuilder
+            ->addFilter('increment_id', 'test_order_bundle_1')
+            ->create();
+        /** @var OrderInterface $order */
+        $order = current($this->orderRepository->getList($searchCriteria)->getItems());
+        $this->invoiceOrder->execute($order->getEntityId());
+
         /** @var OrderSelectionServiceInterface $orderSelectionService */
-        $orderSelectionService = ObjectManager::getInstance()->get(OrderSelectionServiceInterface::class);
+        $orderSelectionService = Bootstrap::getObjectManager()->get(OrderSelectionServiceInterface::class);
         $result = $orderSelectionService->execute(null, 'byDateCreated');
         $this->assertEquals(1, $result->getTotalCount());
     }
