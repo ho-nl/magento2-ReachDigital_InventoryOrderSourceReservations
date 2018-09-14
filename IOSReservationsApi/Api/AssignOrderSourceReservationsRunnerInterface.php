@@ -8,6 +8,9 @@ declare(strict_types=1);
 
 namespace ReachDigital\IOSReservationsApi\Api;
 
+/**
+ * @todo Reservations should be singular?
+ */
 interface AssignOrderSourceReservationsRunnerInterface
 {
 

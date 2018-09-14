@@ -29,6 +29,6 @@ class AssignOrderSourceReservations implements AssignOrderSourceReservationsInte
         //This method calls the actual SourceSelectionAlgorithm, but this algorithm should use the right data, so the
         //source data of that algorithm is different based on the strict mode setting.
 
-        // TODO: Implement execute() method.
+        //@TODO: Implement execute() method.
     }
 }

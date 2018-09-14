@@ -10,6 +10,9 @@ namespace ReachDigital\IOSReservationsApi\Api;
 
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface;
 
+/**
+ * @todo Reservations should be singular?
+ */
 interface AssignOrderSourceReservationsInterface
 {
 
