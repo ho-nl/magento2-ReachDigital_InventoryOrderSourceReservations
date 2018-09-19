@@ -6,10 +6,10 @@
 
 declare(strict_types=1);
 
-namespace ReachDigital\IOSReservations;
+namespace ReachDigital\IOSReservations\Model;
 
 use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
-use ReachDigital\IOSReservationsApi\Api\AssignOrderSourceReservationsInterface;
+use ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceInterface;
 use ReachDigital\IOSReservationsApi\Api\AssignOrderSourceReservationsRunnerInterface;
 use ReachDigital\IOSReservationsPriorityApi\Api\OrderSelectionServiceInterface;
 use ReachDigital\IOSReservationsPriorityApi\GetOrderSelectionAlgorithmCodeInterface;
@@ -28,7 +28,7 @@ class AssignOrderSourceReservationsRunner implements AssignOrderSourceReservatio
     private $getOrderSelectionAlgorithmCode;
 
     /**
-     * @var AssignOrderSourceReservationsInterface
+     * @var MoveReservationsFromStockToSourceInterface
      */
     private $assignOrderSourceReservations;
 
@@ -40,7 +40,7 @@ class AssignOrderSourceReservationsRunner implements AssignOrderSourceReservatio
     public function __construct(
         OrderSelectionServiceInterface $orderSelectionService,
         GetOrderSelectionAlgorithmCodeInterface $getOrderSelectionAlgorithmCode,
-        AssignOrderSourceReservationsInterface $assignOrderSourceReservations,
+        MoveReservationsFromStockToSourceInterface $assignOrderSourceReservations,
         GetDefaultSourceSelectionAlgorithmCodeInterface $getDefaultSourceSelectionAlgorithmCode
     )
     {

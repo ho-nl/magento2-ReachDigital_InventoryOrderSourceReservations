@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface" type="ReachDigital\IOSReservations\Model\SourceReservationResult\SourceReservationResult"/>
+    <preference for="ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultItemInterface" type="ReachDigital\IOSReservations\Model\SourceReservationResult\SourceReservationResultItem"/>
+    <preference for="ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceInterface" type="ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource"/>
+    <preference for="ReachDigital\IOSReservationsApi\Api\AssignOrderSourceReservationsRunnerInterface" type="ReachDigital\IOSReservations\Model\AssignOrderSourceReservationsRunner"/>
+    <preference for="ReachDigital\IOSReservationsApi\Api\GetOrderSourceReservationsInterface" type="ReachDigital\IOSReservations\Model\GetOrderSourceReservations"/>
+    <preference for="ReachDigital\IOSReservationsApi\Api\RevertOrderSourceReservationsInterface" type="ReachDigital\IOSReservations\Model\RevertOrderSourceReservations"/>
+</config>

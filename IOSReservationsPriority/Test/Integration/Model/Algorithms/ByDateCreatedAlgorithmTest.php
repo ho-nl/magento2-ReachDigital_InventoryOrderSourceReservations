@@ -58,9 +58,7 @@ class ByDateCreatedAlgorithmTest extends \PHPUnit\Framework\TestCase
         $order = current($this->orderRepository->getList($searchCriteria)->getItems());
         $this->invoiceOrder->execute($order->getEntityId());
 
-        /** @var OrderSelectionServiceInterface $orderSelectionService */
-        $orderSelectionService = Bootstrap::getObjectManager()->get(OrderSelectionServiceInterface::class);
-        $result = $orderSelectionService->execute(null, 'byDateCreated');
+        $result = $this->orderSelectionService->execute(null, 'byDateCreated');
         $this->assertEquals(1, $result->getTotalCount());
     }
 

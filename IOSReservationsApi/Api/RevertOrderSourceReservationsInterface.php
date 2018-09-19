@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace ReachDigital\ISReservationsOrderApi\Api;
+namespace ReachDigital\IOSReservationsApi\Api;
 
 use ReachDigital\IOSReservationsApi\Exception\SourceReservationForOrderInputException;
 
