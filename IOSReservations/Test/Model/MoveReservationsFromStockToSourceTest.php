@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace ReachDigital\IOSReservationsPriority\Test\Integration\Model\Algorithms;
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\InventorySales\Model\GetProductSalableQty;
 use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
 use Magento\Sales\Api\Data\OrderInterface;
@@ -51,8 +52,7 @@ class MoveReservationsFromStockToSourceTest extends \PHPUnit\Framework\TestCase
     /**
      * @test
      *
-     * @covers             \ReachDigital\IOSReservationsPriorityApi\Model\OrderSelectionService,
-     *                     \ReachDigital\IOSReservationsPriority\Model\Algorithms\AssignOrderSourceReservations
+     * @covers \ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource
      *
      * @magentoDbIsolation disabled
      *
@@ -103,11 +103,58 @@ class MoveReservationsFromStockToSourceTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @test
-     * @todo
+     *
+     * @covers \ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource
+     *
+     *
+     * @magentoDbIsolation disabled
+     *
+     * Rolling back previous database mess
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/_files/order_simple_product_with_custom_options_rollback.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryIndexer/Test/_files/reindex_inventory_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/_files/product_simple_with_custom_options_rollback.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventorySalesApi/Test/_files/websites_with_stores_rollback.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/stock_source_links_rollback.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/stocks_rollback.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/sources_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/_files/clean_all_reservations.php
+     *
+     * Filling database
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/sources.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/stocks.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/stock_source_links.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventorySalesApi/Test/_files/websites_with_stores.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventorySalesApi/Test/_files/stock_website_sales_channels.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/_files/product_simple_with_custom_options.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryShipping/Test/_files/source_items_for_simple_on_multi_source.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryIndexer/Test/_files/reindex_inventory.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryShipping/Test/_files/create_quote_on_eu_website.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/_files/order_simple_product_with_custom_options.php
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function should_not_move_reservations_if_already_moved() : void
     {
+        $searchCriteria = $this->searchCriteriaBuilder
+            ->addFilter('increment_id', 'created_order_for_test')
+            ->create();
+        /** @var OrderInterface $order */
+        $order = current($this->orderRepository->getList($searchCriteria)->getItems());
+        $this->invoiceOrder->execute($order->getEntityId());
 
+        $salableQty = $this->getProductSalableQty->execute('simple', 10);
+        $this->assertEquals(11, $salableQty);
+
+        $this->moveReservationsFromStockToSource->execute(
+            (int) $order->getEntityId(),
+            $this->getDefaultSourceSelectionAlgorithmCode->execute()
+        );
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessageRegExp('/Can not assign sources, source already selected for order/');
+        $this->moveReservationsFromStockToSource->execute(
+            (int) $order->getEntityId(),
+            $this->getDefaultSourceSelectionAlgorithmCode->execute()
+        );
     }
 
     /**

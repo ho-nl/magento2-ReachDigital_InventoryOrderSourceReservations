@@ -16,6 +16,7 @@ use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource\AppendS
 use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource\RevertStockReservations;
 use ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceInterface;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface;
+use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadata;
 
 class MoveReservationsFromStockToSource implements MoveReservationsFromStockToSourceInterface
 {
@@ -44,18 +45,25 @@ class MoveReservationsFromStockToSource implements MoveReservationsFromStockToSo
      */
     private $appendSourceReservations;
 
+    /**
+     * @var GetReservationsByMetadata
+     */
+    private $getReservationsByMetadata;
+
     public function __construct(
         OrderRepositoryInterface $orderRepository,
         SourceSelectionServiceInterface $sourceSelectionService,
         InventoryRequestFromOrderFactory $inventoryRequestFromOrderFactory,
         RevertStockReservations $revertStockReservations,
-        AppendSourceReservations $appendSourceReservations
+        AppendSourceReservations $appendSourceReservations,
+        GetReservationsByMetadata $getReservationsByMetadata
     ) {
         $this->orderRepository = $orderRepository;
         $this->sourceSelectionService = $sourceSelectionService;
         $this->inventoryRequestFromOrderFactory = $inventoryRequestFromOrderFactory;
         $this->revertStockReservations = $revertStockReservations;
         $this->appendSourceReservations = $appendSourceReservations;
+        $this->getReservationsByMetadata = $getReservationsByMetadata;
     }
 
     /**
@@ -68,6 +76,11 @@ class MoveReservationsFromStockToSource implements MoveReservationsFromStockToSo
     public function execute(int $orderId, string $algorithmCode): SourceReservationResultInterface
     {
         $order = $this->orderRepository->get($orderId);
+
+        $reservations = $this->getReservationsByMetadata->execute("order:{$orderId}");
+        if ($reservations) {
+            throw new LocalizedException(__("Can not assign sources, source already selected for order %1", $orderId));
+        }
 
         //@todo check if test is available to try to reserve for order that is already reserved.
         $sourceSelectionRequest = $this->inventoryRequestFromOrderFactory->create($order);

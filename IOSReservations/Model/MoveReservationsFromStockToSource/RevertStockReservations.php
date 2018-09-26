@@ -87,6 +87,8 @@ class RevertStockReservations
                 ->setQuantity($qty)
                 ->setStockId($stockId)
                 ->build();
+
+            //@todo It should set the metadata properly.
         }
         $this->appendReservations->execute($reservations);
     }

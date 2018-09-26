@@ -17,7 +17,6 @@ use Magento\TestFramework\Helper\Bootstrap;
 use ReachDigital\IOSReservations\Model\GetOrderSourceReservations;
 use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource;
 use ReachDigital\IOSReservations\Model\SourceReservationResult\SourceReservationResultItem;
-use ReachDigital\ISReservationsApi\Model\ReservationInterface;
 
 class GetOrderSourceReservationsTest extends \PHPUnit\Framework\TestCase
 {
