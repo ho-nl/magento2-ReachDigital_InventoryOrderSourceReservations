@@ -43,11 +43,11 @@ class ByDateCreatedAlgorithmTest extends \PHPUnit\Framework\TestCase
      *
      * @covers \ReachDigital\IOSReservationsPriorityApi\Model\OrderSelectionService, \ReachDigital\IOSReservationsPriority\Model\Algorithms\AssignOrderSourceReservations
      *
-     * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/products.php
-     * @magentoDataFixture ../../../../app/code/Magento/InventoryShipping/Test/_files/source_items_for_bundle_children.php
-     * @magentoDataFixture ../../../../app/code/Magento/InventoryShipping/Test/_files/products_bundle.php
-     * @magentoDataFixture ../../../../app/code/Magento/InventoryShipping/Test/_files/order_bundle_products.php
-     * @magentoDataFixture ../../../../app/code/Magento/InventoryIndexer/Test/_files/reindex_inventory.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/products.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/source_items_for_bundle_children.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/products_bundle.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_bundle_products.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory.php
      */
     public function should_retrieve_unsourced_orders_by_date(): void
     {
