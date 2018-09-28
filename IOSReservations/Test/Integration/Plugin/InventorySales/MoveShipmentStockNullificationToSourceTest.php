@@ -164,9 +164,10 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
             );
         }
 
-        //The qty should now be reduced from the actual qty
-        //The qty should not be nullified from the stock reservations
-        //The qty should be nullified in the source reservations
+        // @fixme The qty should now be reduced from the actual qty
+        // @fixme The qty should not be nullified from the stock reservations
+        // @fixme The qty should be nullified in the source reservations
+        // @see \Magento\InventoryShipping\Observer\SourceDeductionProcessor::placeCompensatingReservation
 
         $salableQty = $this->getProductSalableQty->execute('simple', 10);
         self::assertEquals(11, $salableQty);
