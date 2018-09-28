@@ -11,5 +11,4 @@
     <preference for="ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceInterface" type="ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource"/>
     <preference for="ReachDigital\IOSReservationsApi\Api\AssignOrderSourceReservationsRunnerInterface" type="ReachDigital\IOSReservations\Model\AssignOrderSourceReservationsRunner"/>
     <preference for="ReachDigital\IOSReservationsApi\Api\GetOrderSourceReservationsInterface" type="ReachDigital\IOSReservations\Model\GetOrderSourceReservations"/>
-    <preference for="ReachDigital\IOSReservationsApi\Api\RevertOrderSourceReservationsInterface" type="ReachDigital\IOSReservations\Model\RevertOrderSourceReservations"/>
 </config>

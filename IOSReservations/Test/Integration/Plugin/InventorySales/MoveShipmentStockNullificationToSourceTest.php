@@ -1,0 +1,174 @@
+<?php
+declare(strict_types=1);
+/**
+ * Copyright © Reach Digital (https://www.reachdigital.io/)
+ * See LICENSE.txt for license details.
+ */
+namespace ReachDigital\IOSReservations\Test\Integration\Plugin\InventorySales;
+
+use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\InventorySales\Model\GetProductSalableQty;
+use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
+use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\Data\ShipmentCreationArgumentsInterface;
+use Magento\Sales\Api\InvoiceOrderInterface;
+use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Api\ShipOrderInterface;
+use Magento\Sales\Model\Order;
+use Magento\TestFramework\Helper\Bootstrap;
+use PHPUnit\Framework\TestCase;
+use ReachDigital\IOSReservations\Model\GetOrderSourceReservations;
+use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource;
+use ReachDigital\IOSReservations\Model\SourceReservationResult\SourceReservationResultItem;
+use ReachDigital\ISReservations\Model\MetaData\DecodeMetaData;
+use \Magento\Sales\Api\Data\ShipmentCreationArgumentsExtensionInterfaceFactory;
+
+class MoveShipmentStockNullificationToSourceTest extends TestCase
+{
+    /** @var SearchCriteriaBuilder */
+    private $searchCriteriaBuilder;
+
+    /** @var OrderRepositoryInterface */
+    private $orderRepository;
+
+    /** @var InvoiceOrderInterface */
+    private $invoiceOrder;
+
+    /** @var MoveReservationsFromStockToSource */
+    private $moveReservationsFromStockToSource;
+
+    /** @var GetDefaultSourceSelectionAlgorithmCodeInterface */
+    private $getDefaultSourceSelectionAlgorithmCode;
+
+    /** @var GetOrderSourceReservations */
+    private $getOrderSourceReservations;
+
+    /** @var ShipOrderInterface */
+    private $shipOrder;
+
+    /** @var GetProductSalableQty */
+    private $getProductSalableQty;
+
+    /** @var DecodeMetaData */
+    private $decodeMetaData;
+
+    /** @var \Magento\Sales\Model\Convert\Order */
+    private $orderConverter;
+
+    /** @var ShipmentCreationArgumentsInterface */
+    private $shipmentCreationArguments;
+
+    /** @var ShipmentCreationArgumentsExtensionInterfaceFactory */
+    private $shipmentCreationArgumentsExtensionInterfaceFactory;
+
+    protected function setUp()
+    {
+        $this->searchCriteriaBuilder = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
+        $this->orderRepository = Bootstrap::getObjectManager()->get(OrderRepositoryInterface::class);
+        $this->invoiceOrder = Bootstrap::getObjectManager()->get(InvoiceOrderInterface::class);
+        $this->moveReservationsFromStockToSource = Bootstrap::getObjectManager()->get(MoveReservationsFromStockToSource::class);
+        $this->getDefaultSourceSelectionAlgorithmCode = Bootstrap::getObjectManager()->get(GetDefaultSourceSelectionAlgorithmCodeInterface::class);
+        $this->getOrderSourceReservations = Bootstrap::getObjectManager()->get(GetOrderSourceReservations::class);
+        $this->shipOrder = Bootstrap::getObjectManager()->get(ShipOrderInterface::class);
+        $this->getProductSalableQty = Bootstrap::getObjectManager()->get(GetProductSalableQty::class);
+        $this->decodeMetaData = Bootstrap::getObjectManager()->get(DecodeMetaData::class);
+        $this->orderConverter = Bootstrap::getObjectManager()->get(\Magento\Sales\Model\Convert\Order::class);
+        $this->shipmentCreationArguments = Bootstrap::getObjectManager()->get(ShipmentCreationArgumentsInterface::class);
+        $this->shipmentCreationArgumentsExtensionInterfaceFactory = Bootstrap::getObjectManager()->get(ShipmentCreationArgumentsExtensionInterfaceFactory::class);
+    }
+
+    /**
+     * @test
+     *
+     * @covers \ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource
+     *
+     * @magentoDbIsolation disabled
+     *
+     * Rolling back previous database mess
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/order_simple_product_with_custom_options_rollback.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryIndexer/Test/_files/reindex_inventory_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/product_simple_with_custom_options_rollback.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventorySalesApi/Test/_files/websites_with_stores_rollback.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/stock_source_links_rollback.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/stocks_rollback.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/sources_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/clean_all_reservations.php
+     *
+     * Filling database
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/sources.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/stocks.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/stock_source_links.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventorySalesApi/Test/_files/websites_with_stores.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventorySalesApi/Test/_files/stock_website_sales_channels.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/product_simple_with_custom_options.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryShipping/Test/_files/source_items_for_simple_on_multi_source.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryIndexer/Test/_files/reindex_inventory.php
+     * @magentoDataFixture ../../../../app/code/Magento/InventoryShipping/Test/_files/create_quote_on_eu_website.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/order_simple_product_with_custom_options.php
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function should_nullify_the_source_instead_of_the_stock() : void
+    {
+        $searchCriteria = $this->searchCriteriaBuilder
+            ->addFilter('increment_id', 'created_order_for_test')
+            ->create();
+        /** @var Order $order */
+        $order = current($this->orderRepository->getList($searchCriteria)->getItems());
+
+        //Create Invoice
+        $this->invoiceOrder->execute($order->getEntityId());
+
+        //Move reservation to source
+        $this->moveReservationsFromStockToSource->execute(
+            (int) $order->getEntityId(),
+            $this->getDefaultSourceSelectionAlgorithmCode->execute()
+        );
+
+        $salableQty = $this->getProductSalableQty->execute('simple', 10);
+        self::assertEquals(11, $salableQty);
+
+        //Create shipment
+        $sourceReservations = $this->getOrderSourceReservations->execute((int) $order->getEntityId());
+        $reservationsPerSource = [];
+        foreach ($sourceReservations->getReservationItems() as $reservationItem) {
+            $sourceCode = $reservationItem->getReservation()->getSourceCode();
+            isset($reservationsPerSource[$sourceCode]) ?
+                $reservationsPerSource[$sourceCode][] = $reservationItem:
+                $reservationsPerSource[$sourceCode] = [$reservationItem];
+        }
+
+        foreach ($reservationsPerSource as $sourceCode => $items) {
+            /** @var SourceReservationResultItem[] $items */
+            /** @var SourceReservationResultItem $item */
+            $shipmentItems = [];
+            foreach ($items as $item) {
+                $shipmentItems[] = $this->orderConverter
+                    ->itemToShipmentItem($order->getItemById($item->getOrderItemId()))
+                    ->setQty($item->getReservation()->getQuantity() * -1);
+            }
+
+            if ($this->shipmentCreationArguments->getExtensionAttributes() === null) {
+                $this->shipmentCreationArguments->setExtensionAttributes($this->shipmentCreationArgumentsExtensionInterfaceFactory->create());
+            }
+
+            $this->shipmentCreationArguments->getExtensionAttributes()->setSourceCode($sourceCode);
+            $this->shipOrder->execute(
+                $sourceReservations->getOrderId(),
+                $shipmentItems,
+                false,
+                false,
+                null,
+                [],
+                [],
+                $this->shipmentCreationArguments
+            );
+        }
+
+        //The qty should now be reduced from the actual qty
+        //The qty should not be nullified from the stock reservations
+        //The qty should be nullified in the source reservations
+
+        $salableQty = $this->getProductSalableQty->execute('simple', 10);
+        self::assertEquals(11, $salableQty);
+    }
+}

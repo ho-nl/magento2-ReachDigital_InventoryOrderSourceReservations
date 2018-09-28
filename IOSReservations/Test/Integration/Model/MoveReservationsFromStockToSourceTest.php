@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace ReachDigital\IOSReservationsPriority\Test\Integration\Model\Algorithms;
+namespace ReachDigital\IOSReservationsPriority\Test\Integration\Model;
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Exception\LocalizedException;
@@ -57,14 +57,14 @@ class MoveReservationsFromStockToSourceTest extends \PHPUnit\Framework\TestCase
      * @magentoDbIsolation disabled
      *
      * Rolling back previous database mess
-     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/_files/order_simple_product_with_custom_options_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/order_simple_product_with_custom_options_rollback.php
      * @magentoDataFixture ../../../../app/code/Magento/InventoryIndexer/Test/_files/reindex_inventory_rollback.php
-     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/_files/product_simple_with_custom_options_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/product_simple_with_custom_options_rollback.php
      * @magentoDataFixture ../../../../app/code/Magento/InventorySalesApi/Test/_files/websites_with_stores_rollback.php
      * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/stock_source_links_rollback.php
      * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/stocks_rollback.php
      * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/sources_rollback.php
-     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/_files/clean_all_reservations.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/clean_all_reservations.php
      *
      * Filling database
      * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/sources.php
@@ -72,15 +72,19 @@ class MoveReservationsFromStockToSourceTest extends \PHPUnit\Framework\TestCase
      * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/stock_source_links.php
      * @magentoDataFixture ../../../../app/code/Magento/InventorySalesApi/Test/_files/websites_with_stores.php
      * @magentoDataFixture ../../../../app/code/Magento/InventorySalesApi/Test/_files/stock_website_sales_channels.php
-     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/_files/product_simple_with_custom_options.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/product_simple_with_custom_options.php
      * @magentoDataFixture ../../../../app/code/Magento/InventoryShipping/Test/_files/source_items_for_simple_on_multi_source.php
      * @magentoDataFixture ../../../../app/code/Magento/InventoryIndexer/Test/_files/reindex_inventory.php
      * @magentoDataFixture ../../../../app/code/Magento/InventoryShipping/Test/_files/create_quote_on_eu_website.php
-     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/_files/order_simple_product_with_custom_options.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/order_simple_product_with_custom_options.php
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function should_move_reservation_from_stock_to_source() : void
     {
+        //There are 14 actually available in the source, order is placed with three.
+        $salableQty = $this->getProductSalableQty->execute('simple', 10);
+        self::assertEquals(11, $salableQty);
+
         $searchCriteria = $this->searchCriteriaBuilder
             ->addFilter('increment_id', 'created_order_for_test')
             ->create();
@@ -96,9 +100,8 @@ class MoveReservationsFromStockToSourceTest extends \PHPUnit\Framework\TestCase
             $this->getDefaultSourceSelectionAlgorithmCode->execute()
         );
 
-        //@todo this doesn't work yet, because the salable qty doesn't properly gets updated yet.
-//        $salableQty = $this->getProductSalableQty->execute('simple', 10);
-//        self::assertEquals(11, $salableQty);
+        $salableQty = $this->getProductSalableQty->execute('simple', 10);
+        self::assertEquals(11, $salableQty);
     }
 
     /**
@@ -110,14 +113,14 @@ class MoveReservationsFromStockToSourceTest extends \PHPUnit\Framework\TestCase
      * @magentoDbIsolation disabled
      *
      * Rolling back previous database mess
-     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/_files/order_simple_product_with_custom_options_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/order_simple_product_with_custom_options_rollback.php
      * @magentoDataFixture ../../../../app/code/Magento/InventoryIndexer/Test/_files/reindex_inventory_rollback.php
-     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/_files/product_simple_with_custom_options_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/product_simple_with_custom_options_rollback.php
      * @magentoDataFixture ../../../../app/code/Magento/InventorySalesApi/Test/_files/websites_with_stores_rollback.php
      * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/stock_source_links_rollback.php
      * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/stocks_rollback.php
      * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/sources_rollback.php
-     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/_files/clean_all_reservations.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/clean_all_reservations.php
      *
      * Filling database
      * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/sources.php
@@ -125,11 +128,11 @@ class MoveReservationsFromStockToSourceTest extends \PHPUnit\Framework\TestCase
      * @magentoDataFixture ../../../../app/code/Magento/InventoryApi/Test/_files/stock_source_links.php
      * @magentoDataFixture ../../../../app/code/Magento/InventorySalesApi/Test/_files/websites_with_stores.php
      * @magentoDataFixture ../../../../app/code/Magento/InventorySalesApi/Test/_files/stock_website_sales_channels.php
-     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/_files/product_simple_with_custom_options.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/product_simple_with_custom_options.php
      * @magentoDataFixture ../../../../app/code/Magento/InventoryShipping/Test/_files/source_items_for_simple_on_multi_source.php
      * @magentoDataFixture ../../../../app/code/Magento/InventoryIndexer/Test/_files/reindex_inventory.php
      * @magentoDataFixture ../../../../app/code/Magento/InventoryShipping/Test/_files/create_quote_on_eu_website.php
-     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/_files/order_simple_product_with_custom_options.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/order_simple_product_with_custom_options.php
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function should_not_move_reservations_if_already_moved() : void

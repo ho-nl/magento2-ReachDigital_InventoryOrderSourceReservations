@@ -76,15 +76,12 @@ class RevertStockReservations
             //@todo Should we check if the product still exists? See ProcessBackItemQtyPlugin for explanation
             //@see Magento\InventorySales\Plugin\CatalogInventory\StockManagement\ProcessBackItemQtyPlugin::aroundBackItemQty
 
-            //We create a negative reservation
-            $qty = (float)$item->getQtyToDeduct() * -1;
-
             $store = $this->storeRepository->getById((int) $order->getStoreId());
             $stockId = (int)$this->stockByWebsiteIdResolver->execute((int)$store->getWebsiteId())->getStockId();
 
             $reservations[] = $this->reservationBuilder
                 ->setSku($item->getSku())
-                ->setQuantity($qty)
+                ->setQuantity((float)$item->getQtyToDeduct())
                 ->setStockId($stockId)
                 ->build();
 

@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace ReachDigital\IOSReservations\Model;
 
 use ReachDigital\IOSReservationsApi\Api\GetOrderSourceReservationsInterface;
+use ReachDigital\ISReservations\Model\MetaData\DecodeMetaData;
 use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadata;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterfaceFactory;
@@ -34,19 +35,25 @@ class GetOrderSourceReservations implements GetOrderSourceReservationsInterface
      */
     private $sourceReservationResultItemFactory;
 
+    /**
+     * @var DecodeMetaData
+     */
+    private $decodeMetaData;
+
     public function __construct(
         GetReservationsByMetadata $getReservationsByMetadata,
         SourceReservationResultInterfaceFactory $sourceReservationResultFactory,
-        SourceReservationResultItemInterfaceFactory $sourceReservationResultItemFactory
+        SourceReservationResultItemInterfaceFactory $sourceReservationResultItemFactory,
+        DecodeMetaData $decodeMetaData
     ) {
         $this->getReservationsByMetadata = $getReservationsByMetadata;
         $this->sourceReservationResultFactory = $sourceReservationResultFactory;
         $this->sourceReservationResultItemFactory = $sourceReservationResultItemFactory;
+        $this->decodeMetaData = $decodeMetaData;
     }
 
     /**
      * @param int $orderId
-     *
      * @return SourceReservationResultInterface
      */
     public function execute(int $orderId): ? SourceReservationResultInterface
@@ -54,7 +61,7 @@ class GetOrderSourceReservations implements GetOrderSourceReservationsInterface
         $reservations = $this->getReservationsByMetadata->execute("order:{$orderId}");
 
         $resultItems = array_map(function(ReservationInterface $reservation): SourceReservationResultItemInterface {
-            $metaData = $this->decodeMetaData($reservation->getMetadata());
+            $metaData = $this->decodeMetaData->execute($reservation->getMetadata());
 
             return $this->sourceReservationResultItemFactory->create([
                 'reservation' => $reservation,
@@ -67,16 +74,4 @@ class GetOrderSourceReservations implements GetOrderSourceReservationsInterface
             'orderId' => $orderId
         ]);
     }
-
-    private function decodeMetaData($line)
-    {
-        $lineItems = explode(',', $line);
-        $values = [];
-        foreach ($lineItems as $lineItem) {
-            list($key, $value) = explode(':', $lineItem);
-            $values[$key] = $value;
-        }
-        return $values;
-    }
-
 }
