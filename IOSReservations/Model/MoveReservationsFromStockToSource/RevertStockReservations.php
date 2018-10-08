@@ -81,7 +81,7 @@ class RevertStockReservations
 
             $reservations[] = $this->reservationBuilder
                 ->setSku($item->getSku())
-                ->setQuantity((float)$item->getQtyToDeduct())
+                ->setQuantity($item->getQtyToDeduct())
                 ->setStockId($stockId)
                 ->build();
 
