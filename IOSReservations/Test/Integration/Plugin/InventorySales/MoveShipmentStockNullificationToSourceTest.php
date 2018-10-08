@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace ReachDigital\IOSReservations\Test\Integration\Plugin\InventorySales;
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\InventoryIndexer\Indexer\SourceItem\SourceItemIndexer;
 use Magento\InventorySales\Model\GetProductSalableQty;
 use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
 use Magento\Sales\Api\Data\OrderInterface;
@@ -85,7 +86,7 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
      * @magentoDbIsolation disabled
      *
      * Rolling back previous database mess
-     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/order_simple_product_with_custom_options_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product_rollback.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory_rollback.php
      * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/product_simple_with_custom_options_rollback.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/websites_with_stores_rollback.php
@@ -100,11 +101,11 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/websites_with_stores.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/stock_website_sales_channels.php
-     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/product_simple_with_custom_options.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/simple_product.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/source_items_for_simple_on_multi_source.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website.php
-     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/order_simple_product_with_custom_options.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product.php
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function should_nullify_the_source_instead_of_the_stock() : void
@@ -118,7 +119,16 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
         //Create Invoice
         $this->invoiceOrder->execute($order->getEntityId());
 
-        //Move reservation to source
+
+        // Trigger initial reindex (else no stock index tables exist)
+        /** @var SourceItemIndexer $indexer */
+        $indexer = Bootstrap::getObjectManager()->get(SourceItemIndexer::class);
+        $indexer->executeFull();
+
+        $salableQty = $this->getProductSalableQty->execute('simple', 10);
+        self::assertEquals(11, $salableQty);
+
+        //Move reservation to source, salable qty should remain the same
         $this->moveReservationsFromStockToSource->execute(
             (int) $order->getEntityId(),
             $this->getDefaultSourceSelectionAlgorithmCode->execute()
@@ -164,8 +174,8 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
             );
         }
 
-        // @fixme The qty should now be reduced from the actual qty
-        // @fixme The qty should not be nullified from the stock reservations
+        // @fixme The qty should now be reduced from the actual source qty
+        // @fixme The qty should not be nullified from the stock reservations (as this was already done)
         // @fixme The qty should be nullified in the source reservations
         // @see \Magento\InventoryShipping\Observer\SourceDeductionProcessor::placeCompensatingReservation
 
