@@ -159,10 +159,17 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
 
         // The qty should now be nullified from the stock reservations
         $currentStockReservationsQty = $this->getReservationsQuantity->execute('simple', 10);
-        self::assertEquals($currentStockReservationsQty, $initialStockReservationsQty + 3);
+        self::assertEquals($initialStockReservationsQty + 3, $currentStockReservationsQty);
 
         // Create shipments for the orders' assigned sources
         $sourceReservations = $this->getOrderSourceReservations->execute((int) $order->getEntityId());
+        $initialSourceReservationsQty = [];
+        foreach ($sourceReservations->getReservationItems() as $reservationItem) {
+            $sourceCode = $reservationItem->getReservation()->getSourceCode();
+            $initialSourceReservationsQty[$sourceCode] = $this->getSourceReservationsQuantity->execute('simple', $sourceCode);
+        }
+        $initialSourceReservationsQty = array_sum($initialSourceReservationsQty);
+
         $reservationsPerSource = [];
         foreach ($sourceReservations->getReservationItems() as $reservationItem) {
             $sourceCode = $reservationItem->getReservation()->getSourceCode();
@@ -202,9 +209,14 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
         $currentSourcesQty = $this->getCombinedSourcesQty('simple', $sourceSelectionResult);
         self::assertEquals($currentSourcesQty, $initialSourcesQty - 3);
 
-        // @fixme The qty should be nullified in the source reservations
-
-        // @see \Magento\InventoryShipping\Observer\SourceDeductionProcessor::placeCompensatingReservation
+        // The qty should be nullified in the source reservations
+        $currentSourceReservationsQty = [];
+        foreach ($sourceReservations->getReservationItems() as $reservationItem) {
+            $sourceCode = $reservationItem->getReservation()->getSourceCode();
+            $currentSourceReservationsQty[$sourceCode] = $this->getSourceReservationsQuantity->execute('simple', $sourceCode);
+        }
+        $currentSourceReservationsQty = array_sum($currentSourceReservationsQty);
+        self::assertEquals($initialSourceReservationsQty + 3, $currentSourceReservationsQty);
 
         $salableQty = $this->getProductSalableQty->execute('simple', 10);
         self::assertEquals(11, $salableQty);
