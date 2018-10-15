@@ -8,6 +8,7 @@ namespace ReachDigital\IOSReservations\Test\Integration\Plugin\InventorySales;
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\InventoryIndexer\Indexer\SourceItem\SourceItemIndexer;
+use Magento\InventoryReservations\Model\ResourceModel\GetReservationsQuantity;
 use Magento\InventorySales\Model\GetProductSalableQty;
 use Magento\InventorySourceDeductionApi\Model\GetSourceItemBySourceCodeAndSku;
 use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
@@ -25,6 +26,7 @@ use ReachDigital\IOSReservations\Model\SourceReservationResult\SourceReservation
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface;
 use ReachDigital\ISReservations\Model\MetaData\DecodeMetaData;
 use \Magento\Sales\Api\Data\ShipmentCreationArgumentsExtensionInterfaceFactory;
+use ReachDigital\ISReservationsApi\Model\GetSourceReservationsQuantityInterface;
 
 class MoveShipmentStockNullificationToSourceTest extends TestCase
 {
@@ -67,6 +69,12 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
     /** @var GetSourceItemBySourceCodeAndSku */
     private $getSourceItemBySourceCodeAndSku;
 
+    /** @var GetReservationsQuantity */
+    private $getReservationsQuantity;
+
+    /** @var GetSourceReservationsQuantityInterface */
+    private $getSourceReservationsQuantity;
+
     protected function setUp()
     {
         $this->searchCriteriaBuilder = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
@@ -82,6 +90,8 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
         $this->shipmentCreationArguments = Bootstrap::getObjectManager()->get(ShipmentCreationArgumentsInterface::class);
         $this->shipmentCreationArgumentsExtensionInterfaceFactory = Bootstrap::getObjectManager()->get(ShipmentCreationArgumentsExtensionInterfaceFactory::class);
         $this->getSourceItemBySourceCodeAndSku = Bootstrap::getObjectManager()->get(GetSourceItemBySourceCodeAndSku::class);
+        $this->getReservationsQuantity = Bootstrap::getObjectManager()->get(GetReservationsQuantity::class);
+        $this->getSourceReservationsQuantity = Bootstrap::getObjectManager()->get(GetSourceReservationsQuantityInterface::class);
     }
 
     /**
@@ -137,6 +147,7 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
         self::assertEquals(11, $salableQty);
 
         // Move reservation to source, salable qty should remain the same. Actual source quantity should not be affected yet
+        $initialStockReservationsQty = $this->getReservationsQuantity->execute('simple', 10);
         $sourceSelectionResult = $this->moveReservationsFromStockToSource->execute(
             (int) $order->getEntityId(),
             $this->getDefaultSourceSelectionAlgorithmCode->execute()
@@ -146,7 +157,11 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
         $salableQty = $this->getProductSalableQty->execute('simple', 10);
         self::assertEquals(11, $salableQty);
 
-        //Create shipment
+        // The qty should now be nullified from the stock reservations
+        $currentStockReservationsQty = $this->getReservationsQuantity->execute('simple', 10);
+        self::assertEquals($currentStockReservationsQty, $initialStockReservationsQty + 3);
+
+        // Create shipments for the orders' assigned sources
         $sourceReservations = $this->getOrderSourceReservations->execute((int) $order->getEntityId());
         $reservationsPerSource = [];
         foreach ($sourceReservations->getReservationItems() as $reservationItem) {
@@ -185,10 +200,10 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
 
         // The qty should now be reduced from the actual source qty
         $currentSourcesQty = $this->getCombinedSourcesQty('simple', $sourceSelectionResult);
-        $this->assertEquals($currentSourcesQty, $initialSourcesQty - 3);
+        self::assertEquals($currentSourcesQty, $initialSourcesQty - 3);
 
-        // @fixme The qty should not be nullified from the stock reservations (as this was already done)
         // @fixme The qty should be nullified in the source reservations
+
         // @see \Magento\InventoryShipping\Observer\SourceDeductionProcessor::placeCompensatingReservation
 
         $salableQty = $this->getProductSalableQty->execute('simple', 10);
