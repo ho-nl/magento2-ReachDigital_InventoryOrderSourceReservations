@@ -9,6 +9,7 @@ namespace ReachDigital\IOSReservations\Test\Integration\Plugin\InventorySales;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\InventoryIndexer\Indexer\SourceItem\SourceItemIndexer;
 use Magento\InventorySales\Model\GetProductSalableQty;
+use Magento\InventorySourceDeductionApi\Model\GetSourceItemBySourceCodeAndSku;
 use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\ShipmentCreationArgumentsInterface;
@@ -21,6 +22,7 @@ use PHPUnit\Framework\TestCase;
 use ReachDigital\IOSReservations\Model\GetOrderSourceReservations;
 use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource;
 use ReachDigital\IOSReservations\Model\SourceReservationResult\SourceReservationResultItem;
+use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface;
 use ReachDigital\ISReservations\Model\MetaData\DecodeMetaData;
 use \Magento\Sales\Api\Data\ShipmentCreationArgumentsExtensionInterfaceFactory;
 
@@ -62,6 +64,9 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
     /** @var ShipmentCreationArgumentsExtensionInterfaceFactory */
     private $shipmentCreationArgumentsExtensionInterfaceFactory;
 
+    /** @var GetSourceItemBySourceCodeAndSku */
+    private $getSourceItemBySourceCodeAndSku;
+
     protected function setUp()
     {
         $this->searchCriteriaBuilder = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
@@ -76,6 +81,7 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
         $this->orderConverter = Bootstrap::getObjectManager()->get(\Magento\Sales\Model\Convert\Order::class);
         $this->shipmentCreationArguments = Bootstrap::getObjectManager()->get(ShipmentCreationArgumentsInterface::class);
         $this->shipmentCreationArgumentsExtensionInterfaceFactory = Bootstrap::getObjectManager()->get(ShipmentCreationArgumentsExtensionInterfaceFactory::class);
+        $this->getSourceItemBySourceCodeAndSku = Bootstrap::getObjectManager()->get(GetSourceItemBySourceCodeAndSku::class);
     }
 
     /**
@@ -130,11 +136,12 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
         $salableQty = $this->getProductSalableQty->execute('simple', 10);
         self::assertEquals(11, $salableQty);
 
-        //Move reservation to source, salable qty should remain the same
-        $this->moveReservationsFromStockToSource->execute(
+        // Move reservation to source, salable qty should remain the same. Actual source quantity should not be affected yet
+        $sourceSelectionResult = $this->moveReservationsFromStockToSource->execute(
             (int) $order->getEntityId(),
             $this->getDefaultSourceSelectionAlgorithmCode->execute()
         );
+        $initialSourcesQty = $this->getCombinedSourcesQty('simple', $sourceSelectionResult);
 
         $salableQty = $this->getProductSalableQty->execute('simple', 10);
         self::assertEquals(11, $salableQty);
@@ -176,12 +183,36 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
             );
         }
 
-        // @fixme The qty should now be reduced from the actual source qty
+        // The qty should now be reduced from the actual source qty
+        $currentSourcesQty = $this->getCombinedSourcesQty('simple', $sourceSelectionResult);
+        $this->assertEquals($currentSourcesQty, $initialSourcesQty - 3);
+
         // @fixme The qty should not be nullified from the stock reservations (as this was already done)
         // @fixme The qty should be nullified in the source reservations
         // @see \Magento\InventoryShipping\Observer\SourceDeductionProcessor::placeCompensatingReservation
 
         $salableQty = $this->getProductSalableQty->execute('simple', 10);
         self::assertEquals(11, $salableQty);
+    }
+
+    /**
+     * Obtain actual qtys of sources present in the reservation result, for given SKU.
+     *
+     * @param string                           $sku
+     * @param SourceReservationResultInterface $reservationResult
+     *
+     * @return float
+     */
+    public function getCombinedSourcesQty(string $sku, SourceReservationResultInterface $reservationResult): float
+    {
+        $qty = 0;
+
+        foreach ($reservationResult->getReservationItems() as $item) {
+            $sourceCode = $item->getReservation()->getSourceCode();
+            $sourceItem = $this->getSourceItemBySourceCodeAndSku->execute($sourceCode, $sku);
+            $qty += $sourceItem->getQuantity();
+        }
+
+        return $qty;
     }
 }
