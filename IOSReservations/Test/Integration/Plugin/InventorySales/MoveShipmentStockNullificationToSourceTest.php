@@ -205,6 +205,11 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
             );
         }
 
+        // @todo The stock reservation should not have been modified during shipment creation, as this is done when assigning
+        // sources
+        $currentStockReservationsQty = $this->getStockReservationsQuantity->execute('simple', 10);
+        self::assertEquals($initialStockReservationsQty + 3, $currentStockReservationsQty);
+
         // The qty should now be reduced from the actual source qty
         $currentSourcesQty = $this->getCombinedSourcesQty('simple', $sourceSelectionResult);
         self::assertEquals($currentSourcesQty, $initialSourcesQty - 3);
