@@ -70,28 +70,28 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
     private $getSourceItemBySourceCodeAndSku;
 
     /** @var GetReservationsQuantity */
-    private $getReservationsQuantity;
+    private $getStockReservationsQuantity;
 
     /** @var GetSourceReservationsQuantityInterface */
     private $getSourceReservationsQuantity;
 
     protected function setUp()
     {
-        $this->searchCriteriaBuilder = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
-        $this->orderRepository = Bootstrap::getObjectManager()->get(OrderRepositoryInterface::class);
-        $this->invoiceOrder = Bootstrap::getObjectManager()->get(InvoiceOrderInterface::class);
-        $this->moveReservationsFromStockToSource = Bootstrap::getObjectManager()->get(MoveReservationsFromStockToSource::class);
+        $this->searchCriteriaBuilder                              = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
+        $this->orderRepository                                    = Bootstrap::getObjectManager()->get(OrderRepositoryInterface::class);
+        $this->invoiceOrder                                       = Bootstrap::getObjectManager()->get(InvoiceOrderInterface::class);
+        $this->moveReservationsFromStockToSource                  = Bootstrap::getObjectManager()->get(MoveReservationsFromStockToSource::class);
         $this->getDefaultSourceSelectionAlgorithmCode = Bootstrap::getObjectManager()->get(GetDefaultSourceSelectionAlgorithmCodeInterface::class);
         $this->getOrderSourceReservations = Bootstrap::getObjectManager()->get(GetOrderSourceReservations::class);
         $this->shipOrder = Bootstrap::getObjectManager()->get(ShipOrderInterface::class);
         $this->getProductSalableQty = Bootstrap::getObjectManager()->get(GetProductSalableQty::class);
         $this->decodeMetaData = Bootstrap::getObjectManager()->get(DecodeMetaData::class);
-        $this->orderConverter = Bootstrap::getObjectManager()->get(\Magento\Sales\Model\Convert\Order::class);
-        $this->shipmentCreationArguments = Bootstrap::getObjectManager()->get(ShipmentCreationArgumentsInterface::class);
+        $this->orderConverter                                     = Bootstrap::getObjectManager()->get(\Magento\Sales\Model\Convert\Order::class);
+        $this->shipmentCreationArguments                          = Bootstrap::getObjectManager()->get(ShipmentCreationArgumentsInterface::class);
         $this->shipmentCreationArgumentsExtensionInterfaceFactory = Bootstrap::getObjectManager()->get(ShipmentCreationArgumentsExtensionInterfaceFactory::class);
-        $this->getSourceItemBySourceCodeAndSku = Bootstrap::getObjectManager()->get(GetSourceItemBySourceCodeAndSku::class);
-        $this->getReservationsQuantity = Bootstrap::getObjectManager()->get(GetReservationsQuantity::class);
-        $this->getSourceReservationsQuantity = Bootstrap::getObjectManager()->get(GetSourceReservationsQuantityInterface::class);
+        $this->getSourceItemBySourceCodeAndSku                    = Bootstrap::getObjectManager()->get(GetSourceItemBySourceCodeAndSku::class);
+        $this->getStockReservationsQuantity                       = Bootstrap::getObjectManager()->get(GetReservationsQuantity::class);
+        $this->getSourceReservationsQuantity                      = Bootstrap::getObjectManager()->get(GetSourceReservationsQuantityInterface::class);
     }
 
     /**
@@ -147,7 +147,7 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
         self::assertEquals(11, $salableQty);
 
         // Move reservation to source, salable qty should remain the same. Actual source quantity should not be affected yet
-        $initialStockReservationsQty = $this->getReservationsQuantity->execute('simple', 10);
+        $initialStockReservationsQty = $this->getStockReservationsQuantity->execute('simple', 10);
         $sourceSelectionResult = $this->moveReservationsFromStockToSource->execute(
             (int) $order->getEntityId(),
             $this->getDefaultSourceSelectionAlgorithmCode->execute()
@@ -158,7 +158,7 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
         self::assertEquals(11, $salableQty);
 
         // The qty should now be nullified from the stock reservations
-        $currentStockReservationsQty = $this->getReservationsQuantity->execute('simple', 10);
+        $currentStockReservationsQty = $this->getStockReservationsQuantity->execute('simple', 10);
         self::assertEquals($initialStockReservationsQty + 3, $currentStockReservationsQty);
 
         // Create shipments for the orders' assigned sources
@@ -209,7 +209,7 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
         $currentSourcesQty = $this->getCombinedSourcesQty('simple', $sourceSelectionResult);
         self::assertEquals($currentSourcesQty, $initialSourcesQty - 3);
 
-        // The qty should be nullified in the source reservations
+        // @todo: The qty should be nullified in the source reservations
         $currentSourceReservationsQty = [];
         foreach ($sourceReservations->getReservationItems() as $reservationItem) {
             $sourceCode = $reservationItem->getReservation()->getSourceCode();
