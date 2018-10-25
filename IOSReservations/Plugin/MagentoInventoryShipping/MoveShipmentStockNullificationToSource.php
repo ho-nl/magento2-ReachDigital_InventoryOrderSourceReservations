@@ -1,31 +1,35 @@
 <?php
-
 /**
  * Copyright © Reach Digital (https://www.reachdigital.io/)
  * See LICENSE.txt for license details.
  */
 
+declare(strict_types=1);
+
 namespace ReachDigital\IOSReservations\Plugin\MagentoInventoryShipping;
 
-use Magento\InventoryShipping\Observer\SourceDeductionProcessor;
-use Magento\Framework\Event\Observer as EventObserver;
-use Magento\InventorySourceDeductionApi\Model\SourceDeductionServiceInterface;
 use Magento\InventoryCatalogApi\Api\DefaultSourceProviderInterface;
 use Magento\InventoryCatalogApi\Model\IsSingleSourceModeInterface;
 use Magento\InventoryShipping\Model\GetItemsToDeductFromShipment;
 use Magento\InventoryShipping\Model\SourceDeductionRequestFromShipmentFactory;
+use Magento\InventoryShipping\Observer\SourceDeductionProcessor;
+use Magento\InventorySourceDeductionApi\Model\SourceDeductionRequestInterface;
+use Magento\InventorySourceDeductionApi\Model\SourceDeductionServiceInterface;
+use ReachDigital\ISReservations\Model\AppendReservations;
+use ReachDigital\ISReservations\Model\ReservationBuilder;
+use Magento\Framework\Event\Observer as EventObserver;
 
-class PreventCompensatingStockReservationOnShipment
+class MoveShipmentStockNullificationToSource
 {
     /**
-     * @var IsSingleSourceModeInterface
+     * @var AppendReservations
      */
-    private $isSingleSourceMode;
+    private $appendReservations;
 
     /**
-     * @var DefaultSourceProviderInterface
+     * @var ReservationBuilder
      */
-    private $defaultSourceProvider;
+    private $reservationBuilder;
 
     /**
      * @var GetItemsToDeductFromShipment
@@ -43,39 +47,38 @@ class PreventCompensatingStockReservationOnShipment
     private $sourceDeductionService;
 
     /**
-     * @param IsSingleSourceModeInterface               $isSingleSourceMode
-     * @param DefaultSourceProviderInterface            $defaultSourceProvider
-     * @param GetItemsToDeductFromShipment              $getItemsToDeductFromShipment
-     * @param SourceDeductionRequestFromShipmentFactory $sourceDeductionRequestFromShipmentFactory
-     * @param SourceDeductionServiceInterface           $sourceDeductionService
+     * @var IsSingleSourceModeInterface
      */
+    private $isSingleSourceMode;
+
+    /**
+     * @var DefaultSourceProviderInterface
+     */
+    private $defaultSourceProvider;
+
     public function __construct(
         IsSingleSourceModeInterface $isSingleSourceMode,
         DefaultSourceProviderInterface $defaultSourceProvider,
+        AppendReservations $appendReservations,
+        ReservationBuilder $reservationBuilder,
         GetItemsToDeductFromShipment $getItemsToDeductFromShipment,
         SourceDeductionRequestFromShipmentFactory $sourceDeductionRequestFromShipmentFactory,
         SourceDeductionServiceInterface $sourceDeductionService
-    ) {
-        $this->isSingleSourceMode = $isSingleSourceMode;
-        $this->defaultSourceProvider = $defaultSourceProvider;
+    )
+    {
+        $this->appendReservations = $appendReservations;
+        $this->reservationBuilder = $reservationBuilder;
         $this->getItemsToDeductFromShipment = $getItemsToDeductFromShipment;
         $this->sourceDeductionRequestFromShipmentFactory = $sourceDeductionRequestFromShipmentFactory;
         $this->sourceDeductionService = $sourceDeductionService;
+        $this->isSingleSourceMode = $isSingleSourceMode;
+        $this->defaultSourceProvider = $defaultSourceProvider;
     }
 
-    /**
-     * Replace core implementation to prevent creation of compensating stock reservations during shipping, as these are
-     * now done earlier, when reservations are moved from stock to source during source assignment.
-     *
-     * @noinspection PhpUnusedParameterInspection
-     *
-     * @param SourceDeductionProcessor $subject
-     * @param \Closure                 $proceed
-     * @param EventObserver            $observer
-     *
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+    /*
+     * Must wrap execute() to avoid call to private placeCompensatingReservation method
      */
-    public function aroundExecute(SourceDeductionProcessor $subject, \Closure $proceed, EventObserver $observer): void
+    public function aroundExecute(SourceDeductionProcessor $subject, \Closure $proceed, EventObserver $observer):void
     {
         /** @var \Magento\Sales\Model\Order\Shipment $shipment */
         $shipment = $observer->getEvent()->getShipment();
@@ -83,8 +86,8 @@ class PreventCompensatingStockReservationOnShipment
             return;
         }
 
-        if ($shipment->getExtensionAttributes() !== null
-            && $shipment->getExtensionAttributes()->getSourceCode() !== null) {
+        if (!empty($shipment->getExtensionAttributes())
+            && !empty($shipment->getExtensionAttributes()->getSourceCode())) {
             $sourceCode = $shipment->getExtensionAttributes()->getSourceCode();
         } elseif ($this->isSingleSourceMode->execute()) {
             $sourceCode = $this->defaultSourceProvider->getCode();
@@ -99,6 +102,21 @@ class PreventCompensatingStockReservationOnShipment
                 $shipmentItems
             );
             $this->sourceDeductionService->execute($sourceDeductionRequest);
+            $this->placeCompensatingSourceReservation($sourceDeductionRequest);
         }
+    }
+
+    private function placeCompensatingSourceReservation(SourceDeductionRequestInterface $sourceDeductionRequest):void
+    {
+        $reservations = [];
+
+        foreach ($sourceDeductionRequest->getItems() as $item) {
+            $this->reservationBuilder->setQuantity($item->getQty());
+            $this->reservationBuilder->setSku($item->getSku());
+            $this->reservationBuilder->setSourceCode($sourceDeductionRequest->getSourceCode());
+            $reservations[] = $this->reservationBuilder->build();
+        }
+
+        $this->appendReservations->execute($reservations);
     }
 }

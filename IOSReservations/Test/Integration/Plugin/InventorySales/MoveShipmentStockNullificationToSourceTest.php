@@ -214,7 +214,6 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
         $currentSourcesQty = $this->getCombinedSourcesQty('simple', $sourceSelectionResult);
         self::assertEquals($currentSourcesQty, $initialSourcesQty - 3);
 
-        // @todo: The qty should be nullified in the source reservations
         $currentSourceReservationsQty = [];
         foreach ($sourceReservations->getReservationItems() as $reservationItem) {
             $sourceCode = $reservationItem->getReservation()->getSourceCode();
