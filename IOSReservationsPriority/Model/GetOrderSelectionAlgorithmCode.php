@@ -19,6 +19,6 @@ class GetOrderSelectionAlgorithmCode implements GetOrderSelectionAlgorithmCodeIn
      */
     public function execute(): string
     {
-        return 'byDatePlaced';
+        return 'byDateCreated';
     }
 }

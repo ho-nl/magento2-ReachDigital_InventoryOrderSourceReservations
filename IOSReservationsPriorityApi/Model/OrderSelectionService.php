@@ -25,10 +25,10 @@ class OrderSelectionService implements OrderSelectionServiceInterface
 
     public function __construct(
         ObjectManagerInterface $objectManager,
-        array $orderSectionMethods = []
+        array $orderSelectionMethods = []
     ) {
         $this->objectManager = $objectManager;
-        $this->orderSelectionMethods = $orderSectionMethods;
+        $this->orderSelectionMethods = $orderSelectionMethods;
     }
 
     /**
