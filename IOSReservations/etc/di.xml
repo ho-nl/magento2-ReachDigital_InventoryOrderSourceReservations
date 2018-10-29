@@ -15,4 +15,11 @@
         <plugin name="move_shipment_stock_nullification_to_source"
                 type="ReachDigital\IOSReservations\Plugin\MagentoInventoryShipping\MoveShipmentStockNullificationToSource"/>
     </type>
+    <type name="Magento\InventorySourceSelection\Model\SourceSelectionService">
+        <arguments>
+            <argument name="sourceSelectionMethods" xsi:type="array">
+                <item name="priority" xsi:type="string">IOSReservations\Plugin\InventorySourceSelection\PriorityBasedAlgorithmWithSourceReservations</item>
+            </argument>
+        </arguments>
+    </type>
 </config>
