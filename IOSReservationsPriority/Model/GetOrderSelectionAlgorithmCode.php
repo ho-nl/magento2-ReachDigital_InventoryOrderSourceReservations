@@ -6,9 +6,9 @@
 
 declare(strict_types=1);
 
-namespace ReachDigital\IOSReservationsPriorityAdminUI;
+namespace ReachDigital\IOSReservationsPriority\Model;
 
-use ReachDigital\IOSReservationsPriorityApi\GetOrderSelectionAlgorithmCodeInterface;
+use ReachDigital\IOSReservationsPriorityApi\Api\GetOrderSelectionAlgorithmCodeInterface;
 
 class GetOrderSelectionAlgorithmCode implements GetOrderSelectionAlgorithmCodeInterface
 {

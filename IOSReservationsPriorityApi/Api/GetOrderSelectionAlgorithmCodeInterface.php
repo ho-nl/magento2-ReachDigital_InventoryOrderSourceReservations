@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace ReachDigital\IOSReservationsPriorityApi;
+namespace ReachDigital\IOSReservationsPriorityApi\Api;
 
 interface GetOrderSelectionAlgorithmCodeInterface
 {
