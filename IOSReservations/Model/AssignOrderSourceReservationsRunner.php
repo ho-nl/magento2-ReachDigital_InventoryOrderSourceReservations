@@ -14,6 +14,9 @@ use ReachDigital\IOSReservationsApi\Api\AssignOrderSourceReservationsRunnerInter
 use ReachDigital\IOSReservationsPriorityApi\Api\OrderSelectionServiceInterface;
 use ReachDigital\IOSReservationsPriorityApi\Api\GetOrderSelectionAlgorithmCodeInterface;
 
+/**
+ * @todo rename to MoveReservationsFromStockToSourceRunner + Interface
+ */
 class AssignOrderSourceReservationsRunner implements AssignOrderSourceReservationsRunnerInterface
 {
 
@@ -37,17 +40,24 @@ class AssignOrderSourceReservationsRunner implements AssignOrderSourceReservatio
      */
     private $getDefaultSourceSelectionAlgorithmCode;
 
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    private $logger;
+
     public function __construct(
         OrderSelectionServiceInterface $orderSelectionService,
         GetOrderSelectionAlgorithmCodeInterface $getOrderSelectionAlgorithmCode,
         MoveReservationsFromStockToSourceInterface $assignOrderSourceReservations,
-        GetDefaultSourceSelectionAlgorithmCodeInterface $getDefaultSourceSelectionAlgorithmCode
+        GetDefaultSourceSelectionAlgorithmCodeInterface $getDefaultSourceSelectionAlgorithmCode,
+        \Psr\Log\LoggerInterface $logger
     )
     {
         $this->orderSelectionService = $orderSelectionService;
         $this->getOrderSelectionAlgorithmCode = $getOrderSelectionAlgorithmCode;
         $this->assignOrderSourceReservations = $assignOrderSourceReservations;
         $this->getDefaultSourceSelectionAlgorithmCode = $getDefaultSourceSelectionAlgorithmCode;
+        $this->logger = $logger;
     }
 
     /**
@@ -56,15 +66,18 @@ class AssignOrderSourceReservationsRunner implements AssignOrderSourceReservatio
     public function execute(): void
     {
         $orderSearchResults = $this->orderSelectionService->execute(
-            null, //@todo Limit?
+            null, //@todo Implement functionality with very large sales collections.
             $this->getOrderSelectionAlgorithmCode->execute()
         );
         foreach($orderSearchResults->getItems() as $order) {
-            //@todo Exception handling in loop? Should we display the error in the Admin Panel?
-            $this->assignOrderSourceReservations->execute(
-                $order->getEntityId(),
-                $this->getDefaultSourceSelectionAlgorithmCode->execute()
-            );
+            try {
+                $this->assignOrderSourceReservations->execute(
+                    $order->getEntityId(),
+                    $this->getDefaultSourceSelectionAlgorithmCode->execute()
+                );
+            } catch (\Throwable $e) {
+                $this->logger->critical($e);
+            }
         }
     }
 }
