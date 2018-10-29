@@ -9,7 +9,7 @@
     <preference for="ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface" type="ReachDigital\IOSReservations\Model\SourceReservationResult\SourceReservationResult"/>
     <preference for="ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultItemInterface" type="ReachDigital\IOSReservations\Model\SourceReservationResult\SourceReservationResultItem"/>
     <preference for="ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceInterface" type="ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource"/>
-    <preference for="ReachDigital\IOSReservationsApi\Api\AssignOrderSourceReservationsRunnerInterface" type="ReachDigital\IOSReservations\Model\AssignOrderSourceReservationsRunner"/>
+    <preference for="ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceRunnerInterface" type="ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSourceRunner"/>
     <preference for="ReachDigital\IOSReservationsApi\Api\GetOrderSourceReservationsInterface" type="ReachDigital\IOSReservations\Model\GetOrderSourceReservations"/>
     <type name="Magento\InventoryShipping\Observer\SourceDeductionProcessor">
         <plugin name="move_shipment_stock_nullification_to_source"

@@ -10,14 +10,11 @@ namespace ReachDigital\IOSReservations\Model;
 
 use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
 use ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceInterface;
-use ReachDigital\IOSReservationsApi\Api\AssignOrderSourceReservationsRunnerInterface;
+use ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceRunnerInterface;
 use ReachDigital\IOSReservationsPriorityApi\Api\OrderSelectionServiceInterface;
 use ReachDigital\IOSReservationsPriorityApi\Api\GetOrderSelectionAlgorithmCodeInterface;
 
-/**
- * @todo rename to MoveReservationsFromStockToSourceRunner + Interface
- */
-class AssignOrderSourceReservationsRunner implements AssignOrderSourceReservationsRunnerInterface
+class MoveReservationsFromStockToSourceRunner implements MoveReservationsFromStockToSourceRunnerInterface
 {
 
     /**

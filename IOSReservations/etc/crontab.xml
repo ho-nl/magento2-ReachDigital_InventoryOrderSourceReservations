@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
     <group id="default">
-        <job name="assign_order_source_reservations" instance="ReachDigital\IOSReservations\Cron\AssignOrderSourceReservationsJob" method="execute">
+        <job name="move_reservations_from_stock_to_source" instance="ReachDigital\IOSReservations\Cron\MoveReservationsFromStockToSourceJob" method="execute">
             <schedule>* * * * *</schedule>
         </job>
     </group>
