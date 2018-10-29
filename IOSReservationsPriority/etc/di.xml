@@ -24,4 +24,5 @@
             </argument>
         </arguments>
     </type>
+    <preference for="ReachDigital\IOSReservationsPriorityApi\Api\GetOrderSelectionAlgorithmCodeInterface" type="ReachDigital\IOSReservationsPriority\Model\GetOrderSelectionAlgorithmCode"/>
 </config>
