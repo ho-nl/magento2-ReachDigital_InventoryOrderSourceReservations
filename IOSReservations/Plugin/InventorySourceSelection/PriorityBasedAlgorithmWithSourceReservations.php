@@ -4,6 +4,8 @@
  * See LICENSE.txt for license details.
  */
 
+declare(strict_types=1);
+
 namespace ReachDigital\IOSReservations\Plugin\InventorySourceSelection;
 
 use Magento\Framework\Api\SearchCriteriaBuilder;

@@ -106,6 +106,13 @@ class MoveShipmentStockNullificationToSource
         }
     }
 
+    /**
+     * @param SourceDeductionRequestInterface $sourceDeductionRequest
+     *
+     * @throws \Magento\Framework\Exception\CouldNotSaveException
+     * @throws \Magento\Framework\Exception\InputException
+     * @throws \Magento\Framework\Validation\ValidationException
+     */
     private function placeCompensatingSourceReservation(SourceDeductionRequestInterface $sourceDeductionRequest):void
     {
         $reservations = [];
