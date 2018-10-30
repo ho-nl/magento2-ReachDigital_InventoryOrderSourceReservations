@@ -41,7 +41,8 @@ class ByDateCreatedAlgorithmTest extends \PHPUnit\Framework\TestCase
     /**
      * @test
      *
-     * @covers \ReachDigital\IOSReservationsPriorityApi\Model\OrderSelectionService, \ReachDigital\IOSReservationsPriority\Model\Algorithms\AssignOrderSourceReservations
+     * @covers \ReachDigital\IOSReservationsPriorityApi\Model\OrderSelectionService
+     * @covers \ReachDigital\IOSReservationsPriority\Model\Algorithms\ByDateCreatedAlgorithm
      *
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/products.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/source_items_for_bundle_children.php
@@ -64,6 +65,7 @@ class ByDateCreatedAlgorithmTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @test
+     * @todo
      */
     public function should_skip_sourced_orders(): void
     {

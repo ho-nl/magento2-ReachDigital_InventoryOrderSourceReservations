@@ -45,9 +45,6 @@ class ByDateCreatedAlgorithm implements OrderSelectionInterface
     }
 
     /**
-     * @todo should this be able to debounce orders? If an order cant be Sourced, should this always return something
-     * @todo it is the responsibility of this method to return orders based on the time of day / strategy.
-     * @todo how to we filter on 'already sourced items'?
      * @inheritdoc
      */
     public function execute(?int $limit): OrderSearchResultInterface
@@ -60,6 +57,7 @@ class ByDateCreatedAlgorithm implements OrderSelectionInterface
             ->create();
         $this->searchCriteriaBuilder->addSortOrder($sort);
 
+        // @todo: only fetch non-assigned orders
         if ($limit) {
             $this->searchCriteriaBuilder->setPageSize($limit);
         }
