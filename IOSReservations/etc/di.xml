@@ -18,7 +18,7 @@
     <type name="Magento\InventorySourceSelection\Model\SourceSelectionService">
         <arguments>
             <argument name="sourceSelectionMethods" xsi:type="array">
-                <item name="priority" xsi:type="string">IOSReservations\Plugin\InventorySourceSelection\PriorityBasedAlgorithmWithSourceReservations</item>
+                <item name="priority" xsi:type="string">ReachDigital\IOSReservations\Plugin\InventorySourceSelection\PriorityBasedAlgorithmWithSourceReservations</item>
             </argument>
         </arguments>
     </type>

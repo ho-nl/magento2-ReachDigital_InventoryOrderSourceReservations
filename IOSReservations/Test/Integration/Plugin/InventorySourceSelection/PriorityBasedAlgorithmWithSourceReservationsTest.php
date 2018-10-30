@@ -3,26 +3,54 @@
  * Copyright © Reach Digital (https://www.reachdigital.io/)
  * See LICENSE.txt for license details.
  */
+
+declare(strict_types=1);
+
 namespace IOSReservations\Test\Integration\Plugin\InventorySourceSelection;
 
-use IOSReservations\Plugin\InventorySourceSelection\PriorityBasedAlgorithmWithSourceReservations;
 use Magento\InventorySourceSelection\Model\Algorithms\PriorityBasedAlgorithm;
+use Magento\InventorySourceSelectionApi\Api\Data\InventoryRequestInterfaceFactory;
+use Magento\InventorySourceSelectionApi\Api\Data\ItemRequestInterface;
+use Magento\InventorySourceSelectionApi\Api\Data\ItemRequestInterfaceFactory;
+use Magento\InventorySourceSelectionApi\Api\Data\SourceSelectionResultInterface;
+use Magento\InventorySourceSelectionApi\Api\SourceSelectionServiceInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 use PHPUnit\Framework\TestCase;
+use ReachDigital\ISReservations\Model\AppendReservations;
+use ReachDigital\ISReservations\Model\ReservationBuilder;
 
 class PriorityBasedAlgorithmWithSourceReservationsTest extends TestCase
 {
     /** @var PriorityBasedAlgorithm */
     private $priorityBasedAlgorithm;
 
+    /** @var ReservationBuilder */
+    private $sourceReservationBuilder;
+
+    /** @var AppendReservations */
+    private $appendReservations;
+
+    /** @var ItemRequestInterfaceFactory */
+    private $itemRequestFactory;
+
+    /** @var InventoryRequestInterfaceFactory */
+    private $inventoryRequestFactory;
+
+    /** @var SourceSelectionServiceInterface */
+    private $sourceSelectionService;
+
     public function setUp()
     {
-        $this->priorityBasedAlgorithm = Bootstrap::getObjectManager()->get(PriorityBasedAlgorithm::class);
+        $this->sourceReservationBuilder = Bootstrap::getObjectManager()->get(ReservationBuilder::class);
+        $this->appendReservations = Bootstrap::getObjectManager()->get(AppendReservations::class);
+        $this->itemRequestFactory = Bootstrap::getObjectManager()->get(ItemRequestInterfaceFactory::class);
+        $this->inventoryRequestFactory = Bootstrap::getObjectManager()->get(InventoryRequestInterfaceFactory::class);
+        $this->sourceSelectionService = Bootstrap::getObjectManager()->get(SourceSelectionServiceInterface::class);
     }
 
     /**
      * @test
-     * @covers \IOSReservations\Plugin\InventorySourceSelection\PriorityBasedAlgorithmWithSourceReservations
+     * @covers \ReachDigital\IOSReservations\Plugin\InventorySourceSelection\PriorityBasedAlgorithmWithSourceReservations
      *
      * @magentoDbIsolation disabled
      *
@@ -33,7 +61,7 @@ class PriorityBasedAlgorithmWithSourceReservationsTest extends TestCase
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links_rollback.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks_rollback.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources_rollback.php
-     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/clean_all_reservations.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-inventory-source-reservations/ISReservations/Test/Integration/_files/clean_all_reservations.php
      *
      * Filling database
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources.php
@@ -45,12 +73,64 @@ class PriorityBasedAlgorithmWithSourceReservationsTest extends TestCase
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/source_items_for_simple_on_multi_source.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website.php
+     *
+     * @throws
      */
     public function should_include_reservations_in_default_ssa(): void
     {
-        // Fixture: eu-1 has qty of 2
-        // Add reservation of 2
-        // Try to select source for qty 4
+        /* Fixture:
+         *
+         * | *Sku*  | *Source Code* | *Qty* | *Info*        |
+         * |--------|---------------|-------|---------------|
+         * | simple | eu-1          | 2     |               |
+         * | simple | eu-2          | 12    |               |
+         * | simple | eu-3          | 12    | out of stock  |
+         * | simple | eu-disabled   | 6     |               |
+         * | simple | us-1          | 10    |               |
+         */
 
+        // 14 available, should not be shippable
+        $selectionResult = $this->requestItem(10, 'simple', 16);
+        self::assertEquals(false, $selectionResult->isShippable());
+
+        // Add two by reservation
+        $this->appendReservation('eu-1', 'simple', 2, 'ssa_test_reservation');
+
+        // Should be shippable
+        $selectionResult = $this->requestItem(10, 'simple', 16);
+        self::assertEquals(true, $selectionResult->isShippable());
+    }
+
+    private function requestItem(int $stockId, string $sku, int $qty): SourceSelectionResultInterface
+    {
+        /** @var ItemRequestInterface[] $requestItems */
+        $requestItems = [];
+
+        $requestItems[] = $this->itemRequestFactory->create([
+            'sku' => $sku,
+            'qty' => $qty,
+        ]);
+
+        $inventoryRequest = $this->inventoryRequestFactory->create([
+            'stockId' => $stockId,
+            'items' => $requestItems,
+        ]);
+
+        return $this->sourceSelectionService->execute($inventoryRequest, 'priority');
+    }
+
+    /**
+     * @throws \Magento\Framework\Exception\CouldNotSaveException
+     * @throws \Magento\Framework\Exception\InputException
+     * @throws \Magento\Framework\Validation\ValidationException
+     */
+    private function appendReservation(string $sourceCode, string $sku, float $quantity, string $metaData): void
+    {
+        $this->sourceReservationBuilder->setSourceCode($sourceCode);
+        $this->sourceReservationBuilder->setQuantity($quantity);
+        $this->sourceReservationBuilder->setSku($sku);
+        $this->sourceReservationBuilder->setMetadata($metaData);
+        $reservation = $this->sourceReservationBuilder->build();
+        $this->appendReservations->execute([$reservation]);
     }
 }
