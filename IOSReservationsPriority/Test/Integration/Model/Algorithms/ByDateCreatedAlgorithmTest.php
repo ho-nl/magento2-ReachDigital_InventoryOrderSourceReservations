@@ -41,13 +41,15 @@ class ByDateCreatedAlgorithmTest extends \PHPUnit\Framework\TestCase
     /**
      * @test
      *
+     * @magentoDbIsolation disabled
+     *
      * @covers \ReachDigital\IOSReservationsPriorityApi\Model\OrderSelectionService
      * @covers \ReachDigital\IOSReservationsPriority\Model\Algorithms\ByDateCreatedAlgorithm
      *
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/products.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/source_items_for_bundle_children.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/products_bundle.php
-     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_bundle_products.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservationsPriority/Test/_files/order_bundle_products.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory.php
      */
     public function should_retrieve_unsourced_orders_by_date(): void
