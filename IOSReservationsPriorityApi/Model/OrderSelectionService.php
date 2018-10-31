@@ -34,11 +34,10 @@ class OrderSelectionService implements OrderSelectionServiceInterface
     /**
      * Get a list of orders that need to be assigned to a source.
      *
-     * @param \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
-     * @param string                                         $algorithmCode
+     * @param int|null $limit
+     * @param string   $algorithmCode
      *
      * @return mixed
-     * @throws \LogicException
      */
     public function execute(
         ?int $limit,
