@@ -79,10 +79,9 @@ class MoveReservationsFromStockToSource implements MoveReservationsFromStockToSo
 
         $reservations = $this->getReservationsByMetadata->execute("order:{$orderId}");
         if ($reservations) {
-            throw new LocalizedException(__("Can not assign sources, source already selected for order %1", $orderId));
+            throw new LocalizedException(__('Can not assign sources, source already selected for order %1', $orderId));
         }
 
-        //@todo check if test is available to try to reserve for order that is already reserved.
         $sourceSelectionRequest = $this->inventoryRequestFromOrderFactory->create($order);
         $sourceSelectionResult = $this->sourceSelectionService->execute($sourceSelectionRequest, $algorithmCode);
 
@@ -90,13 +89,9 @@ class MoveReservationsFromStockToSource implements MoveReservationsFromStockToSo
             throw new LocalizedException(__('No sources could be selected for order: %1', $orderId));
         }
 
-        //@todo should we implement a TransactionManager manager around this, DB Safety.
         $this->revertStockReservations->execute($order, $sourceSelectionResult);
         $sourceReservationResult = $this->appendSourceReservations->execute($order, $sourceSelectionResult);
 
         return $sourceReservationResult;
-        //Check if the order can be sourced, isn't it already sourced?
-        //Revert Stock Reservations
-        //Append Source Reservations
     }
 }
