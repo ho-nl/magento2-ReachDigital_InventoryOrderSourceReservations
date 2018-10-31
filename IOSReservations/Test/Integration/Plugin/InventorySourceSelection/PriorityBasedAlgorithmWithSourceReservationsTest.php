@@ -93,12 +93,15 @@ class PriorityBasedAlgorithmWithSourceReservationsTest extends TestCase
         $selectionResult = $this->requestItem(10, 'simple', 16);
         self::assertEquals(false, $selectionResult->isShippable());
 
-        // Add two by reservation
+        // Add two by reservation and select for 16, should be shippable
         $this->appendReservation('eu-1', 'simple', 2, 'ssa_test_reservation');
-
-        // Should be shippable
         $selectionResult = $this->requestItem(10, 'simple', 16);
         self::assertEquals(true, $selectionResult->isShippable());
+
+        // Reduce two by reservation and try to select for 16, should no longer be shippable
+        $this->appendReservation('eu-1', 'simple', -2, 'ssa_test_reservation');
+        $selectionResult = $this->requestItem(10, 'simple', 16);
+        self::assertEquals(false, $selectionResult->isShippable());
     }
 
     private function requestItem(int $stockId, string $sku, int $qty): SourceSelectionResultInterface
