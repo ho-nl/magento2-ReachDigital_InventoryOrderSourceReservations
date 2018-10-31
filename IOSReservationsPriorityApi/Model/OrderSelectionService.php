@@ -32,7 +32,7 @@ class OrderSelectionService implements OrderSelectionServiceInterface
     }
 
     /**
-     * Get a list of orders that need to be assigned to a source. Sorted by priority
+     * Get a list of orders that need to be assigned to a source.
      *
      * @param \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
      * @param string                                         $algorithmCode
@@ -41,7 +41,7 @@ class OrderSelectionService implements OrderSelectionServiceInterface
      * @throws \LogicException
      */
     public function execute(
-        ?\Magento\Framework\Api\SearchCriteriaInterface $searchCriteria,
+        ?int $limit,
         string $algorithmCode
     ): OrderSearchResultInterface {
         if (!isset($this->orderSelectionMethods[$algorithmCode])) {
@@ -49,15 +49,15 @@ class OrderSelectionService implements OrderSelectionServiceInterface
                 (string) __('There is no such Order Selection Algorithm implemented: %1', $algorithmCode)
             );
         }
-        $sourceSelectionClassName = $this->orderSelectionMethods[$algorithmCode];
+        $orderSelectionClassName = $this->orderSelectionMethods[$algorithmCode];
 
         /** @var OrderSelectionInterface $selection */
-        $selection = $this->objectManager->create($sourceSelectionClassName);
+        $selection = $this->objectManager->create($orderSelectionClassName);
         if (false === $selection instanceof OrderSelectionInterface) {
             throw new \LogicException(
-                (string) __('%1 doesn\'t implement OrderSelectionInterface', $sourceSelectionClassName)
+                (string) __('%1 doesn\'t implement OrderSelectionInterface', $orderSelectionClassName)
             );
         }
-        return $selection->execute($searchCriteria);
+        return $selection->execute($limit);
     }
 }

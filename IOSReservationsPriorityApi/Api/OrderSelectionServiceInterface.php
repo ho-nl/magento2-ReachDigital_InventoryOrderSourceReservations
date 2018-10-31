@@ -16,13 +16,13 @@ interface OrderSelectionServiceInterface
     /**
      * Get a list of orders that need to be assigned to a source. Sorted by priority
      *
-     * @param \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
-     * @param string                                         $algorithmCode
+     * @param int|null $limit
+     * @param string   $algorithmCode
      *
      * @return mixed
      */
     public function execute(
-        ?\Magento\Framework\Api\SearchCriteriaInterface $searchCriteria,
+        ?int $limit,
         string $algorithmCode
     ): OrderSearchResultInterface;
 }
