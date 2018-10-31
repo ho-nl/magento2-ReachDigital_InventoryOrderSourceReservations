@@ -126,7 +126,7 @@ class ByDateCreatedAlgorithmTest extends \PHPUnit\Framework\TestCase
     {
         // Fixture: have an unsourced order
 
-        // Invoice order so it reached processing state
+        // Invoice order so it reaches processing state
         $searchCriteria = $this->searchCriteriaBuilder
             ->addFilter('increment_id', 'created_order_for_test')
             ->create();
@@ -147,7 +147,8 @@ class ByDateCreatedAlgorithmTest extends \PHPUnit\Framework\TestCase
         $items = $sourceReservations->getReservationItems();
         self::assertCount(2, $items);
 
-        // @todo Run order selection and assert that it skipped the order
-
+        // Run order selection and assert that it skipped the order
+        $result = $this->orderSelectionService->execute(null, 'byDateCreated');
+        $this->assertEquals(0, $result->getTotalCount());
     }
 }
