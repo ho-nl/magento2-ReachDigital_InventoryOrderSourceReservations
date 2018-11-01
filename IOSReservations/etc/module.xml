@@ -9,6 +9,7 @@
     <module name="ReachDigital_IOSReservations" setup_version="1.0.0">
         <sequence>
             <module name="Magento_InventoryShipping"/>
+            <module name="Magento_InventorySales"/>
             <module name="Magento_InventorySourceSelection"/>
         </sequence>
     </module>

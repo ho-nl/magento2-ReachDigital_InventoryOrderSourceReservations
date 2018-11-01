@@ -3,7 +3,7 @@
 _Note: This is discussed earlier during the MSI Open Grooming meeting
 (https://www.youtube.com/watch?v=fl8anqyN-1Q&index=2&list=PLrQ5FBCRsEbWKK6U_3Awe7X-nG7KY0WPW) but after the meeting
 there were some questions how certain specifics were implemented._
-`
+
 ### Backstory
 We have a feature request from a customer to implement purchase orders and therefor it lead me to the idea that we
 should have some form of source reservations. But while writing the specifications it came to my attention that we have
@@ -49,9 +49,6 @@ The orders' stock reservation is nullified, source reservation is made.
 
 #### GetSourceReservationsFromOrderInterface
 Will retrieve already reserved source reservations.
-
-
-Plugin for 
 
 
 #### Shipment step
@@ -127,8 +124,6 @@ interface will be created OrderSourceReservationPriorityAlgorithmInterface (or s
 will only have a single implementation OrderSourceReservationByDate.
 
 Question: How often will this run? Because algorithm1 needs to run once per day, algorithm2 can run every 2 mins, etc.
-
-
 
 
 # Interfaces
