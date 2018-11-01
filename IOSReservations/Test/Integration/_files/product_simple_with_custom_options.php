@@ -102,9 +102,9 @@ foreach ($oldOptions as $option) {
 
 $product->setOptions($options);
 
-/** @var \Magento\Catalog\Api\ProductRepositoryInterface $productRepositoryFactory */
-$productRepositoryFactory = $objectManager->create(\Magento\Catalog\Api\ProductRepositoryInterface::class);
-$productRepositoryFactory->save($product);
+/** @var \Magento\Catalog\Api\ProductRepositoryInterface $productRepository */
+$productRepository = $objectManager->create(\Magento\Catalog\Api\ProductRepositoryInterface::class);
+$productRepository->save($product, true);
 
 $categoryLinkManagement->assignProductToCategories(
     $product->getSku(),
