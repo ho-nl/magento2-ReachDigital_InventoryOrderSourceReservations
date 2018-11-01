@@ -165,26 +165,4 @@ class MoveReservationsFromStockToSourceTest extends \PHPUnit\Framework\TestCase
             $this->getDefaultSourceSelectionAlgorithmCode->execute()
         );
     }
-
-    /**
-     * @todo Source Backorder Support
-     * @test
-     * Sometimes qty's need to be used by the source selection service, but other times it shouldn't? When does S&H
-     * need to know about the orders? Does S&H only need to know how much inventory is incomming (communicating a
-     * purchase order) or do they need to receive all orders directly?
-     *
-     * In OppoSuits' case, for most purchase orders there is a flow where the warehouse will need to receive orders
-     * that will need to be shipped at a certain point.
-     *       1. The system wil withhold all orders from the warehouse until the last moment.
-     *       2. Like a day before the actual container arrives at the warehouse all the orders are sent to the
-     *       warehouse. Question is, is this required, or can we skip this, because it is already covered by the
-     *       purchaseOrder document?
-     *
-     * There seems to be a state difference if a reservation should be used for calculation of the sourceSelection
-     * algorithm.
-     */
-    public function should_not_move_qtys_when_backorder_support_is_disabled_for_source() : void
-    {
-
-    }
 }

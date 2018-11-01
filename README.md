@@ -20,6 +20,29 @@ deducted at that point.
 We split the Source Selection Algorithm and the Shipment creation into two steps, while making sure the source, stock
 and salable qty remain consistent.
 
+#### Flow
+
+🔸 Already handled by Magento
+🔹 Added by IOSR
+
+New order
+    - 🔸Create StockReservations ✅
+
+Order Invoiced  
+    - 🔹Cron to Revert StockReservations + 🔹Add SourceReservations ✅
+
+Shipment Created
+    - 🔹Revert SourceReservations instead of Stock + 🔸Deduct Source ✅
+
+Order Cancelled
+    - 🔸Revert StockReservations ✅
+
+Credit Order when not shipped:
+    - 🔹Revert Source Reservations if available. 🚼
+    - 🔹Low Prio: Hide 'Return Qty to Source' because it isn't deducted yet.
+
+Credit Order when shipped:
+    - 🔸Increment Source ✅
 
 #### ConfirmSourceReservationsForOrderInterface
 The orders' stock reservation is nullified, source reservation is made.
@@ -122,3 +145,6 @@ Question: How often will this run? Because algorithm1 needs to run once per day,
 
 # Model Interfaces
 ✅ OrderSelectionInterface < ByDatePlacedAlgorithm
+
+
+

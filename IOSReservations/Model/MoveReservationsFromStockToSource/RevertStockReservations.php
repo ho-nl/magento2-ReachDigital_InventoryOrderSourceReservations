@@ -73,9 +73,6 @@ class RevertStockReservations
     ): void {
         $reservations = [];
         foreach ($sourceSelectionResult->getSourceSelectionItems() as $item) {
-            //@todo Should we check if the product still exists? See ProcessBackItemQtyPlugin for explanation
-            //@see Magento\InventorySales\Plugin\CatalogInventory\StockManagement\ProcessBackItemQtyPlugin::aroundBackItemQty
-
             $store = $this->storeRepository->getById((int) $order->getStoreId());
             $stockId = (int)$this->stockByWebsiteIdResolver->execute((int)$store->getWebsiteId())->getStockId();
 
