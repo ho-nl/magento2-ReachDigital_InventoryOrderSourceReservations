@@ -8,9 +8,11 @@ declare(strict_types=1);
 
 namespace ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource;
 
+use Magento\Framework\Serialize\SerializerInterface;
 use Magento\InventoryCatalogApi\Model\GetProductIdsBySkusInterface;
 use Magento\InventoryReservationsApi\Model\AppendReservationsInterface;
 use Magento\InventoryReservationsApi\Model\ReservationBuilderInterface;
+use Magento\InventorySales\Model\SalesEventToArrayConverter;
 use Magento\InventorySalesApi\Model\StockByWebsiteIdResolverInterface;
 use Magento\InventorySourceSelectionApi\Api\Data\SourceSelectionResultInterface;
 use Magento\Sales\Api\Data\OrderInterface;
@@ -30,11 +32,6 @@ class RevertStockReservations
     private $reservationBuilder;
 
     /**
-     * @var GetProductIdsBySkusInterface
-     */
-    private $getProductIdsBySkus;
-
-    /**
      * @var StockByWebsiteIdResolverInterface
      */
     private $stockByWebsiteIdResolver;
@@ -44,18 +41,23 @@ class RevertStockReservations
      */
     private $storeRepository;
 
+    /**
+     * @var SerializerInterface
+     */
+    private $serializer;
+
     public function __construct(
         AppendReservationsInterface $appendReservations,
         ReservationBuilderInterface $reservationBuilder,
-        GetProductIdsBySkusInterface $getProductIdsBySkus,
         StockByWebsiteIdResolverInterface $stockByWebsiteIdResolver,
-        StoreRepositoryInterface $storeRepository
+        StoreRepositoryInterface $storeRepository,
+        SerializerInterface $serializer
     ) {
         $this->appendReservations = $appendReservations;
         $this->reservationBuilder = $reservationBuilder;
-        $this->getProductIdsBySkus = $getProductIdsBySkus;
         $this->stockByWebsiteIdResolver = $stockByWebsiteIdResolver;
         $this->storeRepository = $storeRepository;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -80,9 +82,14 @@ class RevertStockReservations
                 ->setSku($item->getSku())
                 ->setQuantity($item->getQtyToDeduct())
                 ->setStockId($stockId)
+                ->setMetadata($this->serializer->serialize([
+                    // @fixme does it make sense to 'fake' a sales event here? Maybe order-source assignment should be implemented as an actual salesevent?
+                    // @see  \Magento\InventorySales\Model\PlaceReservationsForSalesEvent::execute
+                    'event_type' => 'order_assigned',
+                    'object_type' => 'order',
+                    'object_id' => $order->getEntityId()
+                ]))
                 ->build();
-
-            //@todo It should set the metadata properly.
         }
         $this->appendReservations->execute($reservations);
     }
