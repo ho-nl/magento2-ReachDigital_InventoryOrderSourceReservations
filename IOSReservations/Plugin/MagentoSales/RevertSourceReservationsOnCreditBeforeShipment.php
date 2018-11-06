@@ -82,6 +82,7 @@ class RevertSourceReservationsOnCreditBeforeShipment
         /** @var Creditmemo\Item $item */
         foreach ($creditmemo->getItems() as $item) {
             $qtyToRevert = $item->getQty();
+            // @todo must check qty shipped? can't revert refund qtys that are higher than the unshipped qty. What needs to be done if we can't revert the entire refunded qty?
 
             if ($this->isZero($qtyToRevert)) {
                 continue;
