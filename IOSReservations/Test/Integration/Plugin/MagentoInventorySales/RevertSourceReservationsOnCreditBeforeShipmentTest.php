@@ -111,7 +111,7 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
         $result = $this->getReservationsQuantityList->execute(['simple']);
         self::assertEquals(-3, $result['simple']['quantity']);
 
-        // Credit order @todo do partial refund and check partial reversion of reservation
+        // Credit order
         $this->creditOrder($order);
 
         // Assert that source reservations have been reverted by refunded qty
@@ -119,12 +119,79 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
         self::assertEquals(0, $result['simple']['quantity']);
     }
 
+
+    /**
+     *
+     * @test
+     *
+     * @covers \ReachDigital\IOSReservations\Plugin\MagentoSales\RevertSourceReservationsOnCreditBeforeShipment
+     *
+     * @magentoDbIsolation disabled
+     *
+     * Rolling back previous database mess
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/source_items_for_simple_on_multi_source_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/simple_product_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/websites_with_stores_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-inventory-source-reservations/ISReservations/Test/Integration/_files/clean_all_reservations.php
+     *
+     * Filling database
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/websites_with_stores.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/stock_website_sales_channels.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/simple_product.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/source_items_for_simple_on_multi_source.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product.php
+     *
+     * @throws
+     */
+    public function should_revert_source_reservations_on_partial_credit_before_shipping_if_available(): void
+    {
+        // Have an invoiced order
+        $searchCriteria = $this->searchCriteriaBuilder
+            ->addFilter('increment_id', 'created_order_for_test')
+            ->create();
+        /** @var Order $order */
+        $order = current($this->orderRepository->getList($searchCriteria)->getItems());
+
+        // Create Invoice
+        $this->invoiceOrder->execute($order->getEntityId());
+
+        // Assert no reservations
+        $result = $this->getReservationsQuantityList->execute(['simple']);
+        self::assertCount(0, $result);
+
+        // Assign order to sources
+        $this->moveReservationsFromStockToSource->execute(
+            (int) $order->getEntityId(),
+            $this->getDefaultSourceSelectionAlgorithmCode->execute()
+        );
+
+        // Assert reservation qty
+        $result = $this->getReservationsQuantityList->execute(['simple']);
+        self::assertEquals(-3, $result['simple']['quantity']);
+
+        // Partially credit order
+        $this->creditOrder($order, 1.0);
+
+        // Assert that source reservations have been reverted by refunded qty
+        $result = $this->getReservationsQuantityList->execute(['simple']);
+        self::assertEquals(-2, $result['simple']['quantity']);
+    }
+
     /**
      * @param Order $order
-     *
-     * @throws \Magento\Framework\Exception\LocalizedException
      */
-    private function creditOrder(Order $order): void
+    private function creditOrder(Order $order, ?float $overrideQty = null): void
     {
         $refundOrder = $this->objectManager->create(RefundOrderInterface::class);
 
@@ -132,7 +199,11 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
         foreach ($order->getAllItems() as $item) {
             $creditItem = $this->objectManager->create(CreditmemoItemCreationInterface::class);
             $creditItem->setOrderItemId($item->getItemId());
-            $creditItem->setQty($item->getQtyOrdered());
+            if ($overrideQty === null) {
+                $creditItem->setQty($item->getQtyOrdered());
+            } else {
+                $creditItem->setQty($overrideQty);
+            }
             $items[] = $creditItem;
         }
 
