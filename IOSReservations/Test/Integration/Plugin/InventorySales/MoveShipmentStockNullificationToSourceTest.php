@@ -134,7 +134,7 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
         /** @var Order $order */
         $order = current($this->orderRepository->getList($searchCriteria)->getItems());
 
-        //Create Invoice
+        // Create Invoice
         $this->invoiceOrder->execute($order->getEntityId());
 
 

@@ -10,6 +10,7 @@
         <sequence>
             <module name="Magento_InventoryShipping"/>
             <module name="Magento_InventorySales"/>
+            <module name="Magento_Sales"/>
             <module name="Magento_InventorySourceSelection"/>
         </sequence>
     </module>

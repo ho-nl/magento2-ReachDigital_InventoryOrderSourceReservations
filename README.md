@@ -38,7 +38,7 @@ Order Cancelled
     - 🔸Revert StockReservations ✅
 
 Credit Order when not shipped:
-    - 🔹Revert Source Reservations if available. 🚼
+    - 🔹Revert Source Reservations by refunded qty, if reservation exists. 🚼
     - 🔹Low Prio: Hide 'Return Qty to Source' because it isn't deducted yet.
 
 Credit Order when shipped:

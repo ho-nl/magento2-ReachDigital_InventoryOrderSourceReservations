@@ -22,7 +22,8 @@
             </argument>
         </arguments>
     </type>
-    <type name="Magento\InventorySales\Model\ReturnProcessor\ProcessRefundItems">
-        <plugin name="revert_source_reservations_on_credit_before_shipment" type="ReachDigital\IOSReservations\Plugin\MagentoInventorySales\RevertSourceReservationsOnCreditBeforeShipment"/>
+    <type name="Magento\Sales\Model\Order\Creditmemo">
+        <plugin name="revert_source_reservations_on_credit_before_shipment"
+                type="ReachDigital\IOSReservations\Plugin\MagentoSales\RevertSourceReservationsOnCreditBeforeShipment"/>
     </type>
 </config>
