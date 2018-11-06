@@ -69,12 +69,6 @@ class RevertSourceReservationsOnCreditBeforeShipment
         \Closure $proceed
     ): Creditmemo
     {
-        // @todo Creditmemo state should probably be 'refunded', but core Magento doesn't check this either, so should
-        // @todo we? See Magento\SalesInventory\Observer\RefundOrderInventoryObserver
-        if ($creditmemo->getState() !== Creditmemo::STATE_REFUNDED) {
-            return $proceed();
-        }
-
         $reservations = $this->getReservationsByMetadata->execute(sprintf('order:%s,order_item:', $creditmemo->getOrder()->getId()));
         $nullifications = [];
 
@@ -82,7 +76,6 @@ class RevertSourceReservationsOnCreditBeforeShipment
         /** @var Creditmemo\Item $item */
         foreach ($creditmemo->getItems() as $item) {
             $qtyToRevert = $item->getQty();
-            // @todo must check qty shipped? can't revert refund qtys that are higher than the unshipped qty. What needs to be done if we can't revert the entire refunded qty?
 
             if ($this->isZero($qtyToRevert)) {
                 continue;
@@ -106,8 +99,17 @@ class RevertSourceReservationsOnCreditBeforeShipment
                     break;
                 }
             }
-            // @todo what if we haven't been able to revert all ($qtyToRever > 0)? Does this mean this qty needs to be
-            // @todo added back to the source directly? Does core magento do that? Should we do that ourselfes?
+
+            // The quantity that cant be reverted by nullifying reservations must already have been shipped. Therefore
+            // we need to add that qty (dependencing on the 'return_to_stock' checkbox) back to the source.
+
+            // Magento by default will always add the qty's back to the source (when the checkbox is checked) when a
+            // credit is created. So here we wont actually have to add back to the source, but prevent Magento from
+            // adding back to the source.
+
+            // ReturnProcessor processes returns, ProcessReturnQtyOnCreditMemoPlugin::aroundExecute plugs into this and
+            // invokes \Magento\InventorySales\Model\ReturnProcessor\ProcessRefundItems::execute which will return qtys
+            // to sources, or else add them back as stock reservations.
         }
         if (count($nullifications)) {
             $this->appendReservations->execute($nullifications);
