@@ -44,6 +44,21 @@ Credit Order when not shipped:
 Credit Order when shipped:
     - 🔸Increment Source ✅
 
+
+### Credit Flow
+
+To return the items to the stock, MSI creates plugins to handle this:
+
+RefundInvoice -> ReturnToStockInvoice::afterExecute
+RefundOrder -> ReturnToStockOrder::afterExecute
+
+These are replaced by preferences that remove the isAutoReturn, or explicit returnToStockItems check, so that we always
+get into ProcessRefundItems and implement our logic for reverting source reservations in the right place.
+
+This is done in an executeBefore plugin on Magento\InventorySales\Model\ReturnProcessor\ProcessRefundItems, which aside
+from reverting source reservations, modifies the $itemsToRefund parameter to adjust the qtys that actually need to be
+returned to source. 
+
 #### ConfirmSourceReservationsForOrderInterface
 The orders' stock reservation is nullified, source reservation is made.
 
