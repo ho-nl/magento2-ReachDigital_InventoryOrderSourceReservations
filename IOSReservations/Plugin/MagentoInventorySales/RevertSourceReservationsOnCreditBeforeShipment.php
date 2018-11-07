@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace ReachDigital\IOSReservations\Plugin\MagentoSales;
+namespace ReachDigital\IOSReservations\Plugin\MagentoInventorySales;
 
 use Magento\Framework\Exception\InputException;
 use Magento\Sales\Model\Order\Creditmemo;
@@ -100,12 +100,13 @@ class RevertSourceReservationsOnCreditBeforeShipment
                 }
             }
 
-            // The quantity that cant be reverted by nullifying reservations must already have been shipped. Therefore
-            // we need to add that qty (dependencing on the 'return_to_stock' checkbox) back to the source.
+            // The quantity that cant be reverted by nullifying source reservations (the remaining $qtyToRevert) must
+            // already have been shipped. Therefore we need to add that qty (dependencing on the 'return_to_stock'
+            // checkbox) back to the source.
 
             // Magento by default will always add the qty's back to the source (when the checkbox is checked) when a
-            // credit is created. So here we wont actually have to add back to the source, but prevent Magento from
-            // adding back to the source.
+            // credit is created. So here we must ensure that the amount Magento would add back to the source is the
+            // remaining $qtyToRevert amount.
 
             // ReturnProcessor processes returns, ProcessReturnQtyOnCreditMemoPlugin::aroundExecute plugs into this and
             // invokes \Magento\InventorySales\Model\ReturnProcessor\ProcessRefundItems::execute which will return qtys
