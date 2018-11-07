@@ -88,11 +88,8 @@ class AlwaysAutoReturnToStockOrder extends ReturnToStockOrder
         ) {
             $returnToStockItems = $arguments->getExtensionAttributes()->getReturnToStockItems();
         }
-        $isAutoReturn = $this->stockConfiguration->isAutoReturnEnabled();
-        if ($isAutoReturn || !empty($returnToStockItems)) {
-            $creditmemo = $this->creditmemoRepository->get($resultEntityId);
-            $this->returnProcessor->execute($creditmemo, $order, $returnToStockItems, $isAutoReturn);
-        }
+        $creditmemo = $this->creditmemoRepository->get($resultEntityId);
+        $this->returnProcessor->execute($creditmemo, $order, $returnToStockItems, $isAutoReturn);
         return $resultEntityId;
     }
 }
