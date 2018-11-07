@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\InventorySourceSelection\Model\GetDefaultSourceSelectionAlgorithmCode;
+use Magento\Sales\Api\Data\CreditmemoCreationArgumentsExtensionFactory;
+use Magento\Sales\Api\Data\CreditmemoCreationArgumentsInterface;
 use Magento\Sales\Api\Data\CreditmemoItemCreationInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\RefundOrderInterface;
@@ -189,6 +191,17 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
     }
 
     /**
+     * @test
+     */
+    public function should_not_return_reservation_reverted_qty_to_source_or_stock_reservation()
+    {
+        // \Magento\InventorySales\Model\ReturnProcessor\ProcessRefundItems::execute() will either return qty to source,
+        // or add back as reservation. Assert that it does not do that for the qtys we've already added back as source
+        // reservations through \ReachDigital\IOSReservations\Plugin\MagentoSales\RevertSourceReservationsOnCreditBeforeShipment::aroundAfterSave
+
+    }
+
+    /**
      * @param Order $order
      */
     private function creditOrder(Order $order, ?float $overrideQty = null): void
@@ -196,6 +209,7 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
         $refundOrder = $this->objectManager->create(RefundOrderInterface::class);
 
         $items = [];
+        $returnItems = [];
         foreach ($order->getAllItems() as $item) {
             $creditItem = $this->objectManager->create(CreditmemoItemCreationInterface::class);
             $creditItem->setOrderItemId($item->getItemId());
@@ -205,11 +219,22 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
                 $creditItem->setQty($overrideQty);
             }
             $items[] = $creditItem;
+            $returnItems[] = $item->getItemId();
         }
+
+        $arguments = $this->objectManager->create(CreditmemoCreationArgumentsInterface::class);
+        $arguments->setExtensionAttributes(
+            $this->objectManager->create(CreditmemoCreationArgumentsExtensionFactory::class)
+                ->create());
+        $arguments->getExtensionAttributes()->setReturnToStockItems($returnItems);
 
         $refundOrder->execute(
             $order->getEntityId(),
-            $items
+            $items,
+            false,
+            false,
+            null,
+            $arguments
         );
     }
 }
