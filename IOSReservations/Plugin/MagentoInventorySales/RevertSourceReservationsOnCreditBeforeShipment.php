@@ -9,15 +9,19 @@ declare(strict_types=1);
 namespace ReachDigital\IOSReservations\Plugin\MagentoInventorySales;
 
 use Magento\Framework\Exception\InputException;
+use Magento\InventorySales\Model\ReturnProcessor\ProcessRefundItems;
+use Magento\InventorySales\Model\ReturnProcessor\Request\ItemsToRefund;
+use Magento\InventorySalesApi\Model\ReturnProcessor\Request\ItemsToRefundInterfaceFactory;
+use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order\Creditmemo;
 use ReachDigital\ISReservations\Model\AppendReservations;
+use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
 use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadata;
 use ReachDigital\ISReservationsApi\Model\ReservationInterface;
 use ReachDigital\ISReservationsApi\Model\ReservationBuilderInterface;
 
 class RevertSourceReservationsOnCreditBeforeShipment
 {
-
     /**
      * @var GetReservationsByMetadata
      */
@@ -33,15 +37,29 @@ class RevertSourceReservationsOnCreditBeforeShipment
      */
     private $appendReservations;
 
+    /**
+     * @var ItemsToRefundInterfaceFactory
+     */
+    private $itemsToRefundFactory;
+
+    /**
+     * @var EncodeMetaData
+     */
+    private $encodeMetaData;
+
     public function __construct(
         GetReservationsByMetadata $getReservationsByMetadata,
         ReservationBuilderInterface $reservationBuilder,
-        AppendReservations $appendReservations
+        AppendReservations $appendReservations,
+        ItemsToRefundInterfaceFactory $itemsToRefundFactory,
+        EncodeMetaData $encodeMetaData
     )
     {
         $this->getReservationsByMetadata = $getReservationsByMetadata;
         $this->reservationBuilder = $reservationBuilder;
         $this->appendReservations = $appendReservations;
+        $this->itemsToRefundFactory = $itemsToRefundFactory;
+        $this->encodeMetaData = $encodeMetaData;
     }
 
     /**
@@ -49,96 +67,100 @@ class RevertSourceReservationsOnCreditBeforeShipment
      * @param float $floatNumber
      * @return bool
      */
-    private function isZero(float $floatNumber): bool
+    private function isZeroOrNegative(float $floatNumber): bool
     {
         return $floatNumber < 0.0000001;
     }
 
     /**
+     * Revert reservations for refunded qtys and adjust $itemsToRefund appropriately.
      *
-     * @param Creditmemo $creditmemo
-     * @param \Closure   $proceed
      *
-     * @return Creditmemo
+     *
+     * @param ProcessRefundItems $subject
+     * @param OrderInterface     $order
+     * @param ItemsToRefund[]    $itemsToRefund
+     * @param array              $returnToStockItems
+     *
+     * @return array
+     * @throws InputException
      * @throws \Magento\Framework\Exception\CouldNotSaveException
-     * @throws \Magento\Framework\Exception\InputException
      * @throws \Magento\Framework\Validation\ValidationException
      */
-    public function aroundAfterSave(
-        Creditmemo $creditmemo,
-        \Closure $proceed
-    ): Creditmemo
+    public function beforeExecute(
+        ProcessRefundItems $subject,
+        OrderInterface $order,
+        array $itemsToRefund,
+        array $returnToStockItems): array
     {
-        $reservations = $this->getReservationsByMetadata->execute(sprintf('order:%s,order_item:', $creditmemo->getOrder()->getId()));
+        // Collect reservation qtys by sku and source code
+        $reservations = $this->getReservationsBySkuAndSource($order);
         $nullifications = [];
+        $adjustedItemsToRefund = [];
 
-        // Iterate over items, find reservations
-        /** @var Creditmemo\Item $item */
-        foreach ($creditmemo->getItems() as $item) {
-            $qtyToRevert = $item->getQty();
-
-            if ($this->isZero($qtyToRevert)) {
-                continue;
-            }
-
-            // Iterate over each assigned source, get summed reserved qty for that source
-            // @todo: ensure we revert reservation in reverse order
-            $reservedQtys = $this->sumReservedQtys($item, $reservations);
-            foreach ($reservedQtys as $sourceCode => $reservedQty) {
-                // Ensure we only revert a qty that was not higher than the reserved qty on this source
-                $nullifyQty = min($qtyToRevert, - $reservedQty);
-                if (!$this->isZero($nullifyQty)) {
+        // For each sku being refunded, attempt to revert outstanding (not yet shipped, i.e. negative) reserved qtys.
+        foreach ($itemsToRefund as $item) {
+            $qtyToRefund = $item->getQuantity();
+            $sku = $item->getSku();
+            // @todo reverse reservations order?
+            foreach ($reservations[$sku] as $sourceCode => $sourceReservationQty) {
+                // See if, for this source, we can revert some or all of $qtyToRefund from existing reservations.
+                $revertableQty = min($qtyToRefund, -$sourceReservationQty);
+                if (!$this->isZeroOrNegative($revertableQty)) {
                     $this->reservationBuilder->setSku($item->getSku());
-                    $this->reservationBuilder->setQuantity($nullifyQty);
+                    $this->reservationBuilder->setQuantity($revertableQty);
                     $this->reservationBuilder->setSourceCode($sourceCode);
-                    $this->reservationBuilder->setMetadata(
-                        sprintf('order:%s,order_item:%s', $creditmemo->getOrderId(), $item->getOrderItemId()));
+                    $this->reservationBuilder->setMetadata($this->encodeMetaData->execute([
+                        'order' => $order->getEntityId(),
+                        'refund_revert' => null
+                    ]));
                     $nullifications[] = $this->reservationBuilder->build();
-                    $qtyToRevert -= $nullifyQty;
+                    $qtyToRefund -= $revertableQty;
                 } else {
                     break;
                 }
             }
 
-            // The quantity that cant be reverted by nullifying source reservations (the remaining $qtyToRevert) must
+            // The quantity that can't be reverted by nullifying source reservations (the remaining $qtyToRevert) must
             // already have been shipped. Therefore we need to add that qty (dependencing on the 'return_to_stock'
             // checkbox) back to the source.
 
             // Magento by default will always add the qty's back to the source (when the checkbox is checked) when a
             // credit is created. So here we must ensure that the amount Magento would add back to the source is the
-            // remaining $qtyToRevert amount.
+            // remaining $qtyToRevert amount, not the original qty in $itemsToRefund.
 
-            // ReturnProcessor processes returns, ProcessReturnQtyOnCreditMemoPlugin::aroundExecute plugs into this and
-            // invokes \Magento\InventorySales\Model\ReturnProcessor\ProcessRefundItems::execute which will return qtys
-            // to sources, or else add them back as stock reservations.
+            $adjustedItemsToRefund[] = $this->itemsToRefundFactory->create([
+                'sku' => $item->getSku(),
+                'qty' => $qtyToRefund,
+                'processedQty' => $item->getProcessedQuantity() // @fixme what to do with processed qty?
+            ]);
         }
+
         if (count($nullifications)) {
             $this->appendReservations->execute($nullifications);
         }
 
-        return $proceed();
+        return [ $order, $adjustedItemsToRefund, $returnToStockItems ];
     }
 
     /**
-     * Sum up reserved per-source qtys for item
-     * @param                        $item
-     * @param ReservationInterface[] $reservations
+     * @param OrderInterface $order
      *
-     * @return float[]
+     * @return ReservationInterface[]
      */
-    private function sumReservedQtys(Creditmemo\Item $item, array &$reservations): array
+    private function getReservationsBySkuAndSource(OrderInterface $order): array
     {
-        $qtys = [];
-        $orderItem = $item->getOrderItem();
+        $reservations = $this->getReservationsByMetadata->execute(sprintf('order:%s,', $order->getEntityId()));
+        $reservationsBySkuAndSource = [];
         foreach ($reservations as $reservation) {
-            if ($reservation->getMetadata() === sprintf('order:%s,order_item:%s', $orderItem->getOrderId(), $item->getOrderItem()->getId())) {
-                $sourceCode = $reservation->getSourceCode();
-                if (!isset($qtys[$sourceCode])) {
-                    $qtys[$sourceCode] = 0;
-                }
-                $qtys[$sourceCode] += $reservation->getQuantity();
-            }
+            $sku = $reservation->getSku();
+            $sourceCode = $reservation->getSourceCode();
+
+            $reservationsBySkuAndSource[$sku] = $reservationsBySkuAndSource[$sku] ?? [];
+            $reservationsBySkuAndSource[$sku][$sourceCode] = $reservationsBySkuAndSource[$sku][$sourceCode] ?? 0;
+            $reservationsBySkuAndSource[$sku][$sourceCode] += $reservation->getQuantity();
         }
-        return $qtys;
+
+        return $reservationsBySkuAndSource;
     }
 }

@@ -126,7 +126,7 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
      *
      * @test
      *
-     * @covers \ReachDigital\IOSReservations\Plugin\MagentoSales\RevertSourceReservationsOnCreditBeforeShipment
+     * @covers \ReachDigital\IOSReservations\Plugin\MagentoInventorySales\RevertSourceReservationsOnCreditBeforeShipment
      *
      * @magentoDbIsolation disabled
      *
@@ -199,6 +199,7 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
         // or add back as reservation. Assert that it does not do that for the qtys we've already added back as source
         // reservations through \ReachDigital\IOSReservations\Plugin\MagentoSales\RevertSourceReservationsOnCreditBeforeShipment::aroundAfterSave
 
+        // @todo, test crediting twice? (i.e. two partials)
     }
 
     /**
