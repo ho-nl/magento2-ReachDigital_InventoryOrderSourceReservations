@@ -16,6 +16,7 @@ use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterfaceFactory;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultItemInterface;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultItemInterfaceFactory;
+use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
 use ReachDigital\ISReservationsApi\Model\AppendReservationsInterface;
 use ReachDigital\ISReservationsApi\Model\ReservationBuilderInterface;
 
@@ -46,16 +47,23 @@ class AppendSourceReservations
      */
     private $getSkusByProductIds;
 
+    /**
+     * @var EncodeMetaData
+     */
+    private $encodeMetaData;
+
     public function __construct(
         AppendReservationsInterface $appendReservations,
         SourceReservationResultInterfaceFactory $sourceReservationResultInterfaceFactory,
         SourceReservationResultItemInterfaceFactory $sourceReservationResultItemInterfaceFactory,
-        ReservationBuilderInterface $reservationBuilder
+        ReservationBuilderInterface $reservationBuilder,
+        EncodeMetaData $encodeMetaData
     ) {
         $this->sourceReservationResultFactory = $sourceReservationResultInterfaceFactory;
         $this->sourceReservationResultItemFactory = $sourceReservationResultItemInterfaceFactory;
         $this->appendReservations = $appendReservations;
         $this->reservationBuilder = $reservationBuilder;
+        $this->encodeMetaData = $encodeMetaData;
     }
 
     /**
@@ -124,7 +132,10 @@ class AppendSourceReservations
                         ->setSku($ssItem->getSku())
                         ->setQuantity($ssItem->getQtyToDeduct() * -1)
                         ->setSourceCode($ssItem->getSourceCode())
-                        ->setMetadata("order:{$order->getEntityId()},order_item:{$orderItem->getItemId()}")
+                        ->setMetadata($this->encodeMetaData->execute([
+                            'order' => $order->getEntityId(),
+                            'order_item' => $orderItem->getItemId()
+                        ]))
                         ->build(),
                     'orderItemId' => (int)$orderItem->getItemId()
                 ]);
