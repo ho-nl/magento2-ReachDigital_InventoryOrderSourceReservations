@@ -150,7 +150,9 @@ class RevertSourceReservationsOnCreditBeforeShipment
      */
     private function getReservationsBySkuAndSource(OrderInterface $order): array
     {
-        $reservations = $this->getReservationsByMetadata->execute(sprintf('order:%s,', $order->getEntityId()));
+        $reservations = $this->getReservationsByMetadata->execute(
+            $this->encodeMetaData->execute([ 'order' => $order->getEntityId() ]));
+
         $reservationsBySkuAndSource = [];
         foreach ($reservations as $reservation) {
             $sku = $reservation->getSku();

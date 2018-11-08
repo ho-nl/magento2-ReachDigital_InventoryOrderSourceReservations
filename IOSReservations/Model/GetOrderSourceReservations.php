@@ -10,6 +10,7 @@ namespace ReachDigital\IOSReservations\Model;
 
 use ReachDigital\IOSReservationsApi\Api\GetOrderSourceReservationsInterface;
 use ReachDigital\ISReservations\Model\MetaData\DecodeMetaData;
+use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
 use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadata;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterfaceFactory;
@@ -40,16 +41,23 @@ class GetOrderSourceReservations implements GetOrderSourceReservationsInterface
      */
     private $decodeMetaData;
 
+    /**
+     * @var EncodeMetaData
+     */
+    private $encodeMetaData;
+
     public function __construct(
         GetReservationsByMetadata $getReservationsByMetadata,
         SourceReservationResultInterfaceFactory $sourceReservationResultFactory,
         SourceReservationResultItemInterfaceFactory $sourceReservationResultItemFactory,
-        DecodeMetaData $decodeMetaData
+        DecodeMetaData $decodeMetaData,
+        EncodeMetaData $encodeMetaData
     ) {
         $this->getReservationsByMetadata = $getReservationsByMetadata;
         $this->sourceReservationResultFactory = $sourceReservationResultFactory;
         $this->sourceReservationResultItemFactory = $sourceReservationResultItemFactory;
         $this->decodeMetaData = $decodeMetaData;
+        $this->encodeMetaData = $encodeMetaData;
     }
 
     /**
@@ -58,7 +66,8 @@ class GetOrderSourceReservations implements GetOrderSourceReservationsInterface
      */
     public function execute(int $orderId): ? SourceReservationResultInterface
     {
-        $reservations = $this->getReservationsByMetadata->execute("order:{$orderId}");
+        $reservations = $this->getReservationsByMetadata->execute(
+            $this->encodeMetaData->execute([ 'order' => $orderId]));
 
         $resultItems = array_map(function(ReservationInterface $reservation): SourceReservationResultItemInterface {
             $metaData = $this->decodeMetaData->execute($reservation->getMetadata());
