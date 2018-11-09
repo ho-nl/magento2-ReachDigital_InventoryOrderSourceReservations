@@ -38,8 +38,10 @@ Order Cancelled
     - 🔸Revert StockReservations ✅
 
 Credit Order when not shipped:
-    - 🔹Revert Source Reservations by refunded qty, if reservation exists. 🚼
+    - 🔹Revert Source Reservations by refunded qty, if reservation exists. ✅
     - 🔹Low Prio: Hide 'Return Qty to Source' because it isn't deducted yet.
+    - ❓Magento will also try to revert stock reservations in some cases (see
+        \Magento\InventorySales\Model\ReturnProcessor\ProcessRefundItems::execute), must this be prevented?
 
 Credit Order when shipped:
     - 🔸Increment Source ✅
