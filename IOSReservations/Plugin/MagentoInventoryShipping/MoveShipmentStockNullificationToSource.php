@@ -15,7 +15,9 @@ use Magento\InventoryShipping\Model\SourceDeductionRequestFromShipmentFactory;
 use Magento\InventoryShipping\Observer\SourceDeductionProcessor;
 use Magento\InventorySourceDeductionApi\Model\SourceDeductionRequestInterface;
 use Magento\InventorySourceDeductionApi\Model\SourceDeductionServiceInterface;
+use Magento\Sales\Model\Order;
 use ReachDigital\ISReservations\Model\AppendReservations;
+use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
 use ReachDigital\ISReservations\Model\ReservationBuilder;
 use Magento\Framework\Event\Observer as EventObserver;
 
@@ -56,6 +58,11 @@ class MoveShipmentStockNullificationToSource
      */
     private $defaultSourceProvider;
 
+    /**
+     * @var EncodeMetaData
+     */
+    private $encodeMetaData;
+
     public function __construct(
         IsSingleSourceModeInterface $isSingleSourceMode,
         DefaultSourceProviderInterface $defaultSourceProvider,
@@ -63,7 +70,8 @@ class MoveShipmentStockNullificationToSource
         ReservationBuilder $reservationBuilder,
         GetItemsToDeductFromShipment $getItemsToDeductFromShipment,
         SourceDeductionRequestFromShipmentFactory $sourceDeductionRequestFromShipmentFactory,
-        SourceDeductionServiceInterface $sourceDeductionService
+        SourceDeductionServiceInterface $sourceDeductionService,
+        EncodeMetaData $encodeMetaData
     )
     {
         $this->appendReservations = $appendReservations;
@@ -73,21 +81,34 @@ class MoveShipmentStockNullificationToSource
         $this->sourceDeductionService = $sourceDeductionService;
         $this->isSingleSourceMode = $isSingleSourceMode;
         $this->defaultSourceProvider = $defaultSourceProvider;
+        $this->encodeMetaData = $encodeMetaData;
     }
 
-    /*
+    /**
+     * Plugin to perform source deduction on shipment, and nullify the related source reservation.
+     *
      * Must wrap execute() to avoid call to private placeCompensatingReservation method
+     *
+     * @param SourceDeductionProcessor $subject
+     * @param \Closure                 $proceed
+     * @param EventObserver            $observer
+     *
+     * @throws \Magento\Framework\Exception\CouldNotSaveException
+     * @throws \Magento\Framework\Exception\InputException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws \Magento\Framework\Validation\ValidationException
      */
     public function aroundExecute(SourceDeductionProcessor $subject, \Closure $proceed, EventObserver $observer):void
     {
         /** @var \Magento\Sales\Model\Order\Shipment $shipment */
+        /** @noinspection PhpUndefinedMethodInspection */
         $shipment = $observer->getEvent()->getShipment();
         if ($shipment->getOrigData('entity_id')) {
             return;
         }
 
-        if (!empty($shipment->getExtensionAttributes())
-            && !empty($shipment->getExtensionAttributes()->getSourceCode())) {
+        if ($shipment->getExtensionAttributes() !== null
+            && $shipment->getExtensionAttributes()->getSourceCode() !== null) {
             $sourceCode = $shipment->getExtensionAttributes()->getSourceCode();
         } elseif ($this->isSingleSourceMode->execute()) {
             $sourceCode = $this->defaultSourceProvider->getCode();
@@ -102,7 +123,7 @@ class MoveShipmentStockNullificationToSource
                 $shipmentItems
             );
             $this->sourceDeductionService->execute($sourceDeductionRequest);
-            $this->placeCompensatingSourceReservation($sourceDeductionRequest);
+            $this->placeCompensatingSourceReservation($sourceDeductionRequest, $shipment->getOrder());
         }
     }
 
@@ -113,14 +134,17 @@ class MoveShipmentStockNullificationToSource
      * @throws \Magento\Framework\Exception\InputException
      * @throws \Magento\Framework\Validation\ValidationException
      */
-    private function placeCompensatingSourceReservation(SourceDeductionRequestInterface $sourceDeductionRequest):void
+    private function placeCompensatingSourceReservation(SourceDeductionRequestInterface $sourceDeductionRequest, Order $order):void
     {
         $reservations = [];
+
+        $metaData = $this->encodeMetaData->execute([ 'order' => $order->getEntityId() ]);
 
         foreach ($sourceDeductionRequest->getItems() as $item) {
             $this->reservationBuilder->setQuantity($item->getQty());
             $this->reservationBuilder->setSku($item->getSku());
             $this->reservationBuilder->setSourceCode($sourceDeductionRequest->getSourceCode());
+            $this->reservationBuilder->setMetadata($metaData);
             $reservations[] = $this->reservationBuilder->build();
         }
 
