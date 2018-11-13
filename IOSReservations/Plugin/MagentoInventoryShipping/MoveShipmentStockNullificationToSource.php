@@ -85,9 +85,11 @@ class MoveShipmentStockNullificationToSource
     }
 
     /**
-     * Plugin to perform source deduction on shipment, and nullify the related source reservation.
+     * Plugin to perform source deduction on shipment, and nullify the related source reservation instead of stock
+     * reservation.
      *
-     * Must wrap execute() to avoid call to private placeCompensatingReservation method
+     * Must wrap execute() to avoid call to private placeCompensatingReservation method (which does the no longer needed
+     * stock reservation nullification)
      *
      * @param SourceDeductionProcessor $subject
      * @param \Closure                 $proceed

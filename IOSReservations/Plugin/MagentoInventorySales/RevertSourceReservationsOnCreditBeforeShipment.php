@@ -129,6 +129,7 @@ class RevertSourceReservationsOnCreditBeforeShipment
             // credit is created. So here we must ensure that the amount Magento would add back to the source is the
             // remaining $qtyToRevert amount, not the original qty in $itemsToRefund.
 
+            // @fixme: replace ProcessRefundItems entirely, just don't split the logic since it doesn't work, qty is used in complicated logic and we can't simple adjust it here
             $adjustedItemsToRefund[] = $this->itemsToRefundFactory->create([
                 'sku' => $item->getSku(),
                 'qty' => $qtyToRefund,
