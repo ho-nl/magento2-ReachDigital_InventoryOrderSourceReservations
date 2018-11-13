@@ -342,6 +342,9 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
         // Partially ship order: deduct shipped qty from source (-1), nullify source reservation (+1)
         $this->shipOrder($order, 'eu-1', 1.0);
 
+        $shippedSourceQty = $this->getSummedSourceQty('simple');
+        self::assertEquals($initialSourceQty - 1, $shippedSourceQty);
+
         // Fully credit order: shipped qty back to source (+1), reserved source qty reverted (+2)
         $this->creditOrder($order);
 
