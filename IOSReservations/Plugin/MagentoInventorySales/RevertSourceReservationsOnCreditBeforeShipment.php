@@ -22,6 +22,11 @@ use Magento\Store\Api\WebsiteRepositoryInterface;
 use Magento\InventorySourceDeductionApi\Model\ItemToDeductFactory;
 use Magento\InventorySourceDeductionApi\Model\SourceDeductionRequestFactory;
 use Magento\InventorySourceDeductionApi\Model\SourceDeductionService;
+use ReachDigital\ISReservations\Model\AppendReservations;
+use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
+use ReachDigital\ISReservations\Model\ReservationBuilder;
+use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadata;
+use ReachDigital\ISReservationsApi\Model\ReservationInterface;
 
 class RevertSourceReservationsOnCreditBeforeShipment
 {
@@ -71,6 +76,26 @@ class RevertSourceReservationsOnCreditBeforeShipment
     private $sourceDeductionService;
 
     /**
+     * @var GetReservationsByMetadata
+     */
+    private $getReservationsByMetadata;
+
+    /**
+     * @var EncodeMetaData
+     */
+    private $encodeMetaData;
+
+    /**
+     * @var ReservationBuilder
+     */
+    private $sourceReservationBuilder;
+
+    /**
+     * @var AppendReservations
+     */
+    private $appendReservations;
+
+    /**
      * @param WebsiteRepositoryInterface $websiteRepository
      * @param SalesChannelInterfaceFactory $salesChannelFactory
      * @param SalesEventInterfaceFactory $salesEventFactory
@@ -90,7 +115,11 @@ class RevertSourceReservationsOnCreditBeforeShipment
         GetSourceDeductedOrderItemsInterface $getSourceDeductedOrderItems,
         ItemToDeductFactory $itemToDeductFactory,
         SourceDeductionRequestFactory $sourceDeductionRequestFactory,
-        SourceDeductionService $sourceDeductionService
+        SourceDeductionService $sourceDeductionService,
+        GetReservationsByMetadata $getReservationsByMetadata,
+        EncodeMetaData $encodeMetaData,
+        ReservationBuilder $sourceReservationBuilder,
+        AppendReservations $appendReservations
     ) {
         $this->websiteRepository = $websiteRepository;
         $this->salesChannelFactory = $salesChannelFactory;
@@ -101,11 +130,22 @@ class RevertSourceReservationsOnCreditBeforeShipment
         $this->itemToDeductFactory = $itemToDeductFactory;
         $this->sourceDeductionRequestFactory = $sourceDeductionRequestFactory;
         $this->sourceDeductionService = $sourceDeductionService;
+        $this->getReservationsByMetadata = $getReservationsByMetadata;
+        $this->encodeMetaData = $encodeMetaData;
+        $this->sourceReservationBuilder = $sourceReservationBuilder;
+        $this->appendReservations = $appendReservations;
     }
 
     /**
+     * @param ProcessRefundItems $subject
+     * @param \Closure           $proceed
+     * @param OrderInterface     $order
+     * @param array              $itemsToRefund
+     * @param array              $returnToStockItems
      *
-     * @noinspection PhpUnusedParameterInspection
+     * @throws \Magento\Framework\Exception\CouldNotSaveException
+     * @throws \Magento\Framework\Exception\InputException
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function aroundExecute(
         ProcessRefundItems $subject,
@@ -113,10 +153,12 @@ class RevertSourceReservationsOnCreditBeforeShipment
         OrderInterface $order,
         array $itemsToRefund,
         array $returnToStockItems
-    ) {
+    ): void
+    {
         $salesChannel = $this->getSalesChannelForOrder($order);
         $deductedItems = $this->getSourceDeductedOrderItems->execute($order, $returnToStockItems);
-        $itemToSell = $backItemsPerSource = [];
+        $backItemsPerSource = $nullifications = [];
+        $reservations = $this->getReservationsBySkuAndSource($order);
 
         foreach ($itemsToRefund as $item) {
             $sku = $item->getSku();
@@ -124,19 +166,35 @@ class RevertSourceReservationsOnCreditBeforeShipment
             $totalDeductedQty = $this->getTotalDeductedQty($item, $deductedItems);
             $processedQty = $item->getProcessedQuantity() - $totalDeductedQty;
             $qtyBackToSource = ($processedQty > 0) ? $item->getQuantity() - $processedQty : $item->getQuantity();
-            $qtyBackToStock = ($qtyBackToSource > 0) ? $item->getQuantity() - $qtyBackToSource : $item->getQuantity();
+            $qtyToCompensate = ($qtyBackToSource > 0) ? $item->getQuantity() - $qtyBackToSource : $item->getQuantity();
 
-            if ($qtyBackToStock > 0) {
-                $itemToSell[] = $this->itemsToSellFactory->create([
-                    'sku' => $sku,
-                    'qty' => (float)$qtyBackToStock
-                ]);
+            if ($qtyToCompensate > 0) {
+                // Compensate $qtyToCompensate on the available reservation qtys for each source
+                // @todo Iterate over reservations in reverse
+                foreach ($reservations[$sku] as $sourceCode => $sourceReservationQty) {
+                    // See if, for this source, we can revert some or all of $qtyToRefund from existing reservations.
+                    $revertableQty = min($qtyToCompensate, -$sourceReservationQty);
+                    if (!$this->isZero($revertableQty)) {
+                        $this->sourceReservationBuilder->setSku($item->getSku());
+                        $this->sourceReservationBuilder->setQuantity($revertableQty);
+                        $this->sourceReservationBuilder->setSourceCode($sourceCode);
+                        $this->sourceReservationBuilder->setMetadata($this->encodeMetaData->execute([
+                            'order' => $order->getEntityId(),
+                            'refund_compensation' => null
+                        ]));
+                        $nullifications[] = $this->sourceReservationBuilder->build();
+                        $qtyToCompensate -= $revertableQty;
+                    } else {
+                        break;
+                    }
+                }
+                // @fixme: should remaining qtyBackToSource be compensated on stock reservation?
             }
 
             foreach ($deductedItems as $deductedItemResult) {
                 $sourceCode = $deductedItemResult->getSourceCode();
                 foreach ($deductedItemResult->getItems() as $deductedItem) {
-                    if ($sku != $deductedItem->getSku() || $this->isZero((float)$qtyBackToSource)) {
+                    if ($sku !== $deductedItem->getSku() || $this->isZero($qtyBackToSource)) {
                         continue;
                     }
 
@@ -168,7 +226,32 @@ class RevertSourceReservationsOnCreditBeforeShipment
             $this->sourceDeductionService->execute($sourceDeductionRequest);
         }
 
-        $this->placeReservationsForSalesEvent->execute($itemToSell, $salesChannel, $salesEvent);
+        if (count($nullifications)) {
+            $this->appendReservations->execute($nullifications);
+        }
+    }
+
+    /**
+     * @param OrderInterface $order
+     *
+     * @return ReservationInterface[]
+     */
+    private function getReservationsBySkuAndSource(OrderInterface $order): array
+    {
+        $reservations = $this->getReservationsByMetadata->execute(
+            $this->encodeMetaData->execute([ 'order' => $order->getEntityId() ]));
+
+        $reservationsBySkuAndSource = [];
+        foreach ($reservations as $reservation) {
+            $sku = $reservation->getSku();
+            $sourceCode = $reservation->getSourceCode();
+
+            $reservationsBySkuAndSource[$sku] = $reservationsBySkuAndSource[$sku] ?? [];
+            $reservationsBySkuAndSource[$sku][$sourceCode] = $reservationsBySkuAndSource[$sku][$sourceCode] ?? 0;
+            $reservationsBySkuAndSource[$sku][$sourceCode] += $reservation->getQuantity();
+        }
+
+        return $reservationsBySkuAndSource;
     }
 
     /**
@@ -194,7 +277,9 @@ class RevertSourceReservationsOnCreditBeforeShipment
 
     /**
      * @param OrderInterface $order
+     *
      * @return SalesChannelInterface
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     private function getSalesChannelForOrder(OrderInterface $order): SalesChannelInterface
     {
