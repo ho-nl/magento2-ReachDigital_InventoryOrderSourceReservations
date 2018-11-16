@@ -63,7 +63,7 @@ class MoveReservationsFromStockToSourceRunner implements MoveReservationsFromSto
     public function execute(): void
     {
         $orderSearchResults = $this->orderSelectionService->execute(
-            null,
+            1000,
             $this->getOrderSelectionAlgorithmCode->execute()
         );
         foreach($orderSearchResults->getItems() as $order) {
