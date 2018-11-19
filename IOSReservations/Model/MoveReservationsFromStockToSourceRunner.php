@@ -69,11 +69,11 @@ class MoveReservationsFromStockToSourceRunner implements MoveReservationsFromSto
         foreach($orderSearchResults->getItems() as $order) {
             try {
                 $this->assignOrderSourceReservations->execute(
-                    $order->getEntityId(),
+                    (int) $order->getEntityId(),
                     $this->getDefaultSourceSelectionAlgorithmCode->execute()
                 );
             } catch (\Throwable $e) {
-                $this->logger->critical($e);
+                $this->logger->critical($e); // @fixme should maybe not catch everything? (i.e. programmer errors like TypeError)
             }
         }
     }
