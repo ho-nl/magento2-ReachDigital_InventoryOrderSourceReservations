@@ -22,35 +22,35 @@ and salable qty remain consistent.
 
 #### Flow
 
-🔸 Already handled by Magento
-🔹 Added by IOSR
+- 🔸 Already handled by Magento
+- 🔹 Added by IOSR
 
 New order
 
-    - 🔸Create StockReservations ✅
+- 🔸Create StockReservations ✅
 
 Order Invoiced  
 
-    - 🔹Cron to Revert StockReservations + 🔹Add SourceReservations ✅
+- 🔹Cron to Revert StockReservations + 🔹Add SourceReservations ✅
 
 Shipment Created
 
-    - 🔹Revert SourceReservations instead of Stock + 🔸Deduct Source ✅
+- 🔹Revert SourceReservations instead of Stock + 🔸Deduct Source ✅
 
 Order Cancelled
 
-    - 🔸Revert StockReservations ✅
+- 🔸Revert StockReservations ✅
 
 Credit Order when not shipped:
 
-    - 🔹Revert Source Reservations by refunded qty, if reservation exists. ✅
-    - 🔹Low Prio: Hide 'Return Qty to Source' because it isn't deducted yet.
-    - ❓Magento will also try to revert stock reservations in some cases (see
-        \Magento\InventorySales\Model\ReturnProcessor\ProcessRefundItems::execute), must this be prevented?
+- 🔹Revert Source Reservations by refunded qty, if reservation exists. ✅
+- 🔹Low Prio: Hide 'Return Qty to Source' because it isn't deducted yet.
+- ❓Magento will also try to revert stock reservations in some cases (see
+        `\Magento\InventorySales\Model\ReturnProcessor\ProcessRefundItems::execute`), must this be prevented?
 
 Credit Order when shipped:
 
-    - 🔸Increment Source ✅
+- 🔸Increment Source ✅
 
 
 ### Credit Flow
