@@ -1,37 +1,38 @@
 # Order Source Reservations
 
-_Note: This is discussed earlier during the MSI Open Grooming meeting
-(https://www.youtube.com/watch?v=fl8anqyN-1Q&index=2&list=PLrQ5FBCRsEbWKK6U_3Awe7X-nG7KY0WPW) but after the meeting
-there were some questions how certain specifics were implemented._
-
 ### Backstory
-We have a feature request from a customer to implement purchase orders and therefor it lead me to the idea that we
-should have some form of source reservations. But while writing the specifications it came to my attention that we have
-a feature-gap in the new MSI flow regarding shipments.
+We had a requirement to make a connection with a fulfillment warehouse, we wanted to be future-proof and want to intergrate it with the new Multi Source Inventory functionality introduced in Magento 2.3 If you don't fully understand MSI yet, please read our blogpost [The Definitive Guide to Magento MSI Multi Source Inventory](https://www.reachdigital.nl/en/blog/magento-msi-multi-source-inventory-features)).
 
-### Problem
-We need to make an API-call to the actual source (warehouse) to actually request as shipment for certain products. But
+While writing specifications for the integration with the warehouse it came to our attention that MSI has a feature-gap regarding the creation of shipments:
+
+We need to make an API-call to the actual source (warehouse) to actually request a shipment for the ordered products. But
 to know what to actually communicate to the warehouse, the Source Selection Algorithm needs to have run. We can't run
 that algorithm during the shipment creation because the product hasn't actually shipped and thus the source isn't
 deducted at that point.
 
-
 ### Proposed solution
-We split the Source Selection Algorithm and the Shipment creation into two steps, while making sure the source, stock
-and salable qty remain consistent.
+
+To implement a warehouse connector based on MSI, we need to know to what warehouse to send which products. The warehouse selection is done in MSI with the Souce Selection Algorithm. The SSA is triggered via the UI, right before creating the shipment.
+
+The feature-gap here is that we need the result of the SSA, because we need to send an API call at some point to the warehouse... After we've send the API calls to the warehouse we cant have the result of the SSA be changed.
+
+1. If the SSA has been ran a single time we need to store the result, it can't change.
+2. If an item has a source selected we have a moment to send of an API call to the warehouse.
+
+To store the result of the SSA we make an [Inventory Source Reservations](https://github.com/ho-nl/magento2-ReachDigital_InventorySourceReservations).
 
 #### Flow
 
 - 🔸 Already handled by Magento
-- 🔹 Added by IOSR
+- 🔹 Added by this package
 
-New order
+Order created:
 
 - 🔸Create StockReservations ✅
 
-Order Invoiced  
+Invoice created:
 
-- 🔹Cron to Revert StockReservations + 🔹Add SourceReservations ✅
+- 🔹Cron to 🔹Add SourceReservations + 🔹Revert StockReservations ✅
 
 Shipment Created
 
@@ -45,124 +46,30 @@ Credit Order when not shipped:
 
 - 🔹Revert Source Reservations by refunded qty, if reservation exists. ✅
 - 🔹Low Prio: Hide 'Return Qty to Source' because it isn't deducted yet.
-- ❓Magento will also try to revert stock reservations in some cases (see
-        `\Magento\InventorySales\Model\ReturnProcessor\ProcessRefundItems::execute`), must this be prevented?
 
 Credit Order when shipped:
 
 - 🔸Increment Source ✅
 
 
-### Credit Flow
+### Step by step
 
-To return the items to the stock, MSI creates plugins to handle this:
+1. Order created: When a new order is created in Magento MSI will make a reservation on the Stock🔸, this will be exactly the same.
 
-RefundInvoice -> ReturnToStockInvoice::afterExecute
-RefundOrder -> ReturnToStockOrder::afterExecute
+    - Order Cancelled: The Stock reservation is nullified and the qty is released to be sold again.
 
-These are replaced by preferences that remove the isAutoReturn, or explicit returnToStockItems check, so that we always
-get into ProcessRefundItems and implement our logic for reverting source reservations in the right place.
+2. Create invoice: 🔹Cron [MoveReservationsFromStockToSourceRunner](https://github.com/ho-nl/magento2-ReachDigital_InventoryOrderSourceReservations/blob/master/IOSReservations/Model/MoveReservationsFromStockToSourceRunner.php#L65-L78): Periodically we run the 'heavy' SSA on all orders that are succesfully invoiced (and therefor authorized to be shipped).
 
-This is done in an executeBefore plugin on Magento\InventorySales\Model\ReturnProcessor\ProcessRefundItems, which aside
-from reverting source reservations, modifies the $itemsToRefund parameter to adjust the qtys that actually need to be
-returned to source. 
+    - 🔹[OrderSelectionService](https://github.com/ho-nl/magento2-ReachDigital_InventoryOrderSourceReservations/blob/master/IOSReservationsPriorityApi/Api/OrderSelectionServiceInterface.php) will return a list of unsourced orders based on a certain algorithm (only byDateCreated implemented right now).
+    - 🔹[Selection criteria](https://github.com/ho-nl/magento2-ReachDigital_InventoryOrderSourceReservations/blob/master/IOSReservationsPriority/Model/Algorithms/ByDateCreatedAlgorithm.php#L63-L65) All state:processing and unsourced orders.
+    - 🔹[MoveReservationsFromStockToSource](https://github.com/ho-nl/magento2-ReachDigital_InventoryOrderSourceReservations/blob/master/IOSReservations/Model/MoveReservationsFromStockToSource.php) Will actually move the reservations from the Stock to the Source.
+    - To integrate with a warehouse it becomes trivial to find a point where to hook into, to actually send the reservations to the actual warehouse: 🔹afterExecute on MoveReservationsFromStockToSource.
+ 
+3. Create shipment
+    - [MoveShipmentStockNullificationToSource](https://github.com/ho-nl/magento2-ReachDigital_InventoryOrderSourceReservations/blob/master/IOSReservations/Plugin/MagentoInventoryShipping/MoveShipmentStockNullificationToSource.php#L103-L130): Instead of nullifying MSI's Stock Reservation we now nullify the Source Reservation. The Stock reservation already happened in step two.
+    - The SSA will always return the earlier created reservations: [PriorityBasedAlgorithmWithSourceReservations](https://github.com/ho-nl/magento2-ReachDigital_InventoryOrderSourceReservations/blob/master/IOSReservations/Plugin/InventorySourceSelection/PriorityBasedAlgorithmWithSourceReservations.php#L101-L103)
 
-#### ConfirmSourceReservationsForOrderInterface
-The orders' stock reservation is nullified, source reservation is made.
-
-#### GetSourceReservationsFromOrderInterface
-Will retrieve already reserved source reservations.
-
-
-#### Shipment step
-The orders' source reservation is nullified, actual source deduction is made by the shipment.
-
-### Implementation
-One of the questions is that if we split the SSA from the shipment, when will we run the SSA? Because in the
-manual-order-processing case it doesn't need to be run at all, it can happen exactly the same way it happens now, but
-in the API-case it needs to be ran as soon as possible.
-
-Proposal: Always run the default SSA (async) after an order has been placed and store the result in the source
-reservation table.
-
-The value of the result of the SSA can be used as prefilled values that can be used when the UI-part has ran. If the
-result there is different, the current reservations will be reverted and a new reservation is made.
-
-
----
-
-Flag on Source if qty is Strict or Loose;
-Should the source selection algorithm wait for the actual product to be in stock.
-
----
-
-
-VOORR1
-
-0 OV
-+15 PO
---+
-15
-
-VOORR2
-
-5 OV
---+
-5
-
-STOCK
-
-20
--2 O#1
---+
-18
-
------
-
-
-VOORR1
-
-0 OV
-+15 PO
---+
-15
-
-VOORR2
-
-0 OV
---+
-0
-
-STOCK
-15
--2 O#1
---+
-13
-
-
-# Order Source Reservation Selector
-
-To achieve a good reservation system we need to know when and whom gets priority in the selection of the sources. A new
-interface will be created OrderSourceReservationPriorityAlgorithmInterface (or something like that). In the MVP this
-will only have a single implementation OrderSourceReservationByDate.
-
-Question: How often will this run? Because algorithm1 needs to run once per day, algorithm2 can run every 2 mins, etc.
-
-
-# Interfaces
-
-✅ OrderSelectionServiceInterface < ❓
-✅ GetOrderSelectionSelectionAlgorithmListInterface < ❓
-✅ GetDefaultOrderSelectionAlgorithmCodeInterface < ❓
-
-❌ Data\InventoryRequestInterface < InventoryRequest
-❌ Data\ItemRequestInterface < ItemRequest
-✅ Data\SourceSelectionAlgorithmInterface < SourceSelectionAlgorithm
-❌ Data\SourceSelectionItemInterface < SourceSelectionItem
-❌ Data\SourceSelectionResultInterface
-
-# Model Interfaces
-✅ OrderSelectionInterface < ByDatePlacedAlgorithm
-
-
-
+4. Create creditmemo:
+   - [RevertSourceReservationsOnCreditBeforeShipment](https://github.com/ho-nl/magento2-ReachDigital_InventoryOrderSourceReservations/blob/master/IOSReservations/Plugin/MagentoInventorySales/RevertSourceReservationsOnCreditBeforeShipment.php) will automatically reverty any source reservations.
+   
+   
