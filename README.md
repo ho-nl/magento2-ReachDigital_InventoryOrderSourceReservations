@@ -66,10 +66,10 @@ Credit Order when shipped:
     - To integrate with a warehouse it becomes trivial to find a point where to hook into, to actually send the reservations to the actual warehouse: 🔹afterExecute on MoveReservationsFromStockToSource.
  
 3. Create shipment
-    - [MoveShipmentStockNullificationToSource](https://github.com/ho-nl/magento2-ReachDigital_InventoryOrderSourceReservations/blob/master/IOSReservations/Plugin/MagentoInventoryShipping/MoveShipmentStockNullificationToSource.php#L103-L130): Instead of nullifying MSI's Stock Reservation we now nullify the Source Reservation. The Stock reservation already happened in step two.
-    - The SSA will always return the earlier created reservations: [PriorityBasedAlgorithmWithSourceReservations](https://github.com/ho-nl/magento2-ReachDigital_InventoryOrderSourceReservations/blob/master/IOSReservations/Plugin/InventorySourceSelection/PriorityBasedAlgorithmWithSourceReservations.php#L101-L103)
+    - 🔹 [MoveShipmentStockNullificationToSource](https://github.com/ho-nl/magento2-ReachDigital_InventoryOrderSourceReservations/blob/master/IOSReservations/Plugin/MagentoInventoryShipping/MoveShipmentStockNullificationToSource.php#L103-L130): Instead of nullifying MSI's Stock Reservation we now nullify the Source Reservation. The Stock reservation already happened in step two.
+    - The SSA will always return the earlier created reservations: 🔹 [PriorityBasedAlgorithmWithSourceReservations](https://github.com/ho-nl/magento2-ReachDigital_InventoryOrderSourceReservations/blob/master/IOSReservations/Plugin/InventorySourceSelection/PriorityBasedAlgorithmWithSourceReservations.php#L101-L103)
 
 4. Create creditmemo:
-   - [RevertSourceReservationsOnCreditBeforeShipment](https://github.com/ho-nl/magento2-ReachDigital_InventoryOrderSourceReservations/blob/master/IOSReservations/Plugin/MagentoInventorySales/RevertSourceReservationsOnCreditBeforeShipment.php) will automatically reverty any source reservations.
+   - 🔹 [RevertSourceReservationsOnCreditBeforeShipment](https://github.com/ho-nl/magento2-ReachDigital_InventoryOrderSourceReservations/blob/master/IOSReservations/Plugin/MagentoInventorySales/RevertSourceReservationsOnCreditBeforeShipment.php) will automatically reverty any source reservations.
    
    
