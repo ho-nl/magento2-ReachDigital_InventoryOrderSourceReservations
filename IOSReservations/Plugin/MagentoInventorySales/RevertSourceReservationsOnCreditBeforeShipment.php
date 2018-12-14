@@ -22,11 +22,11 @@ use Magento\Store\Api\WebsiteRepositoryInterface;
 use Magento\InventorySourceDeductionApi\Model\ItemToDeductFactory;
 use Magento\InventorySourceDeductionApi\Model\SourceDeductionRequestFactory;
 use Magento\InventorySourceDeductionApi\Model\SourceDeductionService;
-use ReachDigital\ISReservations\Model\AppendReservations;
+use ReachDigital\ISReservations\Model\AppendSourceReservations;
 use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
-use ReachDigital\ISReservations\Model\ReservationBuilder;
+use ReachDigital\ISReservations\Model\SourceReservationBuilder;
 use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadata;
-use ReachDigital\ISReservationsApi\Model\ReservationInterface;
+use ReachDigital\ISReservationsApi\Model\SourceReservationInterface;
 
 class RevertSourceReservationsOnCreditBeforeShipment
 {
@@ -86,12 +86,12 @@ class RevertSourceReservationsOnCreditBeforeShipment
     private $encodeMetaData;
 
     /**
-     * @var ReservationBuilder
+     * @var SourceReservationBuilder
      */
     private $sourceReservationBuilder;
 
     /**
-     * @var AppendReservations
+     * @var AppendSourceReservations
      */
     private $appendReservations;
 
@@ -118,8 +118,8 @@ class RevertSourceReservationsOnCreditBeforeShipment
         SourceDeductionService $sourceDeductionService,
         GetReservationsByMetadata $getReservationsByMetadata,
         EncodeMetaData $encodeMetaData,
-        ReservationBuilder $sourceReservationBuilder,
-        AppendReservations $appendReservations
+        SourceReservationBuilder $sourceReservationBuilder,
+        AppendSourceReservations $appendReservations
     ) {
         $this->websiteRepository = $websiteRepository;
         $this->salesChannelFactory = $salesChannelFactory;
@@ -234,7 +234,7 @@ class RevertSourceReservationsOnCreditBeforeShipment
     /**
      * @param OrderInterface $order
      *
-     * @return ReservationInterface[]
+     * @return SourceReservationInterface[]
      */
     private function getReservationsBySkuAndSource(OrderInterface $order): array
     {

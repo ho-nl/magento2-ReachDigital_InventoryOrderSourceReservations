@@ -16,18 +16,18 @@ use Magento\InventorySourceSelectionApi\Api\Data\SourceSelectionResultInterface;
 use Magento\InventorySourceSelectionApi\Api\SourceSelectionServiceInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 use PHPUnit\Framework\TestCase;
-use ReachDigital\ISReservations\Model\AppendReservations;
-use ReachDigital\ISReservations\Model\ReservationBuilder;
+use ReachDigital\ISReservations\Model\AppendSourceReservations;
+use ReachDigital\ISReservations\Model\SourceReservationBuilder;
 
 class PriorityBasedAlgorithmWithSourceReservationsTest extends TestCase
 {
     /** @var PriorityBasedAlgorithm */
     private $priorityBasedAlgorithm;
 
-    /** @var ReservationBuilder */
+    /** @var SourceReservationBuilder */
     private $sourceReservationBuilder;
 
-    /** @var AppendReservations */
+    /** @var AppendSourceReservations */
     private $appendReservations;
 
     /** @var ItemRequestInterfaceFactory */
@@ -41,8 +41,8 @@ class PriorityBasedAlgorithmWithSourceReservationsTest extends TestCase
 
     public function setUp()
     {
-        $this->sourceReservationBuilder = Bootstrap::getObjectManager()->get(ReservationBuilder::class);
-        $this->appendReservations = Bootstrap::getObjectManager()->get(AppendReservations::class);
+        $this->sourceReservationBuilder = Bootstrap::getObjectManager()->get(SourceReservationBuilder::class);
+        $this->appendReservations = Bootstrap::getObjectManager()->get(AppendSourceReservations::class);
         $this->itemRequestFactory = Bootstrap::getObjectManager()->get(ItemRequestInterfaceFactory::class);
         $this->inventoryRequestFactory = Bootstrap::getObjectManager()->get(InventoryRequestInterfaceFactory::class);
         $this->sourceSelectionService = Bootstrap::getObjectManager()->get(SourceSelectionServiceInterface::class);

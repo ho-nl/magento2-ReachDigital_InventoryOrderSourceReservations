@@ -16,20 +16,20 @@ use Magento\InventoryShipping\Observer\SourceDeductionProcessor;
 use Magento\InventorySourceDeductionApi\Model\SourceDeductionRequestInterface;
 use Magento\InventorySourceDeductionApi\Model\SourceDeductionServiceInterface;
 use Magento\Sales\Model\Order;
-use ReachDigital\ISReservations\Model\AppendReservations;
+use ReachDigital\ISReservations\Model\AppendSourceReservations;
 use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
-use ReachDigital\ISReservations\Model\ReservationBuilder;
+use ReachDigital\ISReservations\Model\SourceReservationBuilder;
 use Magento\Framework\Event\Observer as EventObserver;
 
 class MoveShipmentStockNullificationToSource
 {
     /**
-     * @var AppendReservations
+     * @var AppendSourceReservations
      */
     private $appendReservations;
 
     /**
-     * @var ReservationBuilder
+     * @var SourceReservationBuilder
      */
     private $reservationBuilder;
 
@@ -66,8 +66,8 @@ class MoveShipmentStockNullificationToSource
     public function __construct(
         IsSingleSourceModeInterface $isSingleSourceMode,
         DefaultSourceProviderInterface $defaultSourceProvider,
-        AppendReservations $appendReservations,
-        ReservationBuilder $reservationBuilder,
+        AppendSourceReservations $appendReservations,
+        SourceReservationBuilder $reservationBuilder,
         GetItemsToDeductFromShipment $getItemsToDeductFromShipment,
         SourceDeductionRequestFromShipmentFactory $sourceDeductionRequestFromShipmentFactory,
         SourceDeductionServiceInterface $sourceDeductionService,

@@ -8,13 +8,13 @@ declare(strict_types=1);
 namespace ReachDigital\IOSReservations\Model\SourceReservationResult;
 
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultItemInterface;
-use ReachDigital\ISReservationsApi\Model\ReservationInterface;
+use ReachDigital\ISReservationsApi\Model\SourceReservationInterface;
 
 class SourceReservationResultItem implements SourceReservationResultItemInterface
 {
 
     /**
-     * @var ReservationInterface
+     * @var SourceReservationInterface
      */
     private $reservation;
 
@@ -24,14 +24,14 @@ class SourceReservationResultItem implements SourceReservationResultItemInterfac
     private $orderItemId;
 
     public function __construct(
-        ReservationInterface $reservation,
+        SourceReservationInterface $reservation,
         int $orderItemId
     ) {
         $this->reservation = $reservation;
         $this->orderItemId = $orderItemId;
     }
 
-    public function getReservation(): ReservationInterface
+    public function getReservation(): SourceReservationInterface
     {
         return $this->reservation;
     }

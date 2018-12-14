@@ -8,11 +8,11 @@ declare(strict_types=1);
 
 namespace ReachDigital\IOSReservationsApi\Api\Data;
 
-use ReachDigital\ISReservationsApi\Model\ReservationInterface;
+use ReachDigital\ISReservationsApi\Model\SourceReservationInterface;
 
 interface SourceReservationResultItemInterface
 {
-    public function getReservation(): ReservationInterface;
+    public function getReservation(): SourceReservationInterface;
 
     public function getOrderItemId() : int;
 }

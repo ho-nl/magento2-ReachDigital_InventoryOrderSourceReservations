@@ -16,7 +16,7 @@ use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterfaceFactory;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultItemInterface;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultItemInterfaceFactory;
-use ReachDigital\ISReservationsApi\Model\ReservationInterface;
+use ReachDigital\ISReservationsApi\Model\SourceReservationInterface;
 
 class GetOrderSourceReservations implements GetOrderSourceReservationsInterface
 {
@@ -69,7 +69,7 @@ class GetOrderSourceReservations implements GetOrderSourceReservationsInterface
         $reservations = $this->getReservationsByMetadata->execute(
             $this->encodeMetaData->execute([ 'order' => $orderId]));
 
-        $resultItems = array_map(function(ReservationInterface $reservation): SourceReservationResultItemInterface {
+        $resultItems = array_map(function(SourceReservationInterface $reservation): SourceReservationResultItemInterface {
             $metaData = $this->decodeMetaData->execute($reservation->getMetadata());
 
             return $this->sourceReservationResultItemFactory->create([

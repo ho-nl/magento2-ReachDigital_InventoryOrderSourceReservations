@@ -17,8 +17,8 @@ use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterfaceFac
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultItemInterface;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultItemInterfaceFactory;
 use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
-use ReachDigital\ISReservationsApi\Model\AppendReservationsInterface;
-use ReachDigital\ISReservationsApi\Model\ReservationBuilderInterface;
+use ReachDigital\ISReservationsApi\Model\AppendSourceReservationsInterface;
+use ReachDigital\ISReservationsApi\Model\SourceReservationBuilderInterface;
 
 class AppendSourceReservations
 {
@@ -33,12 +33,12 @@ class AppendSourceReservations
     private $sourceReservationResultItemFactory;
 
     /**
-     * @var AppendReservationsInterface
+     * @var AppendSourceReservationsInterface
      */
     private $appendReservations;
 
     /**
-     * @var ReservationBuilderInterface
+     * @var SourceReservationBuilderInterface
      */
     private $reservationBuilder;
 
@@ -53,10 +53,10 @@ class AppendSourceReservations
     private $encodeMetaData;
 
     public function __construct(
-        AppendReservationsInterface $appendReservations,
+        AppendSourceReservationsInterface $appendReservations,
         SourceReservationResultInterfaceFactory $sourceReservationResultInterfaceFactory,
         SourceReservationResultItemInterfaceFactory $sourceReservationResultItemInterfaceFactory,
-        ReservationBuilderInterface $reservationBuilder,
+        SourceReservationBuilderInterface $reservationBuilder,
         EncodeMetaData $encodeMetaData
     ) {
         $this->sourceReservationResultFactory = $sourceReservationResultInterfaceFactory;
