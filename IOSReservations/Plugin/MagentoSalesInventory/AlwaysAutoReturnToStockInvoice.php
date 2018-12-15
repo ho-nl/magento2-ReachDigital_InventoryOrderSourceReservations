@@ -30,12 +30,6 @@ class AlwaysAutoReturnToStockInvoice extends ReturnToStockInvoice
      * @var \Magento\Sales\Api\InvoiceRepositoryInterface
      */
     private $invoiceRepository;
-
-    /**
-     * @var \Magento\CatalogInventory\Api\StockConfigurationInterface
-     */
-    private $stockConfiguration;
-
     /**
      * ReturnToStockInvoice constructor.
      * @param \Magento\SalesInventory\Model\Order\ReturnProcessor $returnProcessor
@@ -56,7 +50,6 @@ class AlwaysAutoReturnToStockInvoice extends ReturnToStockInvoice
         $this->creditmemoRepository = $creditmemoRepository;
         $this->orderRepository = $orderRepository;
         $this->invoiceRepository = $invoiceRepository;
-        $this->stockConfiguration = $stockConfiguration;
     }
 
     /**
@@ -82,7 +75,7 @@ class AlwaysAutoReturnToStockInvoice extends ReturnToStockInvoice
         $appendComment = false,
         \Magento\Sales\Api\Data\CreditmemoCommentCreationInterface $comment = null,
         \Magento\Sales\Api\Data\CreditmemoCreationArgumentsInterface $arguments = null
-    ) {
+    ) : int {
         $invoice = $this->invoiceRepository->get($invoiceId);
         $order = $this->orderRepository->get($invoice->getOrderId());
 

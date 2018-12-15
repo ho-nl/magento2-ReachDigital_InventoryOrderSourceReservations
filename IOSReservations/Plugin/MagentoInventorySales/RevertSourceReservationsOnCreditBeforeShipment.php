@@ -265,7 +265,7 @@ class RevertSourceReservationsOnCreditBeforeShipment
 
         foreach ($deductedItems as $deductedItemResult) {
             foreach ($deductedItemResult->getItems() as $deductedItem) {
-                if ($item->getSku() != $deductedItem->getSku()) {
+                if ($item->getSku() !== $deductedItem->getSku()) {
                     continue;
                 }
                 $result += $deductedItem->getQuantity();

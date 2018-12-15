@@ -101,18 +101,6 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
      *
      * @magentoDbIsolation disabled
      *
-     * Rolling back previous database mess
-     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product_rollback.php
-     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website_rollback.php
-     * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory_rollback.php
-     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/source_items_for_simple_on_multi_source_rollback.php
-     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/simple_product_rollback.php
-     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/websites_with_stores_rollback.php
-     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links_rollback.php
-     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks_rollback.php
-     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources_rollback.php
-     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-inventory-source-reservations/ISReservations/Test/Integration/_files/clean_all_reservations.php
-     *
      * Filling database
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks.php
@@ -183,6 +171,7 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
             /** @var SourceReservationResultItem $item */
             $shipmentItems = [];
             foreach ($items as $item) {
+                /** @noinspection PhpParamsInspection */
                 $shipmentItems[] = $this->orderConverter
                     ->itemToShipmentItem($order->getItemById($item->getOrderItemId()))
                     ->setQty($item->getReservation()->getQuantity() * -1);
@@ -233,6 +222,7 @@ class MoveShipmentStockNullificationToSourceTest extends TestCase
      * @param SourceReservationResultInterface $reservationResult
      *
      * @return float
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getCombinedSourcesQty(string $sku, SourceReservationResultInterface $reservationResult): float
     {

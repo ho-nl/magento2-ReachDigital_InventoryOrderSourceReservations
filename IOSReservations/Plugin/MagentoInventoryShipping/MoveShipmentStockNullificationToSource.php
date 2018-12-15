@@ -145,7 +145,9 @@ class MoveShipmentStockNullificationToSource
         foreach ($sourceDeductionRequest->getItems() as $item) {
             $this->reservationBuilder->setQuantity($item->getQty());
             $this->reservationBuilder->setSku($item->getSku());
+            /** @noinspection DisconnectedForeachInstructionInspection */
             $this->reservationBuilder->setSourceCode($sourceDeductionRequest->getSourceCode());
+            /** @noinspection DisconnectedForeachInstructionInspection */
             $this->reservationBuilder->setMetadata($metaData);
             $reservations[] = $this->reservationBuilder->build();
         }

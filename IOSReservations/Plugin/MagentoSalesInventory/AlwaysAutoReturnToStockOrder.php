@@ -78,7 +78,7 @@ class AlwaysAutoReturnToStockOrder extends ReturnToStockOrder
         $appendComment = false,
         \Magento\Sales\Api\Data\CreditmemoCommentCreationInterface $comment = null,
         \Magento\Sales\Api\Data\CreditmemoCreationArgumentsInterface $arguments = null
-    ) {
+    ) : int {
         $order = $this->orderRepository->get($orderId);
 
         $returnToStockItems = [];

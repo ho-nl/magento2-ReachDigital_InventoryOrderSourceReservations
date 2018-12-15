@@ -61,8 +61,9 @@ foreach ($itemsToBuy as $sku => $qtyData) {
     $optionsQtyData = [];
     $i = 0;
     foreach ($options as $option) {
-        $optionsData[$option->getId()] = $option->getId();
-        $optionsQtyData[$option->getId()] = $qtyData['options_qty'][$i];
+        $id = $option->getId();
+        $optionsData[$id] = $id;
+        $optionsQtyData[$id] = $qtyData['options_qty'][$i];
         $i++;
     }
     $requestData = [

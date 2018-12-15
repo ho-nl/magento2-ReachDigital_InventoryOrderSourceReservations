@@ -94,7 +94,7 @@ class PriorityBasedAlgorithmWithSourceReservations implements SourceSelectionInt
                     continue;
                 }
 
-                if ($sourceItem->getStatus() != SourceItemInterface::STATUS_IN_STOCK) {
+                if ((int) $sourceItem->getStatus() !== SourceItemInterface::STATUS_IN_STOCK) {
                     continue;
                 }
 
@@ -170,7 +170,7 @@ class PriorityBasedAlgorithmWithSourceReservations implements SourceSelectionInt
      * @param string $sku
      * @return SourceItemInterface|null
      */
-    private function getSourceItemBySourceCodeAndSku(string $sourceCode, string $sku)
+    private function getSourceItemBySourceCodeAndSku(string $sourceCode, string $sku): ?SourceItemInterface
     {
         $searchCriteria = $this->searchCriteriaBuilder
             ->addFilter(SourceItemInterface::SOURCE_CODE, $sourceCode)

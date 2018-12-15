@@ -56,6 +56,12 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
     /** @var GetSourceItemsBySku */
     private $getSourceItemsBySku;
 
+    /** @var ShipmentCreationArgumentsInterface */
+    private $shipmentCreationArguments;
+
+    /** @var ShipmentCreationArgumentsExtensionInterfaceFactory */
+    private $shipmentCreationArgumentsExtensionFactory;
+
     public function setUp()
     {
         $objectManager = Bootstrap::getObjectManager();

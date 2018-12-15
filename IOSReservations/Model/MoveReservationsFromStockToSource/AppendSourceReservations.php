@@ -74,8 +74,7 @@ class AppendSourceReservations
      * @throws \Magento\Framework\Exception\CouldNotSaveException
      * @throws \Magento\Framework\Exception\InputException
      * @throws \Magento\Framework\Validation\ValidationException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
-     */
+\     */
     public function execute(
         OrderInterface $order,
         SourceSelectionResultInterface $sourceSelectionResult
