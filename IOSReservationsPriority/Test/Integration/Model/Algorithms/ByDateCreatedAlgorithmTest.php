@@ -9,13 +9,10 @@ declare(strict_types=1);
 namespace ReachDigital\IOSReservationsPriority\Test\Integration\Model\Algorithms;
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
-use Magento\InventoryShipping\Model\GetSourceSelectionResultFromInvoice;
-use Magento\InventoryShipping\Model\InventoryRequestFromOrderFactory;
 use Magento\InventorySourceSelection\Model\GetDefaultSourceSelectionAlgorithmCode;
-use Magento\InventorySourceSelection\Model\SourceSelectionService;
+use Magento\InventorySourceSelectionApi\Model\SourceSelectionService;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\InvoiceOrderInterface;
-use Magento\Sales\Api\InvoiceRepositoryInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 use ReachDigital\IOSReservations\Model\GetOrderSourceReservations;

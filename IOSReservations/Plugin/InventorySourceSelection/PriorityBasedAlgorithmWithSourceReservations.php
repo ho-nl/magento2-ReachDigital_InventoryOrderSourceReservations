@@ -77,6 +77,9 @@ class PriorityBasedAlgorithmWithSourceReservations implements SourceSelectionInt
 
     /**
      * @inheritdoc
+     *
+     * @throws \Magento\Framework\Exception\InputException
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function execute(InventoryRequestInterface $inventoryRequest): SourceSelectionResultInterface
     {
