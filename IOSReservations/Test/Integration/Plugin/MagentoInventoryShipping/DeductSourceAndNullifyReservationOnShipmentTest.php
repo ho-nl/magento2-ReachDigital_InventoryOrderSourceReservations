@@ -12,7 +12,6 @@ use Magento\InventoryReservations\Model\ResourceModel\GetReservationsQuantity;
 use Magento\InventorySales\Model\GetProductSalableQty;
 use Magento\InventorySourceDeductionApi\Model\GetSourceItemBySourceCodeAndSku;
 use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
-use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\ShipmentCreationArgumentsInterface;
 use Magento\Sales\Api\InvoiceOrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
@@ -28,7 +27,7 @@ use ReachDigital\ISReservations\Model\MetaData\DecodeMetaData;
 use \Magento\Sales\Api\Data\ShipmentCreationArgumentsExtensionInterfaceFactory;
 use ReachDigital\ISReservationsApi\Model\GetSourceReservationsQuantityInterface;
 
-class MoveShipmentStockNullificationToSourceTest extends TestCase
+class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
 {
     /** @var SearchCriteriaBuilder */
     private $searchCriteriaBuilder;

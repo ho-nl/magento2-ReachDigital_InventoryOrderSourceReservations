@@ -21,7 +21,7 @@ use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
 use ReachDigital\ISReservations\Model\SourceReservationBuilder;
 use Magento\Framework\Event\Observer as EventObserver;
 
-class MoveShipmentStockNullificationToSource
+class DeductSourceAndNullifyReservationOnShipment
 {
     /**
      * @var AppendSourceReservations
