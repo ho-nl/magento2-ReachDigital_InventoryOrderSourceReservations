@@ -13,7 +13,7 @@
     <preference for="ReachDigital\IOSReservationsApi\Api\GetOrderSourceReservationsInterface" type="ReachDigital\IOSReservations\Model\GetOrderSourceReservations"/>
     <type name="Magento\InventoryShipping\Observer\SourceDeductionProcessor">
         <plugin name="move_shipment_stock_nullification_to_source"
-                type="ReachDigital\IOSReservations\Plugin\MagentoInventoryShipping\MoveShipmentStockNullificationToSource"/>
+                type="ReachDigital\IOSReservations\Plugin\MagentoInventoryShipping\DeductSourceAndNullifyReservationOnShipment"/>
     </type>
     <type name="Magento\InventorySourceSelection\Model\SourceSelectionService">
         <arguments>
