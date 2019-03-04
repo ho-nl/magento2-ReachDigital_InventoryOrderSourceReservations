@@ -39,7 +39,7 @@ class GetUnSourcedOrderIds
             ->distinct(true)
             ->from(['o' => $orderTable], OrderInterface::ENTITY_ID)
             ->joinInner(['oi' => $orderItemTable], 'oi.order_id = o.entity_id', [])
-            ->joinLeft(['r' => $resTable], "r.metadata like concat('%order_item:', oi.item_id, '%')", [])
+            ->joinLeft(['r' => $resTable], "r.metadata like concat('%order_item(', oi.item_id, ')%')", [])
             ->where(sprintf("r.reservation_id is null AND o.%s = '%s'", OrderInterface::STATE,
                 Order::STATE_PROCESSING));
         return $conn->fetchCol($select);
