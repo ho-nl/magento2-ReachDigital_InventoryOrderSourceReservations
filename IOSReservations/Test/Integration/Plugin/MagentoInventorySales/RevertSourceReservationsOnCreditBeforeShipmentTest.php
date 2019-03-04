@@ -208,7 +208,7 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
         self::assertEquals(-3, $result['simple']['quantity']);
 
         // Partially credit order
-        $this->creditOrder($order, 1.0);
+        $this->creditOrder($order, true, 1.0);
 
         // Assert that source reservations have been reverted by refunded qty
         $result = $this->getReservationsQuantityList->execute(['simple']);
@@ -344,7 +344,6 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
         $initialStockReservationQty = $this->getStockReservationsQuantity->execute('simple', 10);
         $initialSourceReservationQty = $this->getReservationsQuantityList->execute(['simple'])['simple']['quantity'];
 
-        // @todo write test for correct handling of returns without 'back to source' box checked.
         // Partially ship order: deduct shipped qty from source (-1), nullify source reservation (+1)
         $this->shipOrder($order, 'eu-1', 1.0);
 
@@ -353,6 +352,88 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
 
         // Fully credit order: shipped qty back to source (+1), reserved source qty reverted (+2)
         $this->creditOrder($order);
+
+        // Assert that:
+        // - source qty remains the same
+        // - source reservation increased by 3
+        // - stock reservation qty (should not have changed after source-assignment)
+        $currentSourceQty = $this->getSummedSourceQty('simple');
+        $currentStockReservationQty = $this->getStockReservationsQuantity->execute('simple', 10);
+        $currentSourceReservationQty = $this->getReservationsQuantityList->execute(['simple'])['simple']['quantity'];
+
+        self::assertEquals($initialSourceQty, $currentSourceQty);
+        self::assertEquals($initialStockReservationQty, $currentStockReservationQty);
+        self::assertEquals($initialSourceReservationQty + 3, $currentSourceReservationQty);
+    }
+
+    /**
+     *
+     * @test
+     *
+     * @covers \ReachDigital\IOSReservations\Plugin\MagentoInventorySales\RevertSourceReservationsOnCreditBeforeShipment
+     *
+     * @magentoDbIsolation disabled
+     *
+     * Rolling back previous database mess
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/source_items_for_simple_on_multi_source_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/simple_product_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/websites_with_stores_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-inventory-source-reservations/ISReservations/Test/Integration/_files/clean_all_reservations.php
+     *
+     * Filling database
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/websites_with_stores.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/stock_website_sales_channels.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/simple_product.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/source_items_for_simple_on_multi_source.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product.php
+     *
+     * @throws
+     */
+    public function should_correctly_revert_partially_shipped_order_without_return_to_stock() : void
+    {
+        // Test the following scenario: creditmemo created for full qty, but is partially shipped (and should be
+        // returned to source) and one wasn't (should be reverted from reservation). Stock reservations should not be
+        // affected (this should only change during source-assignment).
+
+        // Have an invoiced order
+        $searchCriteria = $this->searchCriteriaBuilder
+            ->addFilter('increment_id', 'created_order_for_test')
+            ->create();
+        /** @var Order $order */
+        $order = current($this->orderRepository->getList($searchCriteria)->getItems());
+
+        // Create Invoice
+        $this->invoiceOrder->execute($order->getEntityId());
+
+        // Assign order to sources: stock reservation moved to source
+        $this->moveReservationsFromStockToSource->execute(
+            (int) $order->getEntityId(),
+            $this->getDefaultSourceSelectionAlgorithmCode->execute()
+        );
+
+        $initialSourceQty = $this->getSummedSourceQty('simple');
+        $initialStockReservationQty = $this->getStockReservationsQuantity->execute('simple', 10);
+        $initialSourceReservationQty = $this->getReservationsQuantityList->execute(['simple'])['simple']['quantity'];
+
+        // Partially ship order: deduct shipped qty from source (-1), nullify source reservation (+1)
+        $this->shipOrder($order, 'eu-1', 1.0);
+
+        $shippedSourceQty = $this->getSummedSourceQty('simple');
+        self::assertEquals($initialSourceQty - 1, $shippedSourceQty);
+
+        // Fully credit order: shipped qty back to source (+1), reserved source qty reverted (+2)
+        $this->creditOrder($order, false);
 
         // Assert that:
         // - source qty remains the same
@@ -381,7 +462,7 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
     /**
      * @param Order $order
      */
-    private function creditOrder(Order $order, ?float $overrideQty = null): void
+    private function creditOrder(Order $order, bool $returnToStock = true, ?float $overrideQty = null): void
     {
         $refundOrder = $this->objectManager->create(RefundOrderInterface::class);
 
@@ -396,14 +477,18 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
                 $creditItem->setQty($overrideQty);
             }
             $orderItems[] = $creditItem;
-            $returnItems[] = $orderItem->getItemId();
+            if ($returnToStock) {
+                $returnItems[] = $orderItem->getItemId();
+            }
         }
 
         $arguments = $this->objectManager->create(CreditmemoCreationArgumentsInterface::class);
         $arguments->setExtensionAttributes(
             $this->objectManager->create(CreditmemoCreationArgumentsExtensionFactory::class)
                 ->create());
-        $arguments->getExtensionAttributes()->setReturnToStockItems($returnItems);
+        if ($returnToStock) {
+            $arguments->getExtensionAttributes()->setReturnToStockItems($returnItems);
+        }
 
         $refundOrder->execute(
             $order->getEntityId(),
