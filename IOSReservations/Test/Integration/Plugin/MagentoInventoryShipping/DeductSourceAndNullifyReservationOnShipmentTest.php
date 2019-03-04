@@ -100,6 +100,17 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
      *
      * @magentoDbIsolation disabled
      *
+     * Clean up database
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/source_items_for_simple_on_multi_source_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/simple_product_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/websites_with_stores_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources_rollback.php
+     *
      * Filling database
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks.php
@@ -115,8 +126,6 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
      */
     public function should_nullify_the_source_instead_of_the_stock() : void
     {
-        // @fixme: test runs okay on a clean DB, fix issue with fixtures
-
         $searchCriteria = $this->searchCriteriaBuilder
             ->addFilter('increment_id', 'created_order_for_test')
             ->create();
