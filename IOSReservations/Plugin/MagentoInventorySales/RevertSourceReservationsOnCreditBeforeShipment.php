@@ -46,16 +46,6 @@ class RevertSourceReservationsOnCreditBeforeShipment
     private $salesEventFactory;
 
     /**
-     * @var ItemToSellInterfaceFactory
-     */
-    private $itemsToSellFactory;
-
-    /**
-     * @var PlaceReservationsForSalesEventInterface
-     */
-    private $placeReservationsForSalesEvent;
-
-    /**
      * @var GetSourceDeductedOrderItemsInterface
      */
     private $getSourceDeductedOrderItems;
@@ -99,8 +89,6 @@ class RevertSourceReservationsOnCreditBeforeShipment
      * @param WebsiteRepositoryInterface $websiteRepository
      * @param SalesChannelInterfaceFactory $salesChannelFactory
      * @param SalesEventInterfaceFactory $salesEventFactory
-     * @param ItemToSellInterfaceFactory $itemsToSellFactory
-     * @param PlaceReservationsForSalesEventInterface $placeReservationsForSalesEvent
      * @param GetSourceDeductedOrderItemsInterface $getSourceDeductedOrderItems
      * @param ItemToDeductFactory $itemToDeductFactory
      * @param SourceDeductionRequestFactory $sourceDeductionRequestFactory
@@ -110,8 +98,6 @@ class RevertSourceReservationsOnCreditBeforeShipment
         WebsiteRepositoryInterface $websiteRepository,
         SalesChannelInterfaceFactory $salesChannelFactory,
         SalesEventInterfaceFactory $salesEventFactory,
-        ItemToSellInterfaceFactory $itemsToSellFactory,
-        PlaceReservationsForSalesEventInterface $placeReservationsForSalesEvent,
         GetSourceDeductedOrderItemsInterface $getSourceDeductedOrderItems,
         ItemToDeductFactory $itemToDeductFactory,
         SourceDeductionRequestFactory $sourceDeductionRequestFactory,
@@ -124,8 +110,6 @@ class RevertSourceReservationsOnCreditBeforeShipment
         $this->websiteRepository = $websiteRepository;
         $this->salesChannelFactory = $salesChannelFactory;
         $this->salesEventFactory = $salesEventFactory;
-        $this->itemsToSellFactory = $itemsToSellFactory;
-        $this->placeReservationsForSalesEvent = $placeReservationsForSalesEvent;
         $this->getSourceDeductedOrderItems = $getSourceDeductedOrderItems;
         $this->itemToDeductFactory = $itemToDeductFactory;
         $this->sourceDeductionRequestFactory = $sourceDeductionRequestFactory;
