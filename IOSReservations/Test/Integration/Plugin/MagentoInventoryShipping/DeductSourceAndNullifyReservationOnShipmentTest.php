@@ -115,6 +115,8 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
      */
     public function should_nullify_the_source_instead_of_the_stock() : void
     {
+        // @fixme: test runs okay on a clean DB, fix issue with fixtures
+
         $searchCriteria = $this->searchCriteriaBuilder
             ->addFilter('increment_id', 'created_order_for_test')
             ->create();
@@ -124,12 +126,13 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
         // Create Invoice
         $this->invoiceOrder->execute($order->getEntityId());
 
-
         // Trigger initial reindex (else no stock index tables exist)
         /** @var SourceItemIndexer $indexer */
         $indexer = Bootstrap::getObjectManager()->get(SourceItemIndexer::class);
         $indexer->executeFull();
 
+        // Initial salableQty should be 11; initial qty of 14 (eu1 and eu2 sources, the other EU sources are either
+        // disabled or marked out of stock) minus the 3 ordered
         $salableQty = $this->getProductSalableQty->execute('simple', 10);
         self::assertEquals(11, $salableQty);
 
