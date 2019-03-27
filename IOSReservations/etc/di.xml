@@ -28,4 +28,7 @@
     </type>
     <preference for="Magento\SalesInventory\Model\Plugin\Order\ReturnToStockOrder" type="ReachDigital\IOSReservations\Plugin\MagentoSalesInventory\AlwaysAutoReturnToStockOrder"/>
     <preference for="Magento\SalesInventory\Model\Plugin\Order\ReturnToStockInvoice" type="ReachDigital\IOSReservations\Plugin\MagentoSalesInventory\AlwaysAutoReturnToStockInvoice"/>
+    <type name="Magento\Sales\Api\OrderItemRepositoryInterface">
+        <plugin name="load_source_reservations_with_order_item" type="ReachDigital\IOSReservations\Plugin\MagentoSales\LoadSourceReservationsWithOrderItem"/>
+    </type>
 </config>
