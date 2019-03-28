@@ -16,7 +16,7 @@ use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterfaceFactory;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultItemInterface;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultItemInterfaceFactory;
-use ReachDigital\ISReservationsApi\Model\SourceReservationInterface;
+use ReachDigital\ISReservationsApi\Api\Data\SourceReservationInterface;
 
 class GetOrderSourceReservations implements GetOrderSourceReservationsInterface
 {

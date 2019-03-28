@@ -26,7 +26,7 @@ use ReachDigital\ISReservations\Model\AppendSourceReservations;
 use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
 use ReachDigital\ISReservations\Model\SourceReservationBuilder;
 use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadata;
-use ReachDigital\ISReservationsApi\Model\SourceReservationInterface;
+use ReachDigital\ISReservationsApi\Api\SourceReservationInterface;
 
 class RevertSourceReservationsOnCreditBeforeShipment
 {

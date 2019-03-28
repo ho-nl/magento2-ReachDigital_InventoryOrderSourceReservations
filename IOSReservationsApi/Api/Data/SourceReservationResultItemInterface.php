@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace ReachDigital\IOSReservationsApi\Api\Data;
 
-use ReachDigital\ISReservationsApi\Model\SourceReservationInterface;
+use ReachDigital\ISReservationsApi\Api\Data\SourceReservationInterface;
 
 interface SourceReservationResultItemInterface
 {
