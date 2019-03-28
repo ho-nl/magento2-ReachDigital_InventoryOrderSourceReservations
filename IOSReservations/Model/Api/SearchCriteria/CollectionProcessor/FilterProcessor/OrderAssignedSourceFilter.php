@@ -71,7 +71,6 @@ class OrderAssignedSourceFilter implements CustomFilterInterface
             [ ]
         );
         $select->distinct();
-        $debug = (string) $select;
         return true;
     }
 }
