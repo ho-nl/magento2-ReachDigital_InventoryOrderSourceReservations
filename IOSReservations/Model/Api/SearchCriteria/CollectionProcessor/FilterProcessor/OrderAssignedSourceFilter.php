@@ -14,7 +14,17 @@ use Magento\Framework\Data\Collection\AbstractDb;
 class OrderAssignedSourceFilter implements CustomFilterInterface
 {
     /**
-     * Filter orders on having the specified source assigned to one of its order items
+     * Filter orders on its order items' assigned sources. Supported condition types are:
+     *
+     * notnull
+     * null
+     * eq
+     * neq
+     * like
+     * nlike
+     * finset
+     * in
+     * notin
      *
      * @param Filter     $filter
      * @param AbstractDb $collection
@@ -24,27 +34,44 @@ class OrderAssignedSourceFilter implements CustomFilterInterface
      */
     public function apply(Filter $filter, AbstractDb $collection): bool
     {
-        if ( !($collection instanceof \Magento\Sales\Model\ResourceModel\Order\Collection)
-            || $filter->getConditionType() !== 'eq' ) {
+        if ( !($collection instanceof \Magento\Sales\Model\ResourceModel\Order\Collection) ) {
             return false;
         }
+
         $select = $collection->getSelect();
+        $adapter = $select->getAdapter();
+        $filterValue = $filter->getValue();
+        $filterField = 'source_reservation.source_code';
 
-        $filterVaue = $filter->getValue();
+        $conditionMap = [
+            'notnull' => $filterField.' IS NOT NULL',
+            'null'    => $filterField.' IS NULL',
+            'eq'      => $adapter->quoteInto($filterField.' = ?', $filterValue),
+            'neq'     => $adapter->quoteInto($filterField.' != ?', $filterValue),
+            'like'    => $adapter->quoteInto($filterField.' LIKE ?', $filterValue),
+            'nlike'   => $adapter->quoteInto($filterField.' NOT LIKE ?', $filterValue),
+            'in'      => $adapter->quoteInto($filterField.' IN (?)',
+                $filterValue ? explode(',', $filterValue) : $filterValue),
+            'notin'   => $adapter->quoteInto($filterField.' NOT IN (?)',
+                $filterValue ? explode(',', $filterValue) : $filterValue),
+        ];
 
-        // Join source reservations, filter out reservations for other sources
+        if (!array_key_exists($filter->getConditionType(), $conditionMap)) {
+            throw new \InvalidArgumentException(
+                (string) __('Unsupported filter condition: %1', $filter->getConditionType()));
+        }
+
+        // Join source reservations to apply filter
         $select->joinInner(
             [ 'source_reservation' => $collection->getTable('inventory_source_reservation') ],
             // @fixme: Hardcoded metadata format. Should change ReachDigital\ISReservations\Model\MetaData\EncodeMetaData
             // @fixme: API so we can use it for building query parts as well
-            $select->getAdapter()->quoteInto(
-                'source_reservation.metadata LIKE concat(\'order(\',main_table.entity_id,\')%\') '.
-                'AND source_reservation.source_code = ?',
-                $filterVaue),
+            'source_reservation.metadata LIKE concat(\'order(\',main_table.entity_id,\')%\') AND '.
+            $conditionMap[$filter->getConditionType()],
             [ ]
         );
         $select->distinct();
-
+        $debug = (string) $select;
         return true;
     }
 }
