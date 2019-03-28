@@ -5,17 +5,17 @@ declare(strict_types=1);
  * See LICENSE.txt for license details.
  */
 
-namespace ReachDigital\IOSReservations\Test\Integration\Model\Api\SearchCriteria\CollectionProcessor\FilterProcessor;
+namespace ReachDigital\IOSReservations\Test\Integration\Model;
 
+use PHPUnit\Framework\TestCase;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\InvoiceOrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use PHPUnit\Framework\TestCase;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSourceRunner;
 
-class OrderAssignedSourceFilterTest extends TestCase
+class LoadSourceReservationsWithOrderItemTest extends TestCase
 {
     /** @var SearchCriteriaBuilder */
     private $searchCriteriaBuilder;
@@ -40,7 +40,7 @@ class OrderAssignedSourceFilterTest extends TestCase
     /**
      * @test
      *
-     * @covers \ReachDigital\IOSReservations\Model\Api\SearchCriteria\CollectionProcessor\FilterProcessor\OrderAssignedSourceFilter
+     * @covers \ReachDigital\IOSReservations\Plugin\MagentoSales\LoadSourceReservationsWithOrderItem
      *
      * @magentoDbIsolation disabled
      *
@@ -69,7 +69,7 @@ class OrderAssignedSourceFilterTest extends TestCase
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product.php
      *
      */
-    public function should_apply_source_code_filter_on_order_collection(): void
+    public function should_load_assigned_sources_extension_attribute(): void
     {
         // Have an order
 
@@ -85,24 +85,14 @@ class OrderAssignedSourceFilterTest extends TestCase
         $this->moveReservationsFromStockToSource->execute();
 
         $orderRepo = Bootstrap::getObjectManager()->get(OrderRepositoryInterface::class);
-        $searchCriteriaBuilder = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
 
-        // Apply filter on order repository, with filter on existant source
-        $searchCriteriaBuilder->addFilter('assigned_source_code', 'eu-1');
-        $items = $orderRepo->getList($searchCriteriaBuilder->create());
-        self::assertCount(1, $items);
-
-        $searchCriteriaBuilder->addFilter('assigned_source_code', 'eu-2');
-        $items = $orderRepo->getList($searchCriteriaBuilder->create());
-        self::assertCount(1, $items);
-
-        // Apply filter on order repository, without filter
-        $items = $orderRepo->getList($searchCriteriaBuilder->create());
-        self::assertCount(1, $items);
-
-        // Apply filter on order repository, with filter for non-existant source
-        $searchCriteriaBuilder->addFilter('assigned_source_code', 'eu-fake');
-        $items = $orderRepo->getList($searchCriteriaBuilder->create());
-        self::assertCount(0, $items);
+        // Load order through service contract and check its extension attributes
+        $order = $orderRepo->get($order->getEntityId());
+        foreach ($order->getItems() as $item) {
+            $extensionAttributes = $item->getExtensionAttributes();
+            self::assertNotNull($extensionAttributes);
+            $reservations = $extensionAttributes->getSourceReservations();
+            self::assertCount(2, $reservations);
+        }
     }
 }
