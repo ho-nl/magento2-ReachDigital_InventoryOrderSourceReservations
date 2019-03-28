@@ -38,4 +38,8 @@
     <type name="Magento\Sales\Api\OrderItemRepositoryInterface">
         <plugin name="load_source_reservations_with_order_item" type="ReachDigital\IOSReservations\Plugin\MagentoSales\LoadSourceReservationsWithOrderItem"/>
     </type>
+    <!-- Must also implement plugin for Order interface, due to some code not loading order items through service contract -->
+    <type name="Magento\Sales\Api\OrderRepositoryInterface">
+        <plugin name="load_source_reservations_with_order" type="ReachDigital\IOSReservations\Plugin\MagentoSales\LoadSourceReservationsWithOrder"/>
+    </type>
 </config>
