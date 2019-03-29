@@ -60,14 +60,7 @@ class LoadSourceReservationsWithOrderItem
     ) : OrderItemSearchResultInterface
     {
         foreach ($orderItemSearchResult->getItems() as $item) {
-            $extensionAttributes = $item->getExtensionAttributes();
-            $orderId = $item->getOrderId();
-            $orderItemId = $item->getItemId();
-            $reservations = $this->getReservationsByMetadata->execute(
-                $this->encodeMetaData->execute([ 'order' => $orderId, 'order_item' => $orderItemId])
-            );
-            /** @noinspection NullPointerExceptionInspection - should always be set */
-            $extensionAttributes->setSourceReservations($reservations);
+            $this->afterGet($subject, $item);
         }
         return $orderItemSearchResult;
     }
