@@ -71,5 +71,9 @@ Credit Order when shipped:
 
 4. Create creditmemo:
    - 🔹 [RevertSourceReservationsOnCreditBeforeShipment](https://github.com/ho-nl/magento2-ReachDigital_InventoryOrderSourceReservations/blob/master/IOSReservations/Plugin/MagentoInventorySales/RevertSourceReservationsOnCreditBeforeShipment.php) will automatically reverty any source reservations.
-   
-   
+
+### REST Api / Internal Api
+
+Adds a filter to [`GET /orders`](https://devdocs.magento.com/redoc/2.3/admin-rest-api.html#tag/orders) called `assigned_source_code`. 
+
+Adds `source_reservations` as an extension attribute on an order item, which allows you to see the sources that are assigned to an order item.
