@@ -76,4 +76,10 @@ Credit Order when shipped:
 
 Adds a filter to [`GET /orders`](https://devdocs.magento.com/redoc/2.3/admin-rest-api.html#tag/orders) called `assigned_source_code`. 
 
+```
+searchCriteria[filterGroups][0][filters][0][conditionType] = 'eq';
+searchCriteria[filterGroups][0][filters][0][field] = 'assigned_source_code';
+searchCriteria[filterGroups][0][filters][0][value] = 'eu-1';
+```
+
 Adds `source_reservations` as an extension attribute on an order item, which allows you to see the sources that are assigned to an order item.
