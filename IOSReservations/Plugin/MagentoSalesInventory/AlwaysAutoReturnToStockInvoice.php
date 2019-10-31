@@ -88,6 +88,6 @@ class AlwaysAutoReturnToStockInvoice extends ReturnToStockInvoice
         }
         $creditmemo = $this->creditmemoRepository->get($resultEntityId);
         $this->returnProcessor->execute($creditmemo, $order, $returnToStockItems);
-        return $resultEntityId;
+        return (int) $resultEntityId;
     }
 }
