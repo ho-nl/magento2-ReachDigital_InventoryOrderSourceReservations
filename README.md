@@ -83,3 +83,7 @@ searchCriteria[filterGroups][0][filters][0][value] = 'eu-1';
 ```
 
 Adds `source_reservations` as an extension attribute on an order item, which allows you to see the sources that are assigned to an order item.
+
+### TODO
+
+- Submit bugreport/PR to for properly fixing issue with GetItemsToDeductFromShipment
