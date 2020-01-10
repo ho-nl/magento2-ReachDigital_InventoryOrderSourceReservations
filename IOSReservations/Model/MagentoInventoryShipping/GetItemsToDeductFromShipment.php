@@ -8,14 +8,17 @@ declare(strict_types=1);
 
 namespace ReachDigital\IOSReservations\Model\MagentoInventoryShipping;
 
+use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Sales\Api\Data\OrderItemInterface;
+use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Sales\Model\Order\Shipment\Item;
 use Magento\Sales\Model\Order\Item as OrderItem;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\InventorySalesApi\Model\GetSkuFromOrderItemInterface;
 use Magento\InventorySourceDeductionApi\Model\ItemToDeductInterface;
 use Magento\InventorySourceDeductionApi\Model\ItemToDeductInterfaceFactory;
 use Magento\Sales\Model\Order\Shipment;
-use Magento\Framework\Exception\NoSuchEntityException;
 
 class GetItemsToDeductFromShipment extends \Magento\InventoryShipping\Model\GetItemsToDeductFromShipment
 {
@@ -35,40 +38,59 @@ class GetItemsToDeductFromShipment extends \Magento\InventoryShipping\Model\GetI
     private $itemToDeduct;
 
     /**
+     * @var OrderItemRepositoryInterface
+     */
+    private $orderItemRepository;
+
+    /**
+     * @var SearchCriteriaBuilder
+     */
+    private $searchCriteriaBuilder;
+
+    /**
      * @param GetSkuFromOrderItemInterface $getSkuFromOrderItem
      * @param Json $jsonSerializer
      * @param ItemToDeductInterfaceFactory $itemToDeduct
+     * @param OrderItemRepositoryInterface|null $orderItemRepository
+     * @param SearchCriteriaBuilder|null $searchCriteriaBuilder
      */
     public function __construct(
         GetSkuFromOrderItemInterface $getSkuFromOrderItem,
         Json $jsonSerializer,
-        ItemToDeductInterfaceFactory $itemToDeduct
+        ItemToDeductInterfaceFactory $itemToDeduct,
+        OrderItemRepositoryInterface $orderItemRepository = null,
+        SearchCriteriaBuilder $searchCriteriaBuilder = null
     ) {
         $this->jsonSerializer = $jsonSerializer;
         $this->itemToDeduct = $itemToDeduct;
         $this->getSkuFromOrderItem = $getSkuFromOrderItem;
+
+        $this->orderItemRepository = $orderItemRepository ?:
+            ObjectManager::getInstance()->get(OrderItemRepositoryInterface::class);
+        $this->searchCriteriaBuilder = $searchCriteriaBuilder ?:
+            ObjectManager::getInstance()->get(SearchCriteriaBuilder::class);
     }
 
     /**
      * @param Shipment $shipment
      * @return ItemToDeductInterface[]
-     * @throws NoSuchEntityException
      */
     public function execute(Shipment $shipment): array
     {
         $itemsToShip = [];
 
+        $byOrderId = $this->searchCriteriaBuilder->addFilter('order_id', $shipment->getOrderId())->create();
+        $orderItems = $this->orderItemRepository->getList($byOrderId)->getItems();
+
         /** @var \Magento\Sales\Model\Order\Shipment\Item $shipmentItem */
         foreach ($shipment->getAllItems() as $shipmentItem) {
-            $orderItem = $shipmentItem->getOrderItem();
-            // This code was added as quick fix for merge mainline
-            // https://github.com/magento-engcom/msi/issues/1586
-            if (null === $orderItem) {
+            if (!$shipmentItem->getOrderItemId() || !isset($orderItems[$shipmentItem->getOrderItemId()])) {
                 continue;
             }
+            $orderItem = $orderItems[$shipmentItem->getOrderItemId()];
             if ($orderItem->getHasChildren()) {
                 if (!$orderItem->isDummy(true)) {
-                    foreach ($this->processComplexItem($shipmentItem) as $item) {
+                    foreach ($this->processComplexItem($shipmentItem, $orderItem) as $item) {
                         $itemsToShip[] = $item;
                     }
                 }
@@ -112,12 +134,13 @@ class GetItemsToDeductFromShipment extends \Magento\InventoryShipping\Model\GetI
 
     /**
      * @param Item $shipmentItem
+     * @param OrderItemInterface $orderItem
      * @return array
      */
-    private function processComplexItem(Item $shipmentItem): array
+    private function processComplexItem(Item $shipmentItem, $orderItem): array
     {
-        $orderItem = $shipmentItem->getOrderItem();
         $itemsToShip = [];
+        /** @var OrderItem $item */
         foreach ($orderItem->getChildrenItems() as $item) {
             if ($item->getIsVirtual() || $item->getLockedDoShip()) {
                 continue;
