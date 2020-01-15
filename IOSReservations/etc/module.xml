@@ -12,6 +12,8 @@
             <module name="Magento_InventorySales"/>
             <module name="Magento_Sales"/>
             <module name="Magento_InventorySourceSelection"/>
+            <module name="ReachDigital_ISReservations"/>
+            <module name="ReachDigital_ISReservationsApi"/>
         </sequence>
     </module>
 </config>
