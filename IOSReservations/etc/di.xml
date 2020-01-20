@@ -31,6 +31,10 @@
         <plugin name="prevent_source_item_quantity_deduction_on_refund"
                 type="ReachDigital\IOSReservations\Plugin\MagentoInventorySales\PreventSourceItemQuantityDeductionOnRefund"/>
     </type>
+    <type name="Magento\InventorySales\Observer\CatalogInventory\CancelOrderItemObserver">
+        <plugin name="prevent_source_item_quantity_deduction_on_cancellation"
+                type="ReachDigital\IOSReservations\Plugin\MagentoInventorySales\PreventSourceItemQuantityDeductionOnCancellation"/>
+    </type>
     <preference for="Magento\SalesInventory\Model\Plugin\Order\ReturnToStockOrder" type="ReachDigital\IOSReservations\Plugin\MagentoSalesInventory\AlwaysAutoReturnToStockOrder"/>
     <preference for="Magento\SalesInventory\Model\Plugin\Order\ReturnToStockInvoice" type="ReachDigital\IOSReservations\Plugin\MagentoSalesInventory\AlwaysAutoReturnToStockInvoice"/>
     <type name="Magento\Framework\Api\SearchCriteria\CollectionProcessor\FilterProcessor">

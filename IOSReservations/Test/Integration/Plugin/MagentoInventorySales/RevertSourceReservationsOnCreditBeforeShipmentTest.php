@@ -483,7 +483,7 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
      *
      * @throws
      */
-    public function should_correctly_revert_unshipped_order_without_return_to_stock() : void
+    public function should_correctly_revert_unshipped_order_without_return_to_stock_at_credit() : void
     {
         // Test the following scenario: order is placed, sourced-assigned and then credited before being shipped (and
         // thus items never left the source)
@@ -524,6 +524,148 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
         self::assertEquals($initialSourceQty, $currentSourceQty);
         self::assertEquals($initialStockReservationQty, $currentStockReservationQty);
         self::assertEquals($initialSourceReservationQty + 3, $currentSourceReservationQty);
+    }
+
+    /**
+     *
+     * @test
+     *
+     * @covers \ReachDigital\IOSReservations\Plugin\MagentoInventorySales\RevertSourceReservationsOnCreditBeforeShipment
+     *
+     * @magentoDbIsolation disabled
+     *
+     * Rolling back previous database mess
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/source_items_for_simple_on_multi_source_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/simple_product_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/websites_with_stores_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-inventory-source-reservations/ISReservations/Test/Integration/_files/clean_all_reservations.php
+     *
+     * Filling database
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/websites_with_stores.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/stock_website_sales_channels.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/simple_product.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/source_items_for_simple_on_multi_source.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product.php
+     *
+     * @throws
+     */
+    public function should_correctly_revert_uncaptured_processing_order_with_return_to_stock_at_cancel() : void
+    {
+        // Test the following scenario: order is placed, sourced-assigned and then cancelled before being shipped (and
+        // thus items never left the source) and before being paid (authorised, but not captured).
+        // Source reservations should be nullified and stock reservations should be refunded.
+
+        // Have an invoiced order
+        $searchCriteria = $this->searchCriteriaBuilder
+            ->addFilter('increment_id', 'created_order_for_test')
+            ->create();
+        /** @var Order $order */
+        $order = current($this->orderRepository->getList($searchCriteria)->getItems());
+
+        // Set order to 'processing' without invoice (authorise without capture)
+        $order->setStatus(Order::STATE_PROCESSING);
+        $order->setState(Order::STATE_PROCESSING);
+        $this->orderRepository->save($order);
+
+        // Assign order to sources: stock reservation moved to source
+        $this->moveReservationsFromStockToSource->execute(
+            (int) $order->getEntityId(),
+            $this->getDefaultSourceSelectionAlgorithmCode->execute()
+        );
+
+        $initialSourceQty = $this->getSummedSourceQty('simple');
+        $initialStockReservationQty = $this->getStockReservationsQuantity->execute('simple', 10);
+        $initialSourceReservationQty = $this->getReservationsQuantityList->execute(['simple'])['simple']['quantity'];
+
+        // Cancel order
+        $order->cancel();
+        $this->orderRepository->save($order);
+
+        // Assert that:
+        // - source qty remains the same
+        // - stock reservation qty remains the same
+        // - source reservation increased by 3
+        $currentSourceQty = $this->getSummedSourceQty('simple');
+        $currentStockReservationQty = $this->getStockReservationsQuantity->execute('simple', 10);
+        $currentSourceReservationQty = $this->getReservationsQuantityList->execute(['simple'])['simple']['quantity'];
+
+        self::assertEquals($initialSourceQty, $currentSourceQty);
+        self::assertEquals($initialStockReservationQty, $currentStockReservationQty);
+        self::assertEquals($initialSourceReservationQty + 3, $currentSourceReservationQty);
+    }
+
+    /**
+     *
+     * @test
+     *
+     * @covers \ReachDigital\IOSReservations\Plugin\MagentoInventorySales\RevertSourceReservationsOnCreditBeforeShipment
+     *
+     * @magentoDbIsolation disabled
+     *
+     * Rolling back previous database mess
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/source_items_for_simple_on_multi_source_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/simple_product_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/websites_with_stores_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-inventory-source-reservations/ISReservations/Test/Integration/_files/clean_all_reservations.php
+     *
+     * Filling database
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/websites_with_stores.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/stock_website_sales_channels.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/simple_product.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/source_items_for_simple_on_multi_source.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product.php
+     *
+     * @throws
+     */
+    public function should_correctly_revert_unauthorized_order_with_return_to_stock_at_cancel() : void
+    {
+        // Test the following scenario: order is placed, sourced-assigned and then cancelled before being shipped (and
+        // thus items never left the source) and before being paid (neither authorised nor captured).
+        // Source reservations should be nullified and stock reservations should not be affected at all.
+
+        // Have a pending order
+        $searchCriteria = $this->searchCriteriaBuilder
+            ->addFilter('increment_id', 'created_order_for_test')
+            ->create();
+        /** @var Order $order */
+        $order = current($this->orderRepository->getList($searchCriteria)->getItems());
+
+        $initialSourceQty = $this->getSummedSourceQty('simple');
+
+        // Cancel order
+        $order->cancel();
+        $this->orderRepository->save($order);
+
+        // Assert that:
+        // - source qty remains the same
+        // - stock reservation qty remains the same
+        $currentSourceQty = $this->getSummedSourceQty('simple');
+        $currentStockReservationQty = $this->getStockReservationsQuantity->execute('simple', 10);
+
+        self::assertEquals($initialSourceQty, $currentSourceQty);
+        self::assertEquals(0, $currentStockReservationQty);
     }
 
     private function getSummedSourceQty(string $sku) : float
