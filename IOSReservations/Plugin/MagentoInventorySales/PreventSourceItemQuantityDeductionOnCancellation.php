@@ -63,7 +63,7 @@ class PreventSourceItemQuantityDeductionOnCancellation
     }
 
     /**
-     * Around plugin to prevent source item quantity deduction when order is cancelled and stock is already assigned,
+     * Around plugin to prevent reservation item quantity deduction when order is cancelled and order is already assigned,
      * can happen when assigning happens before invoicing, for instance when an order is authorised but not yet captured
      *
      * @param CancelOrderItemObserver $subject
