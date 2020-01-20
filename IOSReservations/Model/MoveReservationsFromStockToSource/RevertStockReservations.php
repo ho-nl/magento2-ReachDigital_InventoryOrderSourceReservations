@@ -78,6 +78,10 @@ class RevertStockReservations
             $store = $this->storeRepository->getById((int) $order->getStoreId());
             $stockId = (int)$this->stockByWebsiteIdResolver->execute((int)$store->getWebsiteId())->getStockId();
 
+            /**
+             * Please note to not change the metadata format only here, as it is used in
+             * @see \ReachDigital\IOSReservations\Plugin\MagentoInventorySales\PreventSourceItemQuantityDeductionOnCancellation::aroundExecute
+             */
             $reservations[] = $this->reservationBuilder
                 ->setSku($item->getSku())
                 ->setQuantity($item->getQtyToDeduct())
