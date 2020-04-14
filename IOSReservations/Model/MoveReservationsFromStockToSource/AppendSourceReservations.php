@@ -96,7 +96,7 @@ class AppendSourceReservations
      * @param float $floatNumber
      * @return bool
      */
-    private function isZero(float $floatNumber): bool
+    private function isZeroOrLess(float $floatNumber): bool
     {
         return $floatNumber < 0.0000001;
     }
@@ -120,7 +120,7 @@ class AppendSourceReservations
             //check if order item is not delivered yet
             if ($orderItem->isDeleted()
                 || $orderItem->getParentItemId()
-                || $this->isZero((float)$qtyToDeliver)
+                || $this->isZeroOrLess((float)$qtyToDeliver)
                 || $orderItem->getIsVirtual()
             ) {
                 continue;
@@ -140,7 +140,7 @@ class AppendSourceReservations
                 ]);
                 $qtyToDeliver -= $ssItem->getQtyToDeduct();
                 unset($ssItems[$k]);
-                if ($this->isZero($qtyToDeliver)) {
+                if ($this->isZeroOrLess($qtyToDeliver)) {
                     break;
                 }
             }
