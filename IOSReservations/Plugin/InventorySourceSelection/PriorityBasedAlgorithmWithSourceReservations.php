@@ -119,6 +119,9 @@ class PriorityBasedAlgorithmWithSourceReservations implements SourceSelectionInt
                 ]);
 
                 $qtyToDeliver -= $qtyToDeduct;
+                if ($this->isZero((float) $qtyToDeduct) {
+                    break;
+                }
             }
 
             // if we go throw all sources from the stock and there is still some qty to delivery,
