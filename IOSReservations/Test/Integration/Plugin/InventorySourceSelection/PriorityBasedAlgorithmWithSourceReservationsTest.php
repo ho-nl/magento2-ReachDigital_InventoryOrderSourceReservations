@@ -90,21 +90,67 @@ class PriorityBasedAlgorithmWithSourceReservationsTest extends TestCase
          */
 
         // 14 available, should not be shippable
-        $selectionResult = $this->requestItem(10, 'simple', 16);
+        $selectionResult = $this->requestItems(10, 'simple', 16);
         self::assertEquals(false, $selectionResult->isShippable());
 
         // Add two by reservation and select for 16, should be shippable
         $this->appendReservation('eu-1', 'simple', 2, 'ssa_test_reservation');
-        $selectionResult = $this->requestItem(10, 'simple', 16);
+        $selectionResult = $this->requestItems(10, 'simple', 16);
         self::assertEquals(true, $selectionResult->isShippable());
 
         // Reduce two by reservation and try to select for 16, should no longer be shippable
         $this->appendReservation('eu-1', 'simple', -2, 'ssa_test_reservation');
-        $selectionResult = $this->requestItem(10, 'simple', 16);
+        $selectionResult = $this->requestItems(10, 'simple', 16);
         self::assertEquals(false, $selectionResult->isShippable());
     }
 
-    private function requestItem(int $stockId, string $sku, int $qty): SourceSelectionResultInterface
+    /**
+     * @test
+     * @covers \ReachDigital\IOSReservations\Plugin\InventorySourceSelection\PriorityBasedAlgorithmWithSourceReservations
+     *
+     * @magentoDbIsolation disabled
+     *
+     * Rolling back previous database mess
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/product_simple_with_custom_options_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/websites_with_stores_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-inventory-source-reservations/ISReservations/Test/Integration/_files/clean_all_reservations.php
+     *
+     * Filling database
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/websites_with_stores.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/stock_website_sales_channels.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/product_simple_with_custom_options.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/source_items_for_simple_on_multi_source.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website.php
+     *
+     * @throws
+     */
+    public function should_only_return_one_source_reservation(): void
+    {
+        /* Fixture:
+         *
+         * | *Sku*  | *Source Code* | *Qty* | *Info*        |
+         * |--------|---------------|-------|---------------|
+         * | simple | eu-1          | 2     |               |
+         * | simple | eu-2          | 12    |               |
+         * | simple | eu-3          | 12    | out of stock  |
+         * | simple | eu-disabled   | 6     |               |
+         * | simple | us-1          | 10    |               |
+         */
+
+        $selectionResult = $this->requestItems(10, 'simple', 2);
+        self::assertCount(1, $selectionResult->getSourceSelectionItems());
+    }
+
+
+    private function requestItems(int $stockId, string $sku, int $qty): SourceSelectionResultInterface
     {
         /** @var ItemRequestInterface[] $requestItems */
         $requestItems = [];
@@ -137,3 +183,4 @@ class PriorityBasedAlgorithmWithSourceReservationsTest extends TestCase
         $this->appendReservations->execute([$reservation]);
     }
 }
+
