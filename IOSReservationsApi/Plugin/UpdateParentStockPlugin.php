@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 declare(strict_types=1);
 
 namespace ReachDigital\ISReservationsApi\Plugin;
@@ -26,29 +28,34 @@ class UpdateParentStockPlugin
     }
 
 
-    public function afterExecute(\Magento\Inventory\Model\ResourceModel\SourceItem\SaveMultiple $subject, $result, array $sourceItems)
-    {
+    public function afterExecute(
+        \Magento\Inventory\Model\ResourceModel\SourceItem\SaveMultiple $subject,
+        $result,
+        array $sourceItems
+    ) {
         $connection = $this->resourceConnection->getConnection();
-      
+
         //get SKU's
-        foreach($sourceItems as $sourceItem){
-            if($sourceItem->getData('status')) {
+        foreach ($sourceItems as $sourceItem) {
+            if ($sourceItem->getData('status')) {
                 $skuList[] = $sourceItem->getData('sku');
             }
         }
 
-        if(!isset($skuList)){
+        if (!isset($skuList)) {
             return $result;
         }
 
         //Get id's from SKU
-        $sqlProductId = sprintf('
+        $sqlProductId = sprintf(
+            '
             SELECT `%s` FROM `catalog_product_entity` WHERE `sku` IN ("%s")',
             'entity_id',
-            implode(",'",$skuList));
+            implode(",'", $skuList)
+        );
         $productIds = $connection->fetchAll($sqlProductId);
 
-        foreach($productIds as $productId){
+        foreach ($productIds as $productId) {
             $idList[] = $productId['entity_id'];
         }
 
@@ -59,16 +66,16 @@ class UpdateParentStockPlugin
             'parent_id',
             'catalog_product_super_link',
             'product_id',
-            implode(",'",$idList)
+            implode(",'", $idList)
         );
         $parents = $connection->fetchAll($sqlParentId);
 
         //update stock of cataloginventory_stock_item & cataloginventory_stock_status
-        foreach($parents as $parentId){
+        foreach ($parents as $parentId) {
             $allParents[] = $parentId['parent_id'];
         }
 
-        if(!isset($allParents)){
+        if (!isset($allParents)) {
             return $result;
         }
 
@@ -78,18 +85,19 @@ class UpdateParentStockPlugin
             'cataloginventory_stock_item',
             'is_in_stock',
             'product_id',
-            implode(",'",$allParents)
+            implode(",'", $allParents)
         );
         $connection->query($sqlUpdateStockItem);
+
         //if no result break
-        $sqlUpdateStockItem = sprintf(
+        $sqlUpdateStockStatus = sprintf(
             'UPDATE `%s` SET `%s` = 1 WHERE `%s` IN ("%s")',
             'cataloginventory_stock_status',
             'stock_status',
             'product_id',
-            implode(",'",$allParents)
+            implode(",'", $allParents)
         );
-        $connection->query($sqlUpdateStockItem);
+        $connection->query($sqlUpdateStockStatus);
 
         return $result;
     }
