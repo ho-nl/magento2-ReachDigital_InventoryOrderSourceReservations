@@ -28,6 +28,12 @@ class UpdateParentStockPlugin
     }
 
 
+    /**
+     * @param  \Magento\Inventory\Model\ResourceModel\SourceItem\SaveMultiple $subject
+     * @param  $result
+     * @param  array                                                          $sourceItems
+     * @return mixed
+     */
     public function afterExecute(
         \Magento\Inventory\Model\ResourceModel\SourceItem\SaveMultiple $subject,
         $result,
@@ -48,34 +54,23 @@ class UpdateParentStockPlugin
 
         //Get id's from SKU
         $sqlProductId = sprintf(
-            '
-            SELECT `%s` FROM `catalog_product_entity` WHERE `sku` IN ("%s")',
+            'SELECT `%s` FROM `catalog_product_entity` WHERE `sku` IN ("%s")',
             'entity_id',
             implode(",'", $skuList)
         );
-        $productIds = $connection->fetchAll($sqlProductId);
-
-        foreach ($productIds as $productId) {
-            $idList[] = $productId['entity_id'];
-        }
+        $productIds = $connection->fetchCol($sqlProductId);
 
         //get Parents
         $sqlParentId = sprintf(
-            'SELECT `%s`,`%s` FROM `%s` WHERE `%s` IN ("%s")',
-            'product_id',
+            'SELECT `%s` FROM `%s` WHERE `%s` IN ("%s")',
             'parent_id',
             'catalog_product_super_link',
             'product_id',
-            implode(",'", $idList)
+            implode(",'", $productIds)
         );
-        $parents = $connection->fetchAll($sqlParentId);
+        $parents = $connection->fetchCol($sqlParentId);
 
-        //update stock of cataloginventory_stock_item & cataloginventory_stock_status
-        foreach ($parents as $parentId) {
-            $allParents[] = $parentId['parent_id'];
-        }
-
-        if (!isset($allParents)) {
+        if (!isset($parents)) {
             return $result;
         }
 
@@ -85,7 +80,7 @@ class UpdateParentStockPlugin
             'cataloginventory_stock_item',
             'is_in_stock',
             'product_id',
-            implode(",'", $allParents)
+            implode(",'", $parents)
         );
         $connection->query($sqlUpdateStockItem);
 
@@ -95,7 +90,7 @@ class UpdateParentStockPlugin
             'cataloginventory_stock_status',
             'stock_status',
             'product_id',
-            implode(",'", $allParents)
+            implode(",'", $parents)
         );
         $connection->query($sqlUpdateStockStatus);
 
