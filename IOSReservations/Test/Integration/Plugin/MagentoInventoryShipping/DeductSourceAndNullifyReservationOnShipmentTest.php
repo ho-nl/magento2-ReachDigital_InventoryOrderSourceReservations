@@ -7,8 +7,11 @@ declare(strict_types=1);
 namespace ReachDigital\IOSReservations\Test\Integration\Plugin\InventorySales;
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
-use Magento\InventoryIndexer\Indexer\SourceItem\SourceItemIndexer;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\InventoryIndexer\Model\ResourceModel\GetStockItemData;
+use Magento\InventoryIndexer\Model\ResourceModel\GetStockItemDataCache;
 use Magento\InventoryReservations\Model\ResourceModel\GetReservationsQuantity;
+use Magento\InventoryReservations\Model\ResourceModel\GetReservationsQuantityCache;
 use Magento\InventoryReservationsApi\Model\GetReservationsQuantityInterface;
 use Magento\InventorySales\Model\GetProductSalableQty;
 use Magento\InventorySourceDeductionApi\Model\GetSourceItemBySourceCodeAndSku;
@@ -25,7 +28,6 @@ use ReachDigital\IOSReservations\Model\GetOrderSourceReservations;
 use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource;
 use ReachDigital\IOSReservations\Model\SourceReservationResult\SourceReservationResultItem;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface;
-use ReachDigital\ISReservations\Model\MetaData\DecodeMetaData;
 use Magento\Sales\Api\Data\ShipmentCreationArgumentsExtensionInterfaceFactory;
 use ReachDigital\ISReservationsApi\Model\GetSourceReservationsQuantityInterface;
 
@@ -55,9 +57,6 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
     /** @var GetProductSalableQty */
     private $getProductSalableQty;
 
-    /** @var DecodeMetaData */
-    private $decodeMetaData;
-
     /** @var \Magento\Sales\Model\Convert\Order */
     private $orderConverter;
 
@@ -80,10 +79,8 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
     {
         /** @var ObjectManager $objectManager */
         $objectManager = Bootstrap::getObjectManager();
-        $objectManager->addSharedInstance(
-            $objectManager->get(GetReservationsQuantity::class),
-            GetReservationsQuantityInterface::class
-        );
+        //        $objectManager->addSharedInstance($objectManager->get(GetReservationsQuantity::class), 'wtf');
+        //        $objectManager->addSharedInstance($this->get(GetStockItemData::class), GetStockItemDataCache::class);
 
         $this->searchCriteriaBuilder = $objectManager->get(SearchCriteriaBuilder::class);
         $this->orderRepository = $objectManager->get(OrderRepositoryInterface::class);
@@ -94,8 +91,8 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
         );
         $this->getOrderSourceReservations = $objectManager->get(GetOrderSourceReservations::class);
         $this->shipOrder = $objectManager->get(ShipOrderInterface::class);
-        $this->getProductSalableQty = $objectManager->get(GetProductSalableQty::class);
-        $this->decodeMetaData = $objectManager->get(DecodeMetaData::class);
+        $this->getProductSalableQty = $objectManager->create(GetProductSalableQty::class);
+
         $this->orderConverter = $objectManager->get(\Magento\Sales\Model\Convert\Order::class);
         $this->shipmentCreationArguments = $objectManager->get(ShipmentCreationArgumentsInterface::class);
         $this->shipmentCreationArgumentsExtensionInterfaceFactory = $objectManager->get(
@@ -113,29 +110,32 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
      *
      * @magentoDbIsolation disabled
      *
-     * Clean up database
-     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product_rollback.php
-     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website_rollback.php
-     * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory_rollback.php
-     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/source_items_for_simple_on_multi_source_rollback.php
+     * Rolling back previous database mess
+     *
+     * @-magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product_rollback.php
+     * @-magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website_rollback.php
+     * @-magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory_rollback.php
+     * @-magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/source_items_for_simple_on_multi_source_rollback.php
      * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/simple_product_rollback.php
-     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/websites_with_stores_rollback.php
-     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links_rollback.php
-     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks_rollback.php
-     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources_rollback.php
+     * @-magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/websites_with_stores_rollback.php
+     * @-magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links_rollback.php
+     * @-magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks_rollback.php
+     * @-magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-inventory-source-reservations/ISReservations/Test/Integration/_files/clean_all_reservations.php
      *
      * Filling database
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links.php
-     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/websites_with_stores.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/websites_with_stores.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/stock_website_sales_channels.php
      * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/simple_product.php
      * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/source_items_for_simple_on_multi_source.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product.php
-     * @throws \Magento\Framework\Exception\LocalizedException
+     *
+     * @throws LocalizedException
      */
     public function should_nullify_the_source_instead_of_the_stock(): void
     {
@@ -146,14 +146,13 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
         // Create Invoice
         $this->invoiceOrder->execute($order->getEntityId());
 
-        // Trigger initial reindex (else no stock index tables exist)
-        /** @var SourceItemIndexer $indexer */
-        $indexer = Bootstrap::getObjectManager()->get(SourceItemIndexer::class);
-        $indexer->executeFull();
-
         // Initial salableQty should be 11; initial qty of 14 (eu1 and eu2 sources, the other EU sources are either
         // disabled or marked out of stock) minus the 3 ordered
-        $salableQty = $this->getProductSalableQty->execute('simple', 10);
+        $salableQty =
+            $this->getProductSalableQty->execute('simple', 10) +
+            $this->getStockReservationsQuantity->execute('simple', 10) +
+            $this->getSourceReservationsQuantity->execute('simple', 'eu-1') +
+            $this->getSourceReservationsQuantity->execute('simple', 'eu-2');
         self::assertEquals(11, $salableQty);
 
         // Move reservation to source, salable qty should remain the same. Actual source quantity should not be affected yet
@@ -164,7 +163,11 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
         );
         $initialSourcesQty = $this->getCombinedSourcesQty('simple', $sourceSelectionResult);
 
-        $salableQty = $this->getProductSalableQty->execute('simple', 10);
+        $salableQty =
+            $this->getProductSalableQty->execute('simple', 10) +
+            $this->getStockReservationsQuantity->execute('simple', 10) +
+            $this->getSourceReservationsQuantity->execute('simple', 'eu-1') +
+            $this->getSourceReservationsQuantity->execute('simple', 'eu-2');
         self::assertEquals(11, $salableQty);
 
         // The qty should now be nullified from the stock reservations
@@ -241,8 +244,11 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
         $currentSourceReservationsQty = array_sum($currentSourceReservationsQty);
         self::assertEquals($initialSourceReservationsQty + 3, $currentSourceReservationsQty);
 
-        $salableQty = $this->getProductSalableQty->execute('simple', 10);
-        self::assertEquals(11, $salableQty);
+        $reservationQty =
+            $this->getStockReservationsQuantity->execute('simple', 10) +
+            $this->getSourceReservationsQuantity->execute('simple', 'eu-1') +
+            $this->getSourceReservationsQuantity->execute('simple', 'eu-2');
+        self::assertEquals(0, $reservationQty);
     }
 
     /**
