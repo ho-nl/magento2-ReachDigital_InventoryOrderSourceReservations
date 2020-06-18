@@ -22,6 +22,7 @@ use Magento\TestFramework\Helper\Bootstrap;
 use Magento\TestFramework\ObjectManager;
 use PHPUnit\Framework\TestCase;
 use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource;
+use ReachDigital\ISReservationsApi\Model\GetSourceReservationsQuantityInterface;
 
 class MoveReservationsFromStockToSourceTest extends TestCase
 {
@@ -43,6 +44,12 @@ class MoveReservationsFromStockToSourceTest extends TestCase
     /** @var GetProductSalableQty */
     private $getProductSalableQty;
 
+    /** @var GetReservationsQuantity */
+    private $getStockReservationsQuantity;
+
+    /** @var GetSourceReservationsQuantityInterface */
+    private $getSourceReservationsQuantity;
+
     protected function setUp()
     {
         /** @var ObjectManager $objectManager */
@@ -61,6 +68,8 @@ class MoveReservationsFromStockToSourceTest extends TestCase
             GetDefaultSourceSelectionAlgorithmCodeInterface::class
         );
         $this->getProductSalableQty = $objectManager->get(GetProductSalableQtyInterface::class);
+        $this->getStockReservationsQuantity = $objectManager->get(GetReservationsQuantity::class);
+        $this->getSourceReservationsQuantity = $objectManager->get(GetSourceReservationsQuantityInterface::class);
     }
 
     /**
@@ -99,7 +108,11 @@ class MoveReservationsFromStockToSourceTest extends TestCase
     public function should_move_reservation_from_stock_to_source(): void
     {
         //There are 14 actually available in the source, order is placed with three.
-        $salableQty = $this->getProductSalableQty->execute('simple', 10);
+        $salableQty =
+            $this->getProductSalableQty->execute('simple', 10) +
+            $this->getStockReservationsQuantity->execute('simple', 10) +
+            $this->getSourceReservationsQuantity->execute('simple', 'eu-1') +
+            $this->getSourceReservationsQuantity->execute('simple', 'eu-2');
 
         self::assertEquals(11, $salableQty);
 
@@ -108,7 +121,11 @@ class MoveReservationsFromStockToSourceTest extends TestCase
         $order = current($this->orderRepository->getList($searchCriteria)->getItems());
         $this->invoiceOrder->execute($order->getEntityId());
 
-        $salableQty = $this->getProductSalableQty->execute('simple', 10);
+        $salableQty =
+            $this->getProductSalableQty->execute('simple', 10) +
+            $this->getStockReservationsQuantity->execute('simple', 10) +
+            $this->getSourceReservationsQuantity->execute('simple', 'eu-1') +
+            $this->getSourceReservationsQuantity->execute('simple', 'eu-2');
         self::assertEquals(11, $salableQty);
 
         $this->moveReservationsFromStockToSource->execute(
@@ -116,8 +133,11 @@ class MoveReservationsFromStockToSourceTest extends TestCase
             $this->getDefaultSourceSelectionAlgorithmCode->execute()
         );
 
-        $salableQty = $this->getProductSalableQty->execute('simple', 10);
-        self::assertEquals(11, $salableQty);
+        $reservationQty =
+            $this->getStockReservationsQuantity->execute('simple', 10) +
+            $this->getSourceReservationsQuantity->execute('simple', 'eu-1') +
+            $this->getSourceReservationsQuantity->execute('simple', 'eu-2');
+        self::assertEquals(-3, $reservationQty);
     }
 
     /**
@@ -161,7 +181,11 @@ class MoveReservationsFromStockToSourceTest extends TestCase
         $order = current($this->orderRepository->getList($searchCriteria)->getItems());
         $this->invoiceOrder->execute($order->getEntityId());
 
-        $salableQty = $this->getProductSalableQty->execute('simple', 10);
+        $salableQty =
+            $this->getProductSalableQty->execute('simple', 10) +
+            $this->getStockReservationsQuantity->execute('simple', 10) +
+            $this->getSourceReservationsQuantity->execute('simple', 'eu-1') +
+            $this->getSourceReservationsQuantity->execute('simple', 'eu-2');
         $this->assertEquals(11, $salableQty);
 
         $this->moveReservationsFromStockToSource->execute(
