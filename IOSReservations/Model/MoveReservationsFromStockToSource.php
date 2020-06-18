@@ -8,16 +8,18 @@ declare(strict_types=1);
 
 namespace ReachDigital\IOSReservations\Model;
 
-use Magento\Framework\Exception\LocalizedException;
-use Magento\InventoryShipping\Model\InventoryRequestFromOrderFactory;
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Validation\ValidationException;
 use Magento\InventorySourceSelectionApi\Api\SourceSelectionServiceInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource\AppendSourceReservations;
 use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource\RevertStockReservations;
 use ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceInterface;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface;
-use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
-use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadata;
+use ReachDigital\IOSReservationsApi\Exception\CouldNotCreateSourceSelectionRequestFromOrder;
+use ReachDigital\IOSReservationsApi\Exception\CouldNotFullySelectSourcesForOrder;
 
 class MoveReservationsFromStockToSource implements MoveReservationsFromStockToSourceInterface
 {
@@ -32,9 +34,9 @@ class MoveReservationsFromStockToSource implements MoveReservationsFromStockToSo
     private $sourceSelectionService;
 
     /**
-     * @var InventoryRequestFromOrderFactory
+     * @var GetSourceSelectionRequestFromOrderFactory
      */
-    private $inventoryRequestFromOrderFactory;
+    private $getSourceSelectionRequestFromOrderFactory;
 
     /**
      * @var RevertStockReservations
@@ -47,62 +49,51 @@ class MoveReservationsFromStockToSource implements MoveReservationsFromStockToSo
     private $appendSourceReservations;
 
     /**
-     * @var GetReservationsByMetadata
+     * @var GetOrderSourceReservationConfig
      */
-    private $getReservationsByMetadata;
-
-    /**
-     * @var EncodeMetaData
-     */
-    private $encodeMetaData;
+    private $getOrderSourceReservationConfig;
 
     public function __construct(
         OrderRepositoryInterface $orderRepository,
         SourceSelectionServiceInterface $sourceSelectionService,
-        InventoryRequestFromOrderFactory $inventoryRequestFromOrderFactory,
+        GetSourceSelectionRequestFromOrderFactory $getSourceSelectionRequestFromOrderFactory,
         RevertStockReservations $revertStockReservations,
         AppendSourceReservations $appendSourceReservations,
-        GetReservationsByMetadata $getReservationsByMetadata,
-        EncodeMetaData $encodeMetaData
+        GetOrderSourceReservationConfig $getOrderSourceReservationConfig
     ) {
         $this->orderRepository = $orderRepository;
         $this->sourceSelectionService = $sourceSelectionService;
-        $this->inventoryRequestFromOrderFactory = $inventoryRequestFromOrderFactory;
+        $this->getSourceSelectionRequestFromOrderFactory = $getSourceSelectionRequestFromOrderFactory;
         $this->revertStockReservations = $revertStockReservations;
         $this->appendSourceReservations = $appendSourceReservations;
-        $this->getReservationsByMetadata = $getReservationsByMetadata;
-        $this->encodeMetaData = $encodeMetaData;
+        $this->getOrderSourceReservationConfig = $getOrderSourceReservationConfig;
     }
 
     /**
-     * @param int    $orderId
+     * @param int $orderId
      * @param string $algorithmCode
      *
      * @return SourceReservationResultInterface
-     * @throws LocalizedException
+     * @throws CouldNotCreateSourceSelectionRequestFromOrder
+     * @throws CouldNotFullySelectSourcesForOrder
+     * @throws CouldNotSaveException
+     * @throws InputException
+     * @throws NoSuchEntityException
+     * @throws ValidationException
      */
     public function execute(int $orderId, string $algorithmCode): SourceReservationResultInterface
     {
         $order = $this->orderRepository->get($orderId);
 
-        $reservations = $this->getReservationsByMetadata->execute(
-            $this->encodeMetaData->execute(['order' => $orderId])
-        );
-
-        if ($reservations) {
-            throw new LocalizedException(__('Can not assign sources, source already selected for order %1', $orderId));
-        }
-
-        $sourceSelectionRequest = $this->inventoryRequestFromOrderFactory->create($order);
+        $sourceSelectionRequest = $this->getSourceSelectionRequestFromOrderFactory->create($order);
         $sourceSelectionResult = $this->sourceSelectionService->execute($sourceSelectionRequest, $algorithmCode);
 
-        if (!$sourceSelectionResult->isShippable()) {
-            throw new LocalizedException(__('No sources could be selected for order: %1', $orderId));
+        $allowPartialShipping = $this->getOrderSourceReservationConfig->allowPartialShipping();
+        if (!$allowPartialShipping && !$sourceSelectionResult->isShippable()) {
+            throw CouldNotFullySelectSourcesForOrder::create($orderId);
         }
 
         $this->revertStockReservations->execute($order, $sourceSelectionResult);
-        $sourceReservationResult = $this->appendSourceReservations->execute($order, $sourceSelectionResult);
-
-        return $sourceReservationResult;
+        return $this->appendSourceReservations->execute($order, $sourceSelectionResult);
     }
 }
