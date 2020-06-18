@@ -69,12 +69,18 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
         $this->invoiceOrder = $objectManager->get(InvoiceOrder::class);
         $this->searchCriteriaBuilder = $objectManager->get(SearchCriteriaBuilder::class);
         $this->orderRepository = $objectManager->get(OrderRepositoryInterface::class);
-        $this->moveReservationsFromStockToSource = $objectManager->get(MoveReservationsFromStockToSourceInterface::class);
-        $this->getDefaultSourceSelectionAlgorithmCode = $objectManager->get(GetDefaultSourceSelectionAlgorithmCode::class);
+        $this->moveReservationsFromStockToSource = $objectManager->get(
+            MoveReservationsFromStockToSourceInterface::class
+        );
+        $this->getDefaultSourceSelectionAlgorithmCode = $objectManager->get(
+            GetDefaultSourceSelectionAlgorithmCode::class
+        );
         $this->getStockReservationsQuantity = $objectManager->get(GetReservationsQuantity::class);
         $this->getSourceItemsBySku = $objectManager->get(GetSourceItemsBySku::class);
         $this->shipmentCreationArguments = $objectManager->get(ShipmentCreationArgumentsInterface::class);
-        $this->shipmentCreationArgumentsExtensionFactory = $objectManager->get(ShipmentCreationArgumentsExtensionInterfaceFactory::class);
+        $this->shipmentCreationArgumentsExtensionFactory = $objectManager->get(
+            ShipmentCreationArgumentsExtensionInterfaceFactory::class
+        );
         $this->objectManager = $objectManager;
     }
 
@@ -115,9 +121,7 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
     public function should_revert_source_reservations_on_credit_before_shipping_if_available(): void
     {
         // Have an invoiced order
-        $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter('increment_id', 'created_order_for_test')
-            ->create();
+        $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', 'created_order_for_test')->create();
         /** @var Order $order */
         $order = current($this->orderRepository->getList($searchCriteria)->getItems());
 
@@ -145,7 +149,6 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
         $result = $this->getReservationsQuantityList->execute(['simple']);
         self::assertEquals(0, $result['simple']['quantity']);
     }
-
 
     /**
      *
@@ -184,9 +187,7 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
     public function should_revert_source_reservations_on_partial_credit_before_shipping_if_available(): void
     {
         // Have an invoiced order
-        $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter('increment_id', 'created_order_for_test')
-            ->create();
+        $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', 'created_order_for_test')->create();
         /** @var Order $order */
         $order = current($this->orderRepository->getList($searchCriteria)->getItems());
 
@@ -249,14 +250,12 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
      *
      * @throws
      */
-    public function should_not_return_reservation_reverted_qty_to_source_or_stock_reservation() : void
+    public function should_not_return_reservation_reverted_qty_to_source_or_stock_reservation(): void
     {
         // Test that fully crediting an unshipped order does not affect source qtys or stock reservations
 
         // Have an invoiced order
-        $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter('increment_id', 'created_order_for_test')
-            ->create();
+        $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', 'created_order_for_test')->create();
         /** @var Order $order */
         $order = current($this->orderRepository->getList($searchCriteria)->getItems());
 
@@ -318,16 +317,14 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
      *
      * @throws
      */
-    public function should_correctly_revert_partially_shipped_order() : void
+    public function should_correctly_revert_partially_shipped_order(): void
     {
         // Test the following scenario: creditmemo created for full qty, but is partially shipped (and should be
         // returned to source) and one wasn't (should be reverted from reservation). Stock reservations should not be
         // affected (this should only change during source-assignment).
 
         // Have an invoiced order
-        $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter('increment_id', 'created_order_for_test')
-            ->create();
+        $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', 'created_order_for_test')->create();
         /** @var Order $order */
         $order = current($this->orderRepository->getList($searchCriteria)->getItems());
 
@@ -400,16 +397,14 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
      *
      * @throws
      */
-    public function should_correctly_revert_partially_shipped_order_without_return_to_stock() : void
+    public function should_correctly_revert_partially_shipped_order_without_return_to_stock(): void
     {
         // Test the following scenario: creditmemo created for full qty, but is partially shipped (and should be
         // returned to source) and one wasn't (should be reverted from reservation). Stock reservations should not be
         // affected (this should only change during source-assignment).
 
         // Have an invoiced order
-        $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter('increment_id', 'created_order_for_test')
-            ->create();
+        $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', 'created_order_for_test')->create();
         /** @var Order $order */
         $order = current($this->orderRepository->getList($searchCriteria)->getItems());
 
@@ -448,7 +443,6 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
         self::assertEquals($initialSourceReservationQty + 3, $currentSourceReservationQty);
     }
 
-
     /**
      *
      * @test
@@ -483,7 +477,7 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
      *
      * @throws
      */
-    public function should_correctly_revert_unshipped_order_without_return_to_stock_at_credit() : void
+    public function should_correctly_revert_unshipped_order_without_return_to_stock_at_credit(): void
     {
         // Test the following scenario: order is placed, sourced-assigned and then credited before being shipped (and
         // thus items never left the source)
@@ -491,9 +485,7 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
         // change during source-assignment).
 
         // Have an invoiced order
-        $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter('increment_id', 'created_order_for_test')
-            ->create();
+        $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', 'created_order_for_test')->create();
         /** @var Order $order */
         $order = current($this->orderRepository->getList($searchCriteria)->getItems());
 
@@ -560,16 +552,14 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
      *
      * @throws
      */
-    public function should_correctly_revert_uncaptured_processing_order_with_return_to_stock_at_cancel() : void
+    public function should_correctly_revert_uncaptured_processing_order_with_return_to_stock_at_cancel(): void
     {
         // Test the following scenario: order is placed, sourced-assigned and then cancelled before being shipped (and
         // thus items never left the source) and before being paid (authorised, but not captured).
         // Source reservations should be nullified and stock reservations should be refunded.
 
         // Have an invoiced order
-        $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter('increment_id', 'created_order_for_test')
-            ->create();
+        $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', 'created_order_for_test')->create();
         /** @var Order $order */
         $order = current($this->orderRepository->getList($searchCriteria)->getItems());
 
@@ -639,16 +629,14 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
      *
      * @throws
      */
-    public function should_correctly_revert_unauthorized_order_with_return_to_stock_at_cancel() : void
+    public function should_correctly_revert_unauthorized_order_with_return_to_stock_at_cancel(): void
     {
         // Test the following scenario: order is placed, sourced-assigned and then cancelled before being shipped (and
         // thus items never left the source) and before being paid (neither authorised nor captured).
         // Source reservations should be nullified and stock reservations should not be affected at all.
 
         // Have a pending order
-        $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter('increment_id', 'created_order_for_test')
-            ->create();
+        $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', 'created_order_for_test')->create();
         /** @var Order $order */
         $order = current($this->orderRepository->getList($searchCriteria)->getItems());
 
@@ -668,7 +656,7 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
         self::assertEquals(0, $currentStockReservationQty);
     }
 
-    private function getSummedSourceQty(string $sku) : float
+    private function getSummedSourceQty(string $sku): float
     {
         $sourceQty = 0;
         /** @var SourceItemInterface[] $items */
@@ -704,33 +692,28 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
 
         $arguments = $this->objectManager->create(CreditmemoCreationArgumentsInterface::class);
         $arguments->setExtensionAttributes(
-            $this->objectManager->create(CreditmemoCreationArgumentsExtensionFactory::class)
-                ->create());
+            $this->objectManager->create(CreditmemoCreationArgumentsExtensionFactory::class)->create()
+        );
         if ($returnToStock) {
             $arguments->getExtensionAttributes()->setReturnToStockItems($returnItems);
         }
 
-        $refundOrder->execute(
-            $order->getEntityId(),
-            $orderItems,
-            false,
-            false,
-            null,
-            $arguments
-        );
+        $refundOrder->execute($order->getEntityId(), $orderItems, false, false, null, $arguments);
     }
 
-    private function shipOrder(Order $order, string $sourceCode, ?float $overrideQty = null) : void
+    private function shipOrder(Order $order, string $sourceCode, ?float $overrideQty = null): void
     {
-        $sourceReservations = $this->objectManager->get(GetOrderSourceReservations::class)->execute((int)$order->getEntityId());
+        $sourceReservations = $this->objectManager
+            ->get(GetOrderSourceReservations::class)
+            ->execute((int) $order->getEntityId());
 
         /** @var SourceReservationResultItemInterface[][] $reservationsPerSource */
         $reservationsPerSource = [];
         foreach ($sourceReservations->getReservationItems() as $reservationItem) {
             $resSourceCode = $reservationItem->getReservation()->getSourceCode();
-            isset($reservationsPerSource[$resSourceCode]) ?
-                $reservationsPerSource[$resSourceCode][] = $reservationItem:
-                $reservationsPerSource[$resSourceCode] = [$reservationItem];
+            isset($reservationsPerSource[$resSourceCode])
+                ? ($reservationsPerSource[$resSourceCode][] = $reservationItem)
+                : ($reservationsPerSource[$resSourceCode] = [$reservationItem]);
         }
 
         $reservations = $reservationsPerSource[$sourceCode];
@@ -749,7 +732,9 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
         }
 
         $shipmentCreationArguments = $this->objectManager->get(ShipmentCreationArgumentsInterface::class);
-        $shipmentCreationArgumentsExtensionFactory = $this->objectManager->get(ShipmentCreationArgumentsExtensionInterfaceFactory::class);
+        $shipmentCreationArgumentsExtensionFactory = $this->objectManager->get(
+            ShipmentCreationArgumentsExtensionInterfaceFactory::class
+        );
         if ($shipmentCreationArguments->getExtensionAttributes() === null) {
             $shipmentCreationArguments->setExtensionAttributes($shipmentCreationArgumentsExtensionFactory->create());
         }
@@ -757,15 +742,6 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
         $shipmentCreationArguments->getExtensionAttributes()->setSourceCode($sourceCode);
 
         $shipOrder = $this->objectManager->create(ShipOrderInterface::class);
-        $shipOrder->execute(
-            $order->getEntityId(),
-            $shipItems,
-            false,
-            false,
-            null,
-            [],
-            [],
-            $shipmentCreationArguments
-        );
+        $shipOrder->execute($order->getEntityId(), $shipItems, false, false, null, [], [], $shipmentCreationArguments);
     }
 }

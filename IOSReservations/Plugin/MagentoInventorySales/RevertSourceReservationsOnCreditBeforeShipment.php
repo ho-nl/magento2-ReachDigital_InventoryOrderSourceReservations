@@ -137,8 +137,7 @@ class RevertSourceReservationsOnCreditBeforeShipment
         OrderInterface $order,
         array $itemsToRefund,
         array $returnToStockItems
-    ): void
-    {
+    ): void {
         $salesChannel = $this->getSalesChannelForOrder($order);
         $deductedItems = $this->getSourceDeductedOrderItems->execute($order, $returnToStockItems);
         $backItemsPerSource = $nullifications = [];
@@ -149,8 +148,8 @@ class RevertSourceReservationsOnCreditBeforeShipment
 
             $totalDeductedQty = $this->getTotalDeductedQty($item, $deductedItems);
             $processedQty = $item->getProcessedQuantity() - $totalDeductedQty;
-            $qtyBackToSource = ($processedQty > 0) ? $item->getQuantity() - $processedQty : $item->getQuantity();
-            $qtyToCompensate = ($qtyBackToSource > 0) ? $item->getQuantity() - $qtyBackToSource : $item->getQuantity();
+            $qtyBackToSource = $processedQty > 0 ? $item->getQuantity() - $processedQty : $item->getQuantity();
+            $qtyToCompensate = $qtyBackToSource > 0 ? $item->getQuantity() - $qtyBackToSource : $item->getQuantity();
 
             if ($qtyToCompensate > 0) {
                 // Compensate $qtyToCompensate on the available reservation qtys for each source
@@ -162,10 +161,12 @@ class RevertSourceReservationsOnCreditBeforeShipment
                         $this->sourceReservationBuilder->setSku($item->getSku());
                         $this->sourceReservationBuilder->setQuantity($revertableQty);
                         $this->sourceReservationBuilder->setSourceCode($sourceCode);
-                        $this->sourceReservationBuilder->setMetadata($this->encodeMetaData->execute([
-                            'order' => $order->getEntityId(),
-                            'refund_compensation' => null
-                        ]));
+                        $this->sourceReservationBuilder->setMetadata(
+                            $this->encodeMetaData->execute([
+                                'order' => $order->getEntityId(),
+                                'refund_compensation' => null,
+                            ])
+                        );
                         $nullifications[] = $this->sourceReservationBuilder->build();
                         $qtyToCompensate -= $revertableQty;
                     } else {
@@ -186,7 +187,7 @@ class RevertSourceReservationsOnCreditBeforeShipment
 
                     $backItemsPerSource[$sourceCode][] = $this->itemToDeductFactory->create([
                         'sku' => $deductedItem->getSku(),
-                        'qty' => -$backQty
+                        'qty' => -$backQty,
                     ]);
                     $qtyBackToSource -= $backQty;
                 }
@@ -197,7 +198,7 @@ class RevertSourceReservationsOnCreditBeforeShipment
         $salesEvent = $this->salesEventFactory->create([
             'type' => SalesEventInterface::EVENT_CREDITMEMO_CREATED,
             'objectType' => SalesEventInterface::OBJECT_TYPE_ORDER,
-            'objectId' => (string)$order->getEntityId()
+            'objectId' => (string) $order->getEntityId(),
         ]);
 
         foreach ($backItemsPerSource as $sourceCode => $items) {
@@ -205,7 +206,7 @@ class RevertSourceReservationsOnCreditBeforeShipment
                 'sourceCode' => $sourceCode,
                 'items' => $items,
                 'salesChannel' => $salesChannel,
-                'salesEvent' => $salesEvent
+                'salesEvent' => $salesEvent,
             ]);
             $this->sourceDeductionService->execute($sourceDeductionRequest);
         }
@@ -223,7 +224,8 @@ class RevertSourceReservationsOnCreditBeforeShipment
     private function getReservationsBySkuAndSource(OrderInterface $order): array
     {
         $reservations = $this->getReservationsByMetadata->execute(
-            $this->encodeMetaData->execute([ 'order' => $order->getEntityId() ]));
+            $this->encodeMetaData->execute(['order' => $order->getEntityId()])
+        );
 
         $reservationsBySkuAndSource = [];
         foreach ($reservations as $reservation) {
@@ -267,14 +269,14 @@ class RevertSourceReservationsOnCreditBeforeShipment
      */
     private function getSalesChannelForOrder(OrderInterface $order): SalesChannelInterface
     {
-        $websiteId = (int)$order->getStore()->getWebsiteId();
+        $websiteId = (int) $order->getStore()->getWebsiteId();
         $websiteCode = $this->websiteRepository->getById($websiteId)->getCode();
 
         return $this->salesChannelFactory->create([
             'data' => [
                 'type' => SalesChannelInterface::TYPE_WEBSITE,
-                'code' => $websiteCode
-            ]
+                'code' => $websiteCode,
+            ],
         ]);
     }
 

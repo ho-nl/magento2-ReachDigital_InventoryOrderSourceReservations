@@ -74,11 +74,8 @@ class PreventSourceItemQuantityDeductionOnCancellation
      * @throws \Magento\Framework\Exception\InputException
      * @throws \Magento\Framework\Validation\ValidationException
      */
-    public function aroundExecute(
-        CancelOrderItemObserver $subject,
-        \Closure $proceed,
-        Observer $observer
-    ) {
+    public function aroundExecute(CancelOrderItemObserver $subject, \Closure $proceed, Observer $observer)
+    {
         /** @var OrderItem $orderItem */
         $orderItem = $observer->getEvent()->getItem();
 
@@ -92,7 +89,8 @@ class PreventSourceItemQuantityDeductionOnCancellation
         ]);
 
         // Check if order item is already assigned
-        $select = $connection->select()
+        $select = $connection
+            ->select()
             ->from($reservationTable, [ReservationInterface::QUANTITY => 'SUM(' . ReservationInterface::QUANTITY . ')'])
             ->where(ReservationInterface::SKU . ' = ?', $orderItem->getSku())
             ->where('metadata = ?', $metadata)
@@ -115,10 +113,12 @@ class PreventSourceItemQuantityDeductionOnCancellation
             $this->sourceReservationBuilder->setSku($orderItem->getSku());
             $this->sourceReservationBuilder->setQuantity((float) -$sourceReservationQty);
             $this->sourceReservationBuilder->setSourceCode($sourceCode);
-            $this->sourceReservationBuilder->setMetadata($this->encodeMetaData->execute([
-                'order' => $orderItem->getOrderId(),
-                'refund_compensation' => null
-            ]));
+            $this->sourceReservationBuilder->setMetadata(
+                $this->encodeMetaData->execute([
+                    'order' => $orderItem->getOrderId(),
+                    'refund_compensation' => null,
+                ])
+            );
             $nullifications[] = $this->sourceReservationBuilder->build();
         }
 
@@ -133,7 +133,8 @@ class PreventSourceItemQuantityDeductionOnCancellation
     private function getReservationsBySource(int $orderId, string $sku): array
     {
         $reservations = $this->getReservationsByMetadata->execute(
-            $this->encodeMetaData->execute(['order' => $orderId]));
+            $this->encodeMetaData->execute(['order' => $orderId])
+        );
 
         $reservationsBySkuAndSource = [];
         foreach ($reservations as $reservation) {
@@ -141,7 +142,8 @@ class PreventSourceItemQuantityDeductionOnCancellation
             $sourceCode = $reservation->getSourceCode();
 
             $reservationsBySkuAndSource[$reservationSku] = $reservationsBySkuAndSource[$reservationSku] ?? [];
-            $reservationsBySkuAndSource[$reservationSku][$sourceCode] = $reservationsBySkuAndSource[$reservationSku][$sourceCode] ?? 0;
+            $reservationsBySkuAndSource[$reservationSku][$sourceCode] =
+                $reservationsBySkuAndSource[$reservationSku][$sourceCode] ?? 0;
             $reservationsBySkuAndSource[$reservationSku][$sourceCode] += $reservation->getQuantity();
         }
 

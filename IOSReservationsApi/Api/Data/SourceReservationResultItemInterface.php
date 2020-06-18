@@ -14,5 +14,5 @@ interface SourceReservationResultItemInterface
 {
     public function getReservation(): SourceReservationInterface;
 
-    public function getOrderItemId() : int;
+    public function getOrderItemId(): int;
 }

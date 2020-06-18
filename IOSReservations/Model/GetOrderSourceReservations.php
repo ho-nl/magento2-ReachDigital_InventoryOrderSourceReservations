@@ -20,7 +20,6 @@ use ReachDigital\ISReservationsApi\Api\Data\SourceReservationInterface;
 
 class GetOrderSourceReservations implements GetOrderSourceReservationsInterface
 {
-
     /**
      * @var GetReservationsByMetadata
      */
@@ -64,23 +63,27 @@ class GetOrderSourceReservations implements GetOrderSourceReservationsInterface
      * @param int $orderId
      * @return SourceReservationResultInterface
      */
-    public function execute(int $orderId): ? SourceReservationResultInterface
+    public function execute(int $orderId): ?SourceReservationResultInterface
     {
         $reservations = $this->getReservationsByMetadata->execute(
-            $this->encodeMetaData->execute([ 'order' => $orderId]));
+            $this->encodeMetaData->execute(['order' => $orderId])
+        );
 
-        $resultItems = array_map(function(SourceReservationInterface $reservation): SourceReservationResultItemInterface {
+        $resultItems = array_map(function (
+            SourceReservationInterface $reservation
+        ): SourceReservationResultItemInterface {
             $metaData = $this->decodeMetaData->execute($reservation->getMetadata());
 
             return $this->sourceReservationResultItemFactory->create([
                 'reservation' => $reservation,
-                'orderItemId' => (int) $metaData['order_item']
+                'orderItemId' => (int) $metaData['order_item'],
             ]);
-        }, $reservations);
+        },
+        $reservations);
 
         return $this->sourceReservationResultFactory->create([
             'reservationItems' => $resultItems,
-            'orderId' => $orderId
+            'orderId' => $orderId,
         ]);
     }
 }

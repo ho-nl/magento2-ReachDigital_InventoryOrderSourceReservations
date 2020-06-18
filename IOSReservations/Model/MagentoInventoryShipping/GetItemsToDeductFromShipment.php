@@ -65,10 +65,10 @@ class GetItemsToDeductFromShipment extends \Magento\InventoryShipping\Model\GetI
         $this->itemToDeduct = $itemToDeduct;
         $this->getSkuFromOrderItem = $getSkuFromOrderItem;
 
-        $this->orderItemRepository = $orderItemRepository ?:
-            ObjectManager::getInstance()->get(OrderItemRepositoryInterface::class);
-        $this->searchCriteriaBuilder = $searchCriteriaBuilder ?:
-            ObjectManager::getInstance()->get(SearchCriteriaBuilder::class);
+        $this->orderItemRepository =
+            $orderItemRepository ?: ObjectManager::getInstance()->get(OrderItemRepositoryInterface::class);
+        $this->searchCriteriaBuilder =
+            $searchCriteriaBuilder ?: ObjectManager::getInstance()->get(SearchCriteriaBuilder::class);
     }
 
     /**
@@ -99,7 +99,7 @@ class GetItemsToDeductFromShipment extends \Magento\InventoryShipping\Model\GetI
                 $qty = $this->castQty($orderItem, $shipmentItem->getQty());
                 $itemsToShip[] = $this->itemToDeduct->create([
                     'sku' => $itemSku,
-                    'qty' => $qty
+                    'qty' => $qty,
                 ]);
             }
         }
@@ -125,7 +125,7 @@ class GetItemsToDeductFromShipment extends \Magento\InventoryShipping\Model\GetI
         foreach ($processingItems as $sku => $qty) {
             $groupedItems[] = $this->itemToDeduct->create([
                 'sku' => $sku,
-                'qty' => $qty
+                'qty' => $qty,
             ]);
         }
 
@@ -156,7 +156,7 @@ class GetItemsToDeductFromShipment extends \Magento\InventoryShipping\Model\GetI
                     $itemSku = $this->getSkuFromOrderItem->execute($item);
                     $itemsToShip[] = $this->itemToDeduct->create([
                         'sku' => $itemSku,
-                        'qty' => $qty
+                        'qty' => $qty,
                     ]);
                     continue;
                 }
@@ -166,7 +166,7 @@ class GetItemsToDeductFromShipment extends \Magento\InventoryShipping\Model\GetI
                 $qty = $this->castQty($orderItem, $shipmentItem->getQty());
                 $itemsToShip[] = $this->itemToDeduct->create([
                     'sku' => $itemSku,
-                    'qty' => $qty
+                    'qty' => $qty,
                 ]);
             }
         }
@@ -182,9 +182,9 @@ class GetItemsToDeductFromShipment extends \Magento\InventoryShipping\Model\GetI
     private function castQty(OrderItem $item, $qty)
     {
         if ($item->getIsQtyDecimal()) {
-            $qty = (double)$qty;
+            $qty = (float) $qty;
         } else {
-            $qty = (int)$qty;
+            $qty = (int) $qty;
         }
 
         return $qty > 0 ? $qty : 0;

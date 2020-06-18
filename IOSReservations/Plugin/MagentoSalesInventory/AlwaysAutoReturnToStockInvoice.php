@@ -45,7 +45,13 @@ class AlwaysAutoReturnToStockInvoice extends ReturnToStockInvoice
         \Magento\Sales\Api\InvoiceRepositoryInterface $invoiceRepository,
         \Magento\CatalogInventory\Api\StockConfigurationInterface $stockConfiguration
     ) {
-        parent::__construct($returnProcessor, $creditmemoRepository, $orderRepository, $invoiceRepository, $stockConfiguration);
+        parent::__construct(
+            $returnProcessor,
+            $creditmemoRepository,
+            $orderRepository,
+            $invoiceRepository,
+            $stockConfiguration
+        );
         $this->returnProcessor = $returnProcessor;
         $this->creditmemoRepository = $creditmemoRepository;
         $this->orderRepository = $orderRepository;
@@ -75,14 +81,15 @@ class AlwaysAutoReturnToStockInvoice extends ReturnToStockInvoice
         $appendComment = false,
         \Magento\Sales\Api\Data\CreditmemoCommentCreationInterface $comment = null,
         \Magento\Sales\Api\Data\CreditmemoCreationArgumentsInterface $arguments = null
-    ) : int {
+    ): int {
         $invoice = $this->invoiceRepository->get($invoiceId);
         $order = $this->orderRepository->get($invoice->getOrderId());
 
         $returnToStockItems = [];
-        if ($arguments !== null
-            && $arguments->getExtensionAttributes() !== null
-            && $arguments->getExtensionAttributes()->getReturnToStockItems() !== null
+        if (
+            $arguments !== null &&
+            $arguments->getExtensionAttributes() !== null &&
+            $arguments->getExtensionAttributes()->getReturnToStockItems() !== null
         ) {
             $returnToStockItems = $arguments->getExtensionAttributes()->getReturnToStockItems();
         }

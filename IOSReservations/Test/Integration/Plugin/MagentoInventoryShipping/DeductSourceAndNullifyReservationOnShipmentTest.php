@@ -24,7 +24,7 @@ use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource;
 use ReachDigital\IOSReservations\Model\SourceReservationResult\SourceReservationResultItem;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface;
 use ReachDigital\ISReservations\Model\MetaData\DecodeMetaData;
-use \Magento\Sales\Api\Data\ShipmentCreationArgumentsExtensionInterfaceFactory;
+use Magento\Sales\Api\Data\ShipmentCreationArgumentsExtensionInterfaceFactory;
 use ReachDigital\ISReservationsApi\Model\GetSourceReservationsQuantityInterface;
 
 class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
@@ -76,21 +76,33 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
 
     protected function setUp()
     {
-        $this->searchCriteriaBuilder                              = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
-        $this->orderRepository                                    = Bootstrap::getObjectManager()->get(OrderRepositoryInterface::class);
-        $this->invoiceOrder                                       = Bootstrap::getObjectManager()->get(InvoiceOrderInterface::class);
-        $this->moveReservationsFromStockToSource                  = Bootstrap::getObjectManager()->get(MoveReservationsFromStockToSource::class);
-        $this->getDefaultSourceSelectionAlgorithmCode = Bootstrap::getObjectManager()->get(GetDefaultSourceSelectionAlgorithmCodeInterface::class);
+        $this->searchCriteriaBuilder = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
+        $this->orderRepository = Bootstrap::getObjectManager()->get(OrderRepositoryInterface::class);
+        $this->invoiceOrder = Bootstrap::getObjectManager()->get(InvoiceOrderInterface::class);
+        $this->moveReservationsFromStockToSource = Bootstrap::getObjectManager()->get(
+            MoveReservationsFromStockToSource::class
+        );
+        $this->getDefaultSourceSelectionAlgorithmCode = Bootstrap::getObjectManager()->get(
+            GetDefaultSourceSelectionAlgorithmCodeInterface::class
+        );
         $this->getOrderSourceReservations = Bootstrap::getObjectManager()->get(GetOrderSourceReservations::class);
         $this->shipOrder = Bootstrap::getObjectManager()->get(ShipOrderInterface::class);
         $this->getProductSalableQty = Bootstrap::getObjectManager()->get(GetProductSalableQty::class);
         $this->decodeMetaData = Bootstrap::getObjectManager()->get(DecodeMetaData::class);
-        $this->orderConverter                                     = Bootstrap::getObjectManager()->get(\Magento\Sales\Model\Convert\Order::class);
-        $this->shipmentCreationArguments                          = Bootstrap::getObjectManager()->get(ShipmentCreationArgumentsInterface::class);
-        $this->shipmentCreationArgumentsExtensionInterfaceFactory = Bootstrap::getObjectManager()->get(ShipmentCreationArgumentsExtensionInterfaceFactory::class);
-        $this->getSourceItemBySourceCodeAndSku                    = Bootstrap::getObjectManager()->get(GetSourceItemBySourceCodeAndSku::class);
-        $this->getStockReservationsQuantity                       = Bootstrap::getObjectManager()->get(GetReservationsQuantity::class);
-        $this->getSourceReservationsQuantity                      = Bootstrap::getObjectManager()->get(GetSourceReservationsQuantityInterface::class);
+        $this->orderConverter = Bootstrap::getObjectManager()->get(\Magento\Sales\Model\Convert\Order::class);
+        $this->shipmentCreationArguments = Bootstrap::getObjectManager()->get(
+            ShipmentCreationArgumentsInterface::class
+        );
+        $this->shipmentCreationArgumentsExtensionInterfaceFactory = Bootstrap::getObjectManager()->get(
+            ShipmentCreationArgumentsExtensionInterfaceFactory::class
+        );
+        $this->getSourceItemBySourceCodeAndSku = Bootstrap::getObjectManager()->get(
+            GetSourceItemBySourceCodeAndSku::class
+        );
+        $this->getStockReservationsQuantity = Bootstrap::getObjectManager()->get(GetReservationsQuantity::class);
+        $this->getSourceReservationsQuantity = Bootstrap::getObjectManager()->get(
+            GetSourceReservationsQuantityInterface::class
+        );
     }
 
     /**
@@ -124,11 +136,9 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product.php
      * @throws \Magento\Framework\Exception\LocalizedException
      */
-    public function should_nullify_the_source_instead_of_the_stock() : void
+    public function should_nullify_the_source_instead_of_the_stock(): void
     {
-        $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter('increment_id', 'created_order_for_test')
-            ->create();
+        $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', 'created_order_for_test')->create();
         /** @var Order $order */
         $order = current($this->orderRepository->getList($searchCriteria)->getItems());
 
@@ -165,16 +175,19 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
         $initialSourceReservationsQty = [];
         foreach ($sourceReservations->getReservationItems() as $reservationItem) {
             $sourceCode = $reservationItem->getReservation()->getSourceCode();
-            $initialSourceReservationsQty[$sourceCode] = $this->getSourceReservationsQuantity->execute('simple', $sourceCode);
+            $initialSourceReservationsQty[$sourceCode] = $this->getSourceReservationsQuantity->execute(
+                'simple',
+                $sourceCode
+            );
         }
         $initialSourceReservationsQty = array_sum($initialSourceReservationsQty);
 
         $reservationsPerSource = [];
         foreach ($sourceReservations->getReservationItems() as $reservationItem) {
             $sourceCode = $reservationItem->getReservation()->getSourceCode();
-            isset($reservationsPerSource[$sourceCode]) ?
-                $reservationsPerSource[$sourceCode][] = $reservationItem:
-                $reservationsPerSource[$sourceCode] = [$reservationItem];
+            isset($reservationsPerSource[$sourceCode])
+                ? ($reservationsPerSource[$sourceCode][] = $reservationItem)
+                : ($reservationsPerSource[$sourceCode] = [$reservationItem]);
         }
 
         foreach ($reservationsPerSource as $sourceCode => $items) {
@@ -189,7 +202,9 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
             }
 
             if ($this->shipmentCreationArguments->getExtensionAttributes() === null) {
-                $this->shipmentCreationArguments->setExtensionAttributes($this->shipmentCreationArgumentsExtensionInterfaceFactory->create());
+                $this->shipmentCreationArguments->setExtensionAttributes(
+                    $this->shipmentCreationArgumentsExtensionInterfaceFactory->create()
+                );
             }
 
             $this->shipmentCreationArguments->getExtensionAttributes()->setSourceCode($sourceCode);
@@ -217,7 +232,10 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
         $currentSourceReservationsQty = [];
         foreach ($sourceReservations->getReservationItems() as $reservationItem) {
             $sourceCode = $reservationItem->getReservation()->getSourceCode();
-            $currentSourceReservationsQty[$sourceCode] = $this->getSourceReservationsQuantity->execute('simple', $sourceCode);
+            $currentSourceReservationsQty[$sourceCode] = $this->getSourceReservationsQuantity->execute(
+                'simple',
+                $sourceCode
+            );
         }
         $currentSourceReservationsQty = array_sum($currentSourceReservationsQty);
         self::assertEquals($initialSourceReservationsQty + 3, $currentSourceReservationsQty);

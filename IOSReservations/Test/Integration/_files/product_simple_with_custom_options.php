@@ -16,7 +16,8 @@ $categoryLinkManagement = $objectManager->create(\Magento\Catalog\Api\CategoryLi
 /** @var $product \Magento\Catalog\Model\Product */
 $product = $objectManager->create(\Magento\Catalog\Model\Product::class);
 $product->isObjectNew(true);
-$product->setTypeId(\Magento\Catalog\Model\Product\Type::TYPE_SIMPLE)
+$product
+    ->setTypeId(\Magento\Catalog\Model\Product\Type::TYPE_SIMPLE)
     ->setAttributeSetId(4)
     ->setWebsiteIds([1])
     ->setName('Simple Product')
@@ -31,11 +32,10 @@ $product->setTypeId(\Magento\Catalog\Model\Product\Type::TYPE_SIMPLE)
     ->setMetaDescription('meta description')
     ->setVisibility(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_BOTH)
     ->setStatus(\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED)
-    ->setStockData(
-        [
-            'use_config_manage_stock' => 1
-        ]
-    )->setCanSaveCustomOptions(true)
+    ->setStockData([
+        'use_config_manage_stock' => 1,
+    ])
+    ->setCanSaveCustomOptions(true)
     ->setHasOptions(true);
 
 $oldOptions = [
@@ -60,7 +60,7 @@ $oldOptions = [
                 'price_type' => 'fixed',
                 'sku' => '3-2-select',
             ],
-        ]
+        ],
     ],
     [
         'previous_group' => 'select',
@@ -83,8 +83,8 @@ $oldOptions = [
                 'price_type' => 'fixed',
                 'sku' => '4-2-radio',
             ],
-        ]
-    ]
+        ],
+    ],
 ];
 
 $options = [];
@@ -106,7 +106,4 @@ $product->setOptions($options);
 $productRepository = $objectManager->create(\Magento\Catalog\Api\ProductRepositoryInterface::class);
 $productRepository->save($product, true);
 
-$categoryLinkManagement->assignProductToCategories(
-    $product->getSku(),
-    [2]
-);
+$categoryLinkManagement->assignProductToCategories($product->getSku(), [2]);

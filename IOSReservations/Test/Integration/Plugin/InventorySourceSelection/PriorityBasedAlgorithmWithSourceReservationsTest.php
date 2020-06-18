@@ -149,7 +149,6 @@ class PriorityBasedAlgorithmWithSourceReservationsTest extends TestCase
         self::assertCount(1, $selectionResult->getSourceSelectionItems());
     }
 
-
     private function requestItems(int $stockId, string $sku, int $qty): SourceSelectionResultInterface
     {
         /** @var ItemRequestInterface[] $requestItems */
@@ -183,4 +182,3 @@ class PriorityBasedAlgorithmWithSourceReservationsTest extends TestCase
         $this->appendReservations->execute([$reservation]);
     }
 }
-

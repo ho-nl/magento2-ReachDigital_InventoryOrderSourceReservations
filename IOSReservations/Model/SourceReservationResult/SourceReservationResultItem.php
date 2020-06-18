@@ -12,7 +12,6 @@ use ReachDigital\ISReservationsApi\Api\Data\SourceReservationInterface;
 
 class SourceReservationResultItem implements SourceReservationResultItemInterface
 {
-
     /**
      * @var SourceReservationInterface
      */
@@ -23,10 +22,8 @@ class SourceReservationResultItem implements SourceReservationResultItemInterfac
      */
     private $orderItemId;
 
-    public function __construct(
-        SourceReservationInterface $reservation,
-        int $orderItemId
-    ) {
+    public function __construct(SourceReservationInterface $reservation, int $orderItemId)
+    {
         $this->reservation = $reservation;
         $this->orderItemId = $orderItemId;
     }

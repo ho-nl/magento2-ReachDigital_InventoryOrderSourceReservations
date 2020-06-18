@@ -23,9 +23,7 @@ $orderRepository = Bootstrap::getObjectManager()->get(OrderRepositoryInterface::
 $orderManagement = Bootstrap::getObjectManager()->get(OrderManagementInterface::class);
 /** @var SearchCriteriaBuilder $searchCriteriaBuilder */
 $searchCriteriaBuilder = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
-$searchCriteria = $searchCriteriaBuilder
-    ->addFilter('increment_id', 'test_order_bundle_1')
-    ->create();
+$searchCriteria = $searchCriteriaBuilder->addFilter('increment_id', 'test_order_bundle_1')->create();
 /** @var OrderInterface $order */
 $order = current($orderRepository->getList($searchCriteria)->getItems());
 if ($order) {

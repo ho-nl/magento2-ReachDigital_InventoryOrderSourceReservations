@@ -101,13 +101,13 @@ class PriorityBasedAlgorithmWithSourceReservations implements SourceSelectionInt
                     continue;
                 }
 
-                $sourceItemQty = $sourceItem->getQuantity() + $this->getSourceReservationsQuantity->execute(
-                    $item->getSku(), $source->getSourceCode()
-                );
+                $sourceItemQty =
+                    $sourceItem->getQuantity() +
+                    $this->getSourceReservationsQuantity->execute($item->getSku(), $source->getSourceCode());
                 $qtyToDeduct = min($sourceItemQty, $qtyToDeliver);
 
                 // check if source has some qty of SKU, so it's possible to take them into account
-                if ($this->isZero((float)$sourceItemQty)) {
+                if ($this->isZero((float) $sourceItemQty)) {
                     continue;
                 }
 
@@ -115,7 +115,7 @@ class PriorityBasedAlgorithmWithSourceReservations implements SourceSelectionInt
                     'sourceCode' => $sourceItem->getSourceCode(),
                     'sku' => $itemSku,
                     'qtyToDeduct' => $qtyToDeduct,
-                    'qtyAvailable' => $sourceItemQty
+                    'qtyAvailable' => $sourceItemQty,
                 ]);
 
                 $qtyToDeliver -= $qtyToDeduct;
@@ -131,12 +131,10 @@ class PriorityBasedAlgorithmWithSourceReservations implements SourceSelectionInt
             }
         }
 
-        return $this->sourceSelectionResultFactory->create(
-            [
-                'sourceItemSelections' => $sourceItemSelections,
-                'isShippable' => $isShippable
-            ]
-        );
+        return $this->sourceSelectionResultFactory->create([
+            'sourceItemSelections' => $sourceItemSelections,
+            'isShippable' => $isShippable,
+        ]);
     }
 
     /**
@@ -187,4 +185,3 @@ class PriorityBasedAlgorithmWithSourceReservations implements SourceSelectionInt
         return $sourceItemsResult->getTotalCount() > 0 ? current($sourceItemsResult->getItems()) : null;
     }
 }
-

@@ -12,7 +12,6 @@ use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface;
 
 interface MoveReservationsFromStockToSourceInterface
 {
-
     /**
      * @param int    $orderId
      * @param string $algorithmCode

@@ -21,7 +21,6 @@ use ReachDigital\IOSReservationsPriorityApi\Api\OrderSelectionServiceInterface;
 
 class ByDateCreatedAlgorithmTest extends \PHPUnit\Framework\TestCase
 {
-
     /** @var SearchCriteriaBuilder */
     private $searchCriteriaBuilder;
 
@@ -53,8 +52,12 @@ class ByDateCreatedAlgorithmTest extends \PHPUnit\Framework\TestCase
         $this->invoiceOrder = Bootstrap::getObjectManager()->get(InvoiceOrderInterface::class);
         $this->orderSelectionService = Bootstrap::getObjectManager()->get(OrderSelectionServiceInterface::class);
         $this->sourceSelectionService = Bootstrap::getObjectManager()->get(SourceSelectionService::class);
-        $this->moveReservationsFromStockToSource = Bootstrap::getObjectManager()->get(MoveReservationsFromStockToSource::class);
-        $this->getDefaultSourceSelectionAlgorithmCode = Bootstrap::getObjectManager()->get(GetDefaultSourceSelectionAlgorithmCode::class);
+        $this->moveReservationsFromStockToSource = Bootstrap::getObjectManager()->get(
+            MoveReservationsFromStockToSource::class
+        );
+        $this->getDefaultSourceSelectionAlgorithmCode = Bootstrap::getObjectManager()->get(
+            GetDefaultSourceSelectionAlgorithmCode::class
+        );
         $this->getOrderSourceReservations = Bootstrap::getObjectManager()->get(GetOrderSourceReservations::class);
     }
 
@@ -74,9 +77,7 @@ class ByDateCreatedAlgorithmTest extends \PHPUnit\Framework\TestCase
      */
     public function should_retrieve_unsourced_orders_by_date(): void
     {
-        $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter('increment_id', 'test_order_bundle_1')
-            ->create();
+        $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', 'test_order_bundle_1')->create();
         /** @var OrderInterface $order */
         $order = current($this->orderRepository->getList($searchCriteria)->getItems());
         $this->invoiceOrder->execute($order->getEntityId());
@@ -124,9 +125,7 @@ class ByDateCreatedAlgorithmTest extends \PHPUnit\Framework\TestCase
         // Fixture: have an unsourced order
 
         // Invoice order so it reaches processing state
-        $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter('increment_id', 'created_order_for_test')
-            ->create();
+        $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', 'created_order_for_test')->create();
         /** @var OrderInterface $order */
         $order = current($this->orderRepository->getList($searchCriteria)->getItems());
         $this->invoiceOrder->execute($order->getEntityId());
@@ -140,7 +139,7 @@ class ByDateCreatedAlgorithmTest extends \PHPUnit\Framework\TestCase
             (int) $order->getEntityId(),
             $this->getDefaultSourceSelectionAlgorithmCode->execute()
         );
-        $sourceReservations = $this->getOrderSourceReservations->execute((int)$order->getEntityId());
+        $sourceReservations = $this->getOrderSourceReservations->execute((int) $order->getEntityId());
         $items = $sourceReservations->getReservationItems();
         self::assertCount(2, $items);
 

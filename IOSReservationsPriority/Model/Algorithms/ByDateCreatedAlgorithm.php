@@ -20,7 +20,6 @@ use ReachDigital\IOSReservationsPriorityApi\Model\OrderSelectionInterface;
 
 class ByDateCreatedAlgorithm implements OrderSelectionInterface
 {
-
     /**
      * @var OrderRepositoryInterface
      */
