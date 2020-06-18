@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace IOSReservations\Test\Integration\Plugin\InventorySourceSelection;
 
+use Magento\InventoryReservations\Model\ResourceModel\GetReservationsQuantity;
+use Magento\InventoryReservationsApi\Model\GetReservationsQuantityInterface;
 use Magento\InventorySourceSelection\Model\Algorithms\PriorityBasedAlgorithm;
 use Magento\InventorySourceSelectionApi\Api\Data\InventoryRequestInterfaceFactory;
 use Magento\InventorySourceSelectionApi\Api\Data\ItemRequestInterface;
@@ -15,6 +17,7 @@ use Magento\InventorySourceSelectionApi\Api\Data\ItemRequestInterfaceFactory;
 use Magento\InventorySourceSelectionApi\Api\Data\SourceSelectionResultInterface;
 use Magento\InventorySourceSelectionApi\Api\SourceSelectionServiceInterface;
 use Magento\TestFramework\Helper\Bootstrap;
+use Magento\TestFramework\ObjectManager;
 use PHPUnit\Framework\TestCase;
 use ReachDigital\ISReservations\Model\AppendSourceReservations;
 use ReachDigital\ISReservations\Model\SourceReservationBuilder;
@@ -41,11 +44,18 @@ class PriorityBasedAlgorithmWithSourceReservationsTest extends TestCase
 
     public function setUp()
     {
-        $this->sourceReservationBuilder = Bootstrap::getObjectManager()->get(SourceReservationBuilder::class);
-        $this->appendReservations = Bootstrap::getObjectManager()->get(AppendSourceReservations::class);
-        $this->itemRequestFactory = Bootstrap::getObjectManager()->get(ItemRequestInterfaceFactory::class);
-        $this->inventoryRequestFactory = Bootstrap::getObjectManager()->get(InventoryRequestInterfaceFactory::class);
-        $this->sourceSelectionService = Bootstrap::getObjectManager()->get(SourceSelectionServiceInterface::class);
+        /** @var ObjectManager $objectManager */
+        $objectManager = Bootstrap::getObjectManager();
+        $objectManager->addSharedInstance(
+            $objectManager->get(GetReservationsQuantity::class),
+            GetReservationsQuantityInterface::class
+        );
+
+        $this->sourceReservationBuilder = $objectManager->get(SourceReservationBuilder::class);
+        $this->appendReservations = $objectManager->get(AppendSourceReservations::class);
+        $this->itemRequestFactory = $objectManager->get(ItemRequestInterfaceFactory::class);
+        $this->inventoryRequestFactory = $objectManager->get(InventoryRequestInterfaceFactory::class);
+        $this->sourceSelectionService = $objectManager->get(SourceSelectionServiceInterface::class);
     }
 
     /**

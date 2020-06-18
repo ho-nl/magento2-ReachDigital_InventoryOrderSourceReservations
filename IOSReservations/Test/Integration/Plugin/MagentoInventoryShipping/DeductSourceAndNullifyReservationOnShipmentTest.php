@@ -9,6 +9,7 @@ namespace ReachDigital\IOSReservations\Test\Integration\Plugin\InventorySales;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\InventoryIndexer\Indexer\SourceItem\SourceItemIndexer;
 use Magento\InventoryReservations\Model\ResourceModel\GetReservationsQuantity;
+use Magento\InventoryReservationsApi\Model\GetReservationsQuantityInterface;
 use Magento\InventorySales\Model\GetProductSalableQty;
 use Magento\InventorySourceDeductionApi\Model\GetSourceItemBySourceCodeAndSku;
 use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
@@ -18,6 +19,7 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\ShipOrderInterface;
 use Magento\Sales\Model\Order;
 use Magento\TestFramework\Helper\Bootstrap;
+use Magento\TestFramework\ObjectManager;
 use PHPUnit\Framework\TestCase;
 use ReachDigital\IOSReservations\Model\GetOrderSourceReservations;
 use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource;
@@ -76,33 +78,32 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
 
     protected function setUp()
     {
-        $this->searchCriteriaBuilder = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
-        $this->orderRepository = Bootstrap::getObjectManager()->get(OrderRepositoryInterface::class);
-        $this->invoiceOrder = Bootstrap::getObjectManager()->get(InvoiceOrderInterface::class);
-        $this->moveReservationsFromStockToSource = Bootstrap::getObjectManager()->get(
-            MoveReservationsFromStockToSource::class
+        /** @var ObjectManager $objectManager */
+        $objectManager = Bootstrap::getObjectManager();
+        $objectManager->addSharedInstance(
+            $objectManager->get(GetReservationsQuantity::class),
+            GetReservationsQuantityInterface::class
         );
-        $this->getDefaultSourceSelectionAlgorithmCode = Bootstrap::getObjectManager()->get(
+
+        $this->searchCriteriaBuilder = $objectManager->get(SearchCriteriaBuilder::class);
+        $this->orderRepository = $objectManager->get(OrderRepositoryInterface::class);
+        $this->invoiceOrder = $objectManager->get(InvoiceOrderInterface::class);
+        $this->moveReservationsFromStockToSource = $objectManager->get(MoveReservationsFromStockToSource::class);
+        $this->getDefaultSourceSelectionAlgorithmCode = $objectManager->get(
             GetDefaultSourceSelectionAlgorithmCodeInterface::class
         );
-        $this->getOrderSourceReservations = Bootstrap::getObjectManager()->get(GetOrderSourceReservations::class);
-        $this->shipOrder = Bootstrap::getObjectManager()->get(ShipOrderInterface::class);
-        $this->getProductSalableQty = Bootstrap::getObjectManager()->get(GetProductSalableQty::class);
-        $this->decodeMetaData = Bootstrap::getObjectManager()->get(DecodeMetaData::class);
-        $this->orderConverter = Bootstrap::getObjectManager()->get(\Magento\Sales\Model\Convert\Order::class);
-        $this->shipmentCreationArguments = Bootstrap::getObjectManager()->get(
-            ShipmentCreationArgumentsInterface::class
-        );
-        $this->shipmentCreationArgumentsExtensionInterfaceFactory = Bootstrap::getObjectManager()->get(
+        $this->getOrderSourceReservations = $objectManager->get(GetOrderSourceReservations::class);
+        $this->shipOrder = $objectManager->get(ShipOrderInterface::class);
+        $this->getProductSalableQty = $objectManager->get(GetProductSalableQty::class);
+        $this->decodeMetaData = $objectManager->get(DecodeMetaData::class);
+        $this->orderConverter = $objectManager->get(\Magento\Sales\Model\Convert\Order::class);
+        $this->shipmentCreationArguments = $objectManager->get(ShipmentCreationArgumentsInterface::class);
+        $this->shipmentCreationArgumentsExtensionInterfaceFactory = $objectManager->get(
             ShipmentCreationArgumentsExtensionInterfaceFactory::class
         );
-        $this->getSourceItemBySourceCodeAndSku = Bootstrap::getObjectManager()->get(
-            GetSourceItemBySourceCodeAndSku::class
-        );
-        $this->getStockReservationsQuantity = Bootstrap::getObjectManager()->get(GetReservationsQuantity::class);
-        $this->getSourceReservationsQuantity = Bootstrap::getObjectManager()->get(
-            GetSourceReservationsQuantityInterface::class
-        );
+        $this->getSourceItemBySourceCodeAndSku = $objectManager->get(GetSourceItemBySourceCodeAndSku::class);
+        $this->getStockReservationsQuantity = $objectManager->get(GetReservationsQuantity::class);
+        $this->getSourceReservationsQuantity = $objectManager->get(GetSourceReservationsQuantityInterface::class);
     }
 
     /**

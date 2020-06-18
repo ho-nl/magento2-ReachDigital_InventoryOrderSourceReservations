@@ -9,11 +9,14 @@ declare(strict_types=1);
 namespace ReachDigital\IOSReservationsPriority\Test\Integration\Model;
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\InventoryReservations\Model\ResourceModel\GetReservationsQuantity;
+use Magento\InventoryReservationsApi\Model\GetReservationsQuantityInterface;
 use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\InvoiceOrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\TestFramework\Helper\Bootstrap;
+use Magento\TestFramework\ObjectManager;
 use ReachDigital\IOSReservations\Model\GetOrderSourceReservations;
 use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource;
 use ReachDigital\IOSReservations\Model\SourceReservationResult\SourceReservationResultItem;
@@ -40,16 +43,21 @@ class GetOrderSourceReservationsTest extends \PHPUnit\Framework\TestCase
 
     protected function setUp()
     {
-        $this->searchCriteriaBuilder = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
-        $this->orderRepository = Bootstrap::getObjectManager()->get(OrderRepositoryInterface::class);
-        $this->invoiceOrder = Bootstrap::getObjectManager()->get(InvoiceOrderInterface::class);
-        $this->moveReservationsFromStockToSource = Bootstrap::getObjectManager()->get(
-            MoveReservationsFromStockToSource::class
+        /** @var ObjectManager $objectManager */
+        $objectManager = Bootstrap::getObjectManager();
+        $objectManager->addSharedInstance(
+            $objectManager->get(GetReservationsQuantity::class),
+            GetReservationsQuantityInterface::class
         );
-        $this->getDefaultSourceSelectionAlgorithmCode = Bootstrap::getObjectManager()->get(
+
+        $this->searchCriteriaBuilder = $objectManager->get(SearchCriteriaBuilder::class);
+        $this->orderRepository = $objectManager->get(OrderRepositoryInterface::class);
+        $this->invoiceOrder = $objectManager->get(InvoiceOrderInterface::class);
+        $this->moveReservationsFromStockToSource = $objectManager->get(MoveReservationsFromStockToSource::class);
+        $this->getDefaultSourceSelectionAlgorithmCode = $objectManager->get(
             GetDefaultSourceSelectionAlgorithmCodeInterface::class
         );
-        $this->getOrderSourceReservations = Bootstrap::getObjectManager()->get(GetOrderSourceReservations::class);
+        $this->getOrderSourceReservations = $objectManager->get(GetOrderSourceReservations::class);
     }
 
     /**
