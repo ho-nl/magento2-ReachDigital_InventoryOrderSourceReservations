@@ -85,6 +85,10 @@ class AppendSourceReservations
             return $item->getReservation();
         }, $result->getReservationItems());
 
+        if (!$reservations) {
+            return $result;
+        }
+
         $this->appendReservations->execute($reservations);
 
         return $result;

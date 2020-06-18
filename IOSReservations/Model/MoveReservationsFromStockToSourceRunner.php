@@ -9,8 +9,11 @@ declare(strict_types=1);
 namespace ReachDigital\IOSReservations\Model;
 
 use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
+use Psr\Log\LoggerInterface;
 use ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceInterface;
 use ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceRunnerInterface;
+use ReachDigital\IOSReservationsApi\Exception\CouldNotCreateSourceSelectionRequestFromOrder;
+use ReachDigital\IOSReservationsApi\Exception\CouldNotFullySelectSourcesForOrder;
 use ReachDigital\IOSReservationsPriorityApi\Api\OrderSelectionServiceInterface;
 use ReachDigital\IOSReservationsPriorityApi\Api\GetOrderSelectionAlgorithmCodeInterface;
 
@@ -37,7 +40,7 @@ class MoveReservationsFromStockToSourceRunner implements MoveReservationsFromSto
     private $getDefaultSourceSelectionAlgorithmCode;
 
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var LoggerInterface
      */
     private $logger;
 
@@ -46,7 +49,7 @@ class MoveReservationsFromStockToSourceRunner implements MoveReservationsFromSto
         GetOrderSelectionAlgorithmCodeInterface $getOrderSelectionAlgorithmCode,
         MoveReservationsFromStockToSourceInterface $assignOrderSourceReservations,
         GetDefaultSourceSelectionAlgorithmCodeInterface $getDefaultSourceSelectionAlgorithmCode,
-        \Psr\Log\LoggerInterface $logger
+        LoggerInterface $logger
     ) {
         $this->orderSelectionService = $orderSelectionService;
         $this->getOrderSelectionAlgorithmCode = $getOrderSelectionAlgorithmCode;
@@ -70,8 +73,8 @@ class MoveReservationsFromStockToSourceRunner implements MoveReservationsFromSto
                     (int) $order->getEntityId(),
                     $this->getDefaultSourceSelectionAlgorithmCode->execute()
                 );
-            } catch (\Throwable $e) {
-                $this->logger->critical($e); // @fixme should maybe not catch everything? (i.e. programmer errors like TypeError)
+            } catch (CouldNotCreateSourceSelectionRequestFromOrder | CouldNotFullySelectSourcesForOrder $e) {
+                $this->logger->info($e->getMessage());
             }
         }
     }
