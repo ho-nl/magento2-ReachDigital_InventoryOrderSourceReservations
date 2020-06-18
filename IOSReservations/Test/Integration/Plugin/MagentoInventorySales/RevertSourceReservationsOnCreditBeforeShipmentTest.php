@@ -9,6 +9,7 @@ use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Inventory\Model\SourceItem\Command\GetSourceItemsBySku;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\InventoryReservations\Model\ResourceModel\GetReservationsQuantity;
+use Magento\InventoryReservationsApi\Model\GetReservationsQuantityInterface;
 use Magento\InventorySourceSelection\Model\GetDefaultSourceSelectionAlgorithmCode;
 use Magento\Sales\Api\Data\CreditmemoCreationArgumentsExtensionFactory;
 use Magento\Sales\Api\Data\CreditmemoCreationArgumentsInterface;
@@ -22,6 +23,7 @@ use Magento\Sales\Api\ShipOrderInterface;
 use Magento\Sales\Model\InvoiceOrder;
 use Magento\Sales\Model\Order;
 use Magento\TestFramework\Helper\Bootstrap;
+use Magento\TestFramework\ObjectManager;
 use ReachDigital\IOSReservations\Model\GetOrderSourceReservations;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultItemInterface;
 use ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceInterface;
@@ -64,7 +66,13 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
 
     public function setUp()
     {
+        /** @var ObjectManager $objectManager */
         $objectManager = Bootstrap::getObjectManager();
+        $objectManager->addSharedInstance(
+            $objectManager->get(GetReservationsQuantity::class),
+            GetReservationsQuantityInterface::class
+        );
+
         $this->getReservationsQuantityList = $objectManager->get(GetReservationsQuantityList::class);
         $this->invoiceOrder = $objectManager->get(InvoiceOrder::class);
         $this->searchCriteriaBuilder = $objectManager->get(SearchCriteriaBuilder::class);

@@ -10,15 +10,20 @@ namespace ReachDigital\IOSReservationsPriority\Test\Integration\Model;
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\InventoryReservations\Model\ResourceModel\GetReservationsQuantity;
+use Magento\InventoryReservationsApi\Model\GetReservationsQuantityInterface;
 use Magento\InventorySales\Model\GetProductSalableQty;
+use Magento\InventorySalesApi\Api\GetProductSalableQtyInterface;
 use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\InvoiceOrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\TestFramework\Helper\Bootstrap;
+use Magento\TestFramework\ObjectManager;
+use PHPUnit\Framework\TestCase;
 use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource;
 
-class MoveReservationsFromStockToSourceTest extends \PHPUnit\Framework\TestCase
+class MoveReservationsFromStockToSourceTest extends TestCase
 {
     /** @var SearchCriteriaBuilder */
     private $searchCriteriaBuilder;
@@ -40,16 +45,22 @@ class MoveReservationsFromStockToSourceTest extends \PHPUnit\Framework\TestCase
 
     protected function setUp()
     {
-        $this->searchCriteriaBuilder = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
-        $this->orderRepository = Bootstrap::getObjectManager()->get(OrderRepositoryInterface::class);
-        $this->invoiceOrder = Bootstrap::getObjectManager()->get(InvoiceOrderInterface::class);
-        $this->moveReservationsFromStockToSource = Bootstrap::getObjectManager()->get(
-            MoveReservationsFromStockToSource::class
+        /** @var ObjectManager $objectManager */
+        $objectManager = Bootstrap::getObjectManager();
+        $objectManager->addSharedInstance(
+            $objectManager->get(GetReservationsQuantity::class),
+            GetReservationsQuantityInterface::class
         );
-        $this->getDefaultSourceSelectionAlgorithmCode = Bootstrap::getObjectManager()->get(
+
+        $this->searchCriteriaBuilder = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
+
+        $this->orderRepository = $objectManager->get(OrderRepositoryInterface::class);
+        $this->invoiceOrder = $objectManager->get(InvoiceOrderInterface::class);
+        $this->moveReservationsFromStockToSource = $objectManager->get(MoveReservationsFromStockToSource::class);
+        $this->getDefaultSourceSelectionAlgorithmCode = $objectManager->get(
             GetDefaultSourceSelectionAlgorithmCodeInterface::class
         );
-        $this->getProductSalableQty = Bootstrap::getObjectManager()->get(GetProductSalableQty::class);
+        $this->getProductSalableQty = $objectManager->get(GetProductSalableQtyInterface::class);
     }
 
     /**
@@ -83,12 +94,13 @@ class MoveReservationsFromStockToSourceTest extends \PHPUnit\Framework\TestCase
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product.php
      *
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     public function should_move_reservation_from_stock_to_source(): void
     {
         //There are 14 actually available in the source, order is placed with three.
         $salableQty = $this->getProductSalableQty->execute('simple', 10);
+
         self::assertEquals(11, $salableQty);
 
         $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', 'created_order_for_test')->create();
@@ -140,7 +152,7 @@ class MoveReservationsFromStockToSourceTest extends \PHPUnit\Framework\TestCase
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product.php
      *
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     public function should_not_move_reservations_if_already_moved(): void
     {

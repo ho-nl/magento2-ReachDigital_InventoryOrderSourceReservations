@@ -7,9 +7,12 @@ declare(strict_types=1);
 
 namespace ReachDigital\IOSReservations\Test\Integration\Model\Api\SearchCriteria\CollectionProcessor\FilterProcessor;
 
+use Magento\InventoryReservations\Model\ResourceModel\GetReservationsQuantity;
+use Magento\InventoryReservationsApi\Model\GetReservationsQuantityInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\InvoiceOrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\TestFramework\ObjectManager;
 use PHPUnit\Framework\TestCase;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\Framework\Api\SearchCriteriaBuilder;
@@ -31,12 +34,17 @@ class OrderAssignedSourceFilterTest extends TestCase
 
     protected function setUp()
     {
-        $this->searchCriteriaBuilder = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
-        $this->orderRepository = Bootstrap::getObjectManager()->get(OrderRepositoryInterface::class);
-        $this->invoiceOrder = Bootstrap::getObjectManager()->get(InvoiceOrderInterface::class);
-        $this->moveReservationsFromStockToSource = Bootstrap::getObjectManager()->get(
-            MoveReservationsFromStockToSourceRunner::class
+        /** @var ObjectManager $objectManager */
+        $objectManager = Bootstrap::getObjectManager();
+        $objectManager->addSharedInstance(
+            $objectManager->get(GetReservationsQuantity::class),
+            GetReservationsQuantityInterface::class
         );
+
+        $this->searchCriteriaBuilder = $objectManager->get(SearchCriteriaBuilder::class);
+        $this->orderRepository = $objectManager->get(OrderRepositoryInterface::class);
+        $this->invoiceOrder = $objectManager->get(InvoiceOrderInterface::class);
+        $this->moveReservationsFromStockToSource = $objectManager->get(MoveReservationsFromStockToSourceRunner::class);
     }
 
     /**
