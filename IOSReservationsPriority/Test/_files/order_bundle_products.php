@@ -23,7 +23,7 @@ $addressFactory = Bootstrap::getObjectManager()->get(AddressInterfaceFactory::cl
 
 $itemsToBuy = [
     'SKU-BUNDLE-1' => ['qty' => 2, 'options_qty' => [3, 4]],
-    'SKU-BUNDLE-2' => ['qty' => 3, 'options_qty' => [5, 6]]
+    'SKU-BUNDLE-2' => ['qty' => 3, 'options_qty' => [5, 6]],
 ];
 
 $cartId = $cartManagement->createEmptyCart();
@@ -31,21 +31,19 @@ $cart = $cartRepository->get($cartId);
 $cart->setCustomerEmail('admin@example.com');
 $cart->setCustomerIsGuest(true);
 /** @var AddressInterface $address */
-$address = $addressFactory->create(
-    [
-        'data' => [
-            AddressInterface::KEY_COUNTRY_ID => 'US',
-            AddressInterface::KEY_REGION_ID  => 15,
-            AddressInterface::KEY_LASTNAME   => 'Doe',
-            AddressInterface::KEY_FIRSTNAME  => 'John',
-            AddressInterface::KEY_STREET     => 'example street',
-            AddressInterface::KEY_EMAIL      => 'customer@example.com',
-            AddressInterface::KEY_CITY       => 'example city',
-            AddressInterface::KEY_TELEPHONE  => '000 0000',
-            AddressInterface::KEY_POSTCODE   => 12345
-        ]
-    ]
-);
+$address = $addressFactory->create([
+    'data' => [
+        AddressInterface::KEY_COUNTRY_ID => 'US',
+        AddressInterface::KEY_REGION_ID => 15,
+        AddressInterface::KEY_LASTNAME => 'Doe',
+        AddressInterface::KEY_FIRSTNAME => 'John',
+        AddressInterface::KEY_STREET => 'example street',
+        AddressInterface::KEY_EMAIL => 'customer@example.com',
+        AddressInterface::KEY_CITY => 'example city',
+        AddressInterface::KEY_TELEPHONE => '000 0000',
+        AddressInterface::KEY_POSTCODE => 12345,
+    ],
+]);
 $cart->setReservedOrderId('test_order_bundle_1');
 $cart->setBillingAddress($address);
 $cart->setShippingAddress($address);
@@ -67,9 +65,9 @@ foreach ($itemsToBuy as $sku => $qtyData) {
         $i++;
     }
     $requestData = [
-        'product'           => $product->getProductId(),
-        'qty'               => $qtyData['qty'],
-        'bundle_option'     => $optionsData,
+        'product' => $product->getProductId(),
+        'qty' => $qtyData['qty'],
+        'bundle_option' => $optionsData,
         'bundle_option_qty' => $optionsQtyData,
     ];
     $request = new \Magento\Framework\DataObject($requestData);

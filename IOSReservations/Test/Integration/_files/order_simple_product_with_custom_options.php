@@ -20,15 +20,13 @@ $productRepository = Bootstrap::getObjectManager()->get(ProductRepositoryInterfa
 /** @var CartManagementInterface $cartManagement */
 $cartManagement = Bootstrap::getObjectManager()->get(CartManagementInterface::class);
 
-$searchCriteria = $searchCriteriaBuilder
-    ->addFilter('reserved_order_id', 'created_order_for_test')
-    ->create();
+$searchCriteria = $searchCriteriaBuilder->addFilter('reserved_order_id', 'created_order_for_test')->create();
 $cart = current($cartRepository->getList($searchCriteria)->getItems());
 
 $product = $productRepository->get('simple');
 $requestData = [
     'product' => $product->getId(),
-    'qty' => 3
+    'qty' => 3,
 ];
 
 $optionValuesByType = [

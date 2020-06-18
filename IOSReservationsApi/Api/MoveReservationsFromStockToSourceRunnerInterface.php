@@ -10,7 +10,6 @@ namespace ReachDigital\IOSReservationsApi\Api;
 
 interface MoveReservationsFromStockToSourceRunnerInterface
 {
-
     /**
      * Assign the unassigned orders to their correct sources.
      */

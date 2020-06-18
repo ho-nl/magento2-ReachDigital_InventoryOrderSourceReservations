@@ -39,7 +39,7 @@ class GetOrderSelectionSelectionAlgorithmList implements GetOrderSelectionSelect
             $algorithmsList[] = $this->orderSelectionAlgorithmInterfaceFactory->create([
                 'code' => $data['code'],
                 'title' => $data['title'],
-                'description' => $data['description']
+                'description' => $data['description'],
             ]);
         }
         return $algorithmsList;

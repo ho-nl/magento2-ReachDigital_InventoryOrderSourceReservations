@@ -86,7 +86,8 @@ class MoveReservationsFromStockToSource implements MoveReservationsFromStockToSo
         $order = $this->orderRepository->get($orderId);
 
         $reservations = $this->getReservationsByMetadata->execute(
-            $this->encodeMetaData->execute([ 'order' => $orderId ]));
+            $this->encodeMetaData->execute(['order' => $orderId])
+        );
 
         if ($reservations) {
             throw new LocalizedException(__('Can not assign sources, source already selected for order %1', $orderId));
@@ -95,7 +96,7 @@ class MoveReservationsFromStockToSource implements MoveReservationsFromStockToSo
         $sourceSelectionRequest = $this->inventoryRequestFromOrderFactory->create($order);
         $sourceSelectionResult = $this->sourceSelectionService->execute($sourceSelectionRequest, $algorithmCode);
 
-        if (! $sourceSelectionResult->isShippable()) {
+        if (!$sourceSelectionResult->isShippable()) {
             throw new LocalizedException(__('No sources could be selected for order: %1', $orderId));
         }
 

@@ -74,15 +74,14 @@ class AppendSourceReservations
      * @throws \Magento\Framework\Exception\CouldNotSaveException
      * @throws \Magento\Framework\Exception\InputException
      * @throws \Magento\Framework\Validation\ValidationException
-\     */
+     \     */
     public function execute(
         OrderInterface $order,
         SourceSelectionResultInterface $sourceSelectionResult
-    ) : SourceReservationResultInterface {
-
+    ): SourceReservationResultInterface {
         $result = $this->toOrderLinkObject($order, $sourceSelectionResult);
 
-        $reservations = array_map(function(SourceReservationResultItemInterface $item) {
+        $reservations = array_map(function (SourceReservationResultItemInterface $item) {
             return $item->getReservation();
         }, $result->getReservationItems());
 
@@ -113,15 +112,16 @@ class AppendSourceReservations
         SourceSelectionResultInterface $sourceSelectionResult
     ): SourceReservationResultInterface {
         $resultItems = [];
-        $ssItems     = $sourceSelectionResult->getSourceSelectionItems();
+        $ssItems = $sourceSelectionResult->getSourceSelectionItems();
         /** @var Order\Item $orderItem */
         foreach ($order->getItems() as $orderItem) {
             $qtyToDeliver = $orderItem->getQtyToShip();
             //check if order item is not delivered yet
-            if ($orderItem->isDeleted()
-                || $orderItem->getParentItemId()
-                || $this->isZeroOrLess((float)$qtyToDeliver)
-                || $orderItem->getIsVirtual()
+            if (
+                $orderItem->isDeleted() ||
+                $orderItem->getParentItemId() ||
+                $this->isZeroOrLess((float) $qtyToDeliver) ||
+                $orderItem->getIsVirtual()
             ) {
                 continue;
             }
@@ -131,12 +131,14 @@ class AppendSourceReservations
                         ->setSku($ssItem->getSku())
                         ->setQuantity($ssItem->getQtyToDeduct() * -1)
                         ->setSourceCode($ssItem->getSourceCode())
-                        ->setMetadata($this->encodeMetaData->execute([
-                            'order' => $order->getEntityId(),
-                            'order_item' => $orderItem->getItemId()
-                        ]))
+                        ->setMetadata(
+                            $this->encodeMetaData->execute([
+                                'order' => $order->getEntityId(),
+                                'order_item' => $orderItem->getItemId(),
+                            ])
+                        )
                         ->build(),
-                    'orderItemId' => (int)$orderItem->getItemId()
+                    'orderItemId' => (int) $orderItem->getItemId(),
                 ]);
                 $qtyToDeliver -= $ssItem->getQtyToDeduct();
                 unset($ssItems[$k]);
@@ -147,7 +149,7 @@ class AppendSourceReservations
         }
         return $this->sourceReservationResultFactory->create([
             'reservationItems' => $resultItems,
-            'orderId' => (int)$order->getEntityId()
+            'orderId' => (int) $order->getEntityId(),
         ]);
-}
+    }
 }

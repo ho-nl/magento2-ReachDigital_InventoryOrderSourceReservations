@@ -16,7 +16,6 @@ use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadata;
 
 class LoadSourceReservationsWithOrderItem
 {
-
     /**
      * @var GetReservationsByMetadata
      */
@@ -27,10 +26,7 @@ class LoadSourceReservationsWithOrderItem
      */
     private $encodeMetaData;
 
-    public function __construct(
-        GetReservationsByMetadata $getReservationsByMetadata,
-        EncodeMetaData $encodeMetaData
-    )
+    public function __construct(GetReservationsByMetadata $getReservationsByMetadata, EncodeMetaData $encodeMetaData)
     {
         $this->getReservationsByMetadata = $getReservationsByMetadata;
         $this->encodeMetaData = $encodeMetaData;
@@ -40,13 +36,12 @@ class LoadSourceReservationsWithOrderItem
         /** @noinspection PhpUnusedParameterInspection */
         OrderItemRepositoryInterface $subject,
         OrderItemInterface $orderItem
-    ) : OrderItemInterface
-    {
+    ): OrderItemInterface {
         $extensionAttributes = $orderItem->getExtensionAttributes();
         $orderId = $orderItem->getOrderId();
         $orderItemId = $orderItem->getItemId();
         $reservations = $this->getReservationsByMetadata->execute(
-            $this->encodeMetaData->execute([ 'order' => $orderId, 'order_item' => $orderItemId])
+            $this->encodeMetaData->execute(['order' => $orderId, 'order_item' => $orderItemId])
         );
         /** @noinspection NullPointerExceptionInspection - should always be set */
         $extensionAttributes->setSourceReservations($reservations);
@@ -57,8 +52,7 @@ class LoadSourceReservationsWithOrderItem
         /** @noinspection PhpUnusedParameterInspection */
         OrderItemRepositoryInterface $subject,
         OrderItemSearchResultInterface $orderItemSearchResult
-    ) : OrderItemSearchResultInterface
-    {
+    ): OrderItemSearchResultInterface {
         foreach ($orderItemSearchResult->getItems() as $item) {
             $this->afterGet($subject, $item);
         }

@@ -26,19 +26,13 @@ class LoadSourceReservationsWithOrder
      */
     private $encodeMetaData;
 
-    public function __construct(
-        GetReservationsByMetadata $getReservationsByMetadata,
-        EncodeMetaData $encodeMetaData
-    )
+    public function __construct(GetReservationsByMetadata $getReservationsByMetadata, EncodeMetaData $encodeMetaData)
     {
         $this->getReservationsByMetadata = $getReservationsByMetadata;
         $this->encodeMetaData = $encodeMetaData;
     }
 
-    public function afterGet(
-        $subject,
-        OrderInterface $order
-    ) : OrderInterface
+    public function afterGet($subject, OrderInterface $order): OrderInterface
     {
         // @todo load source reservations in one go (but in batches, due to complex ON-clause for joining on metadata)
         foreach ($order->getItems() as $orderItem) {
@@ -46,7 +40,7 @@ class LoadSourceReservationsWithOrder
             $orderId = $orderItem->getOrderId();
             $orderItemId = $orderItem->getItemId();
             $reservations = $this->getReservationsByMetadata->execute(
-                $this->encodeMetaData->execute([ 'order' => $orderId, 'order_item' => $orderItemId])
+                $this->encodeMetaData->execute(['order' => $orderId, 'order_item' => $orderItemId])
             );
             /** @noinspection NullPointerExceptionInspection - should always be set */
             $extensionAttributes->setSourceReservations($reservations);
@@ -57,15 +51,14 @@ class LoadSourceReservationsWithOrder
     public function afterGetList(
         OrderRepositoryInterface $subject,
         OrderSearchResultInterface $orderSearchResult
-    ) : OrderSearchResultInterface
-    {
+    ): OrderSearchResultInterface {
         foreach ($orderSearchResult->getItems() as $order) {
             foreach ($order->getItems() as $item) {
                 $extensionAttributes = $item->getExtensionAttributes();
                 $orderId = $item->getOrderId();
                 $orderItemId = $item->getItemId();
                 $reservations = $this->getReservationsByMetadata->execute(
-                    $this->encodeMetaData->execute([ 'order' => $orderId, 'order_item' => $orderItemId])
+                    $this->encodeMetaData->execute(['order' => $orderId, 'order_item' => $orderItemId])
                 );
                 /** @noinspection NullPointerExceptionInspection - should always be set */
                 $extensionAttributes->setSourceReservations($reservations);

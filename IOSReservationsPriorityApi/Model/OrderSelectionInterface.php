@@ -11,7 +11,6 @@ use Magento\Sales\Api\Data\OrderSearchResultInterface;
 
 interface OrderSelectionInterface
 {
-
     /**
      * It is guaranteed that this method will be called at least every half hour, can be more. This method should
      * return a list of orders can be Source Selected.

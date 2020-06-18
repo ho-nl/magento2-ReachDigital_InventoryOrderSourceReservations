@@ -27,13 +27,11 @@ class SourceReservationResult implements SourceReservationResultInterface
      *
      * @throws \LogicException
      */
-    public function __construct(
-        array $reservationItems,
-        int $orderId
-    ) {
+    public function __construct(array $reservationItems, int $orderId)
+    {
         $this->orderId = $orderId;
         foreach ($reservationItems as $reservationItem) {
-            if (! $reservationItem instanceof SourceReservationResultItemInterface) {
+            if (!$reservationItem instanceof SourceReservationResultItemInterface) {
                 throw new \LogicException(__('Item must be instance of SourceReservationResultItemInterface'));
             }
             $this->reservationItems[] = $reservationItem;

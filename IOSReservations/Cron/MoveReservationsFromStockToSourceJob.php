@@ -16,9 +16,7 @@ class MoveReservationsFromStockToSourceJob
      */
     private $moveReservationsFromStockToSourceRunner;
 
-    public function __construct(
-        MoveReservationsFromStockToSourceRunner $moveReservationsFromStockToSourceRunner
-    )
+    public function __construct(MoveReservationsFromStockToSourceRunner $moveReservationsFromStockToSourceRunner)
     {
         $this->moveReservationsFromStockToSourceRunner = $moveReservationsFromStockToSourceRunner;
     }

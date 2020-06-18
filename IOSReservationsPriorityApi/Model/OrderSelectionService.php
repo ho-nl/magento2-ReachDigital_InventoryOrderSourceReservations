@@ -23,10 +23,8 @@ class OrderSelectionService implements OrderSelectionServiceInterface
      */
     private $orderSelectionMethods;
 
-    public function __construct(
-        ObjectManagerInterface $objectManager,
-        array $orderSelectionMethods = []
-    ) {
+    public function __construct(ObjectManagerInterface $objectManager, array $orderSelectionMethods = [])
+    {
         $this->objectManager = $objectManager;
         $this->orderSelectionMethods = $orderSelectionMethods;
     }
@@ -39,10 +37,8 @@ class OrderSelectionService implements OrderSelectionServiceInterface
      *
      * @return mixed
      */
-    public function execute(
-        ?int $limit,
-        string $algorithmCode
-    ): OrderSearchResultInterface {
+    public function execute(?int $limit, string $algorithmCode): OrderSearchResultInterface
+    {
         if (!isset($this->orderSelectionMethods[$algorithmCode])) {
             throw new \LogicException(
                 (string) __('There is no such Order Selection Algorithm implemented: %1', $algorithmCode)

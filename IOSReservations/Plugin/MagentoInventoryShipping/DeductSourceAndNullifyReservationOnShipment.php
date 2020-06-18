@@ -72,8 +72,7 @@ class DeductSourceAndNullifyReservationOnShipment
         SourceDeductionRequestFromShipmentFactory $sourceDeductionRequestFromShipmentFactory,
         SourceDeductionServiceInterface $sourceDeductionService,
         EncodeMetaData $encodeMetaData
-    )
-    {
+    ) {
         $this->appendReservations = $appendReservations;
         $this->reservationBuilder = $reservationBuilder;
         $this->getItemsToDeductFromShipment = $getItemsToDeductFromShipment;
@@ -100,7 +99,7 @@ class DeductSourceAndNullifyReservationOnShipment
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Magento\Framework\Validation\ValidationException
      */
-    public function aroundExecute(SourceDeductionProcessor $subject, \Closure $proceed, EventObserver $observer):void
+    public function aroundExecute(SourceDeductionProcessor $subject, \Closure $proceed, EventObserver $observer): void
     {
         /** @var \Magento\Sales\Model\Order\Shipment $shipment */
         /** @noinspection PhpUndefinedMethodInspection */
@@ -109,8 +108,10 @@ class DeductSourceAndNullifyReservationOnShipment
             return;
         }
 
-        if ($shipment->getExtensionAttributes() !== null
-            && $shipment->getExtensionAttributes()->getSourceCode() !== null) {
+        if (
+            $shipment->getExtensionAttributes() !== null &&
+            $shipment->getExtensionAttributes()->getSourceCode() !== null
+        ) {
             $sourceCode = $shipment->getExtensionAttributes()->getSourceCode();
         } elseif ($this->isSingleSourceMode->execute()) {
             $sourceCode = $this->defaultSourceProvider->getCode();
@@ -136,11 +137,13 @@ class DeductSourceAndNullifyReservationOnShipment
      * @throws \Magento\Framework\Exception\InputException
      * @throws \Magento\Framework\Validation\ValidationException
      */
-    private function placeCompensatingSourceReservation(SourceDeductionRequestInterface $sourceDeductionRequest, Order $order):void
-    {
+    private function placeCompensatingSourceReservation(
+        SourceDeductionRequestInterface $sourceDeductionRequest,
+        Order $order
+    ): void {
         $reservations = [];
 
-        $metaData = $this->encodeMetaData->execute([ 'order' => $order->getEntityId() ]);
+        $metaData = $this->encodeMetaData->execute(['order' => $order->getEntityId()]);
 
         foreach ($sourceDeductionRequest->getItems() as $item) {
             $this->reservationBuilder->setQuantity($item->getQty());

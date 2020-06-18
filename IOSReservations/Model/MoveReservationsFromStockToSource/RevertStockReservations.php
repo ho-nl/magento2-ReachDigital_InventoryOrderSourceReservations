@@ -20,7 +20,6 @@ use Magento\Store\Api\StoreRepositoryInterface;
 
 class RevertStockReservations
 {
-
     /**
      * @var AppendReservationsInterface
      */
@@ -69,14 +68,12 @@ class RevertStockReservations
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Magento\Framework\Validation\ValidationException
      */
-    public function execute(
-        OrderInterface $order,
-        SourceSelectionResultInterface $sourceSelectionResult
-    ): void {
+    public function execute(OrderInterface $order, SourceSelectionResultInterface $sourceSelectionResult): void
+    {
         $reservations = [];
         foreach ($sourceSelectionResult->getSourceSelectionItems() as $item) {
             $store = $this->storeRepository->getById((int) $order->getStoreId());
-            $stockId = (int)$this->stockByWebsiteIdResolver->execute((int)$store->getWebsiteId())->getStockId();
+            $stockId = (int) $this->stockByWebsiteIdResolver->execute((int) $store->getWebsiteId())->getStockId();
 
             /**
              * Please note to not change the metadata format only here, as it is used in
@@ -86,13 +83,15 @@ class RevertStockReservations
                 ->setSku($item->getSku())
                 ->setQuantity($item->getQtyToDeduct())
                 ->setStockId($stockId)
-                ->setMetadata($this->serializer->serialize([
-                    // @fixme does it make sense to 'fake' a sales event here? Maybe order-source assignment should be implemented as an actual salesevent?
-                    // @see  \Magento\InventorySales\Model\PlaceReservationsForSalesEvent::execute
-                    'event_type' => 'order_assigned',
-                    'object_type' => 'order',
-                    'object_id' => $order->getEntityId()
-                ]))
+                ->setMetadata(
+                    $this->serializer->serialize([
+                        // @fixme does it make sense to 'fake' a sales event here? Maybe order-source assignment should be implemented as an actual salesevent?
+                        // @see  \Magento\InventorySales\Model\PlaceReservationsForSalesEvent::execute
+                        'event_type' => 'order_assigned',
+                        'object_type' => 'order',
+                        'object_id' => $order->getEntityId(),
+                    ])
+                )
                 ->build();
         }
         $this->appendReservations->execute($reservations);

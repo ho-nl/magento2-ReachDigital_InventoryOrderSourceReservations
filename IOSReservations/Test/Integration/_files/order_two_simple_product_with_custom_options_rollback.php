@@ -23,9 +23,7 @@ $orderManagement = Bootstrap::getObjectManager()->get(OrderManagementInterface::
 /** @var SearchCriteriaBuilder $searchCriteriaBuilder */
 $searchCriteriaBuilder = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
 
-$searchCriteria = $searchCriteriaBuilder
-    ->addFilter('increment_id', 'created_order_for_test')
-    ->create();
+$searchCriteria = $searchCriteriaBuilder->addFilter('increment_id', 'created_order_for_test')->create();
 
 $registry->unregister('isSecureArea');
 $registry->register('isSecureArea', true);

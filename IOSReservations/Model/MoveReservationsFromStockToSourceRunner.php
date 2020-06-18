@@ -16,7 +16,6 @@ use ReachDigital\IOSReservationsPriorityApi\Api\GetOrderSelectionAlgorithmCodeIn
 
 class MoveReservationsFromStockToSourceRunner implements MoveReservationsFromStockToSourceRunnerInterface
 {
-
     /**
      * @var OrderSelectionServiceInterface
      */
@@ -48,8 +47,7 @@ class MoveReservationsFromStockToSourceRunner implements MoveReservationsFromSto
         MoveReservationsFromStockToSourceInterface $assignOrderSourceReservations,
         GetDefaultSourceSelectionAlgorithmCodeInterface $getDefaultSourceSelectionAlgorithmCode,
         \Psr\Log\LoggerInterface $logger
-    )
-    {
+    ) {
         $this->orderSelectionService = $orderSelectionService;
         $this->getOrderSelectionAlgorithmCode = $getOrderSelectionAlgorithmCode;
         $this->assignOrderSourceReservations = $assignOrderSourceReservations;
@@ -66,7 +64,7 @@ class MoveReservationsFromStockToSourceRunner implements MoveReservationsFromSto
             1000,
             $this->getOrderSelectionAlgorithmCode->execute()
         );
-        foreach($orderSearchResults->getItems() as $order) {
+        foreach ($orderSearchResults->getItems() as $order) {
             try {
                 $this->assignOrderSourceReservations->execute(
                     (int) $order->getEntityId(),

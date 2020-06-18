@@ -20,7 +20,6 @@ use ReachDigital\IOSReservations\Model\SourceReservationResult\SourceReservation
 
 class GetOrderSourceReservationsTest extends \PHPUnit\Framework\TestCase
 {
-
     /** @var SearchCriteriaBuilder */
     private $searchCriteriaBuilder;
 
@@ -44,8 +43,12 @@ class GetOrderSourceReservationsTest extends \PHPUnit\Framework\TestCase
         $this->searchCriteriaBuilder = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
         $this->orderRepository = Bootstrap::getObjectManager()->get(OrderRepositoryInterface::class);
         $this->invoiceOrder = Bootstrap::getObjectManager()->get(InvoiceOrderInterface::class);
-        $this->moveReservationsFromStockToSource = Bootstrap::getObjectManager()->get(MoveReservationsFromStockToSource::class);
-        $this->getDefaultSourceSelectionAlgorithmCode = Bootstrap::getObjectManager()->get(GetDefaultSourceSelectionAlgorithmCodeInterface::class);
+        $this->moveReservationsFromStockToSource = Bootstrap::getObjectManager()->get(
+            MoveReservationsFromStockToSource::class
+        );
+        $this->getDefaultSourceSelectionAlgorithmCode = Bootstrap::getObjectManager()->get(
+            GetDefaultSourceSelectionAlgorithmCodeInterface::class
+        );
         $this->getOrderSourceReservations = Bootstrap::getObjectManager()->get(GetOrderSourceReservations::class);
     }
 
@@ -82,11 +85,9 @@ class GetOrderSourceReservationsTest extends \PHPUnit\Framework\TestCase
      *
      * @throws \Magento\Framework\Exception\LocalizedException
      */
-    public function should_have_reservations_after_move() : void
+    public function should_have_reservations_after_move(): void
     {
-        $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter('increment_id', 'created_order_for_test')
-            ->create();
+        $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', 'created_order_for_test')->create();
         /** @var OrderInterface $order */
         $order = current($this->orderRepository->getList($searchCriteria)->getItems());
         $this->invoiceOrder->execute($order->getEntityId());

@@ -12,7 +12,6 @@ use Magento\Sales\Api\Data\OrderSearchResultInterface;
 
 interface OrderSelectionServiceInterface
 {
-
     /**
      * Get a list of orders that need to be assigned to a source. Sorted by priority
      *
@@ -21,8 +20,5 @@ interface OrderSelectionServiceInterface
      *
      * @return mixed
      */
-    public function execute(
-        ?int $limit,
-        string $algorithmCode
-    ): OrderSearchResultInterface;
+    public function execute(?int $limit, string $algorithmCode): OrderSearchResultInterface;
 }

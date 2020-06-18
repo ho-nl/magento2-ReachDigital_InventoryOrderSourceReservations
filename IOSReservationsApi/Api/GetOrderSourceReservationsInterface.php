@@ -12,11 +12,10 @@ use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface;
 
 interface GetOrderSourceReservationsInterface
 {
-
     /**
      * @param int $orderId
      *
      * @return SourceReservationResultInterface
      */
-    public function execute(int $orderId) :? SourceReservationResultInterface;
+    public function execute(int $orderId): ?SourceReservationResultInterface;
 }

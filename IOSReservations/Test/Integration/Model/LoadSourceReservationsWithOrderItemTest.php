@@ -34,7 +34,9 @@ class LoadSourceReservationsWithOrderItemTest extends TestCase
         $this->searchCriteriaBuilder = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
         $this->orderRepository = Bootstrap::getObjectManager()->get(OrderRepositoryInterface::class);
         $this->invoiceOrder = Bootstrap::getObjectManager()->get(InvoiceOrderInterface::class);
-        $this->moveReservationsFromStockToSource = Bootstrap::getObjectManager()->get(MoveReservationsFromStockToSourceRunner::class);
+        $this->moveReservationsFromStockToSource = Bootstrap::getObjectManager()->get(
+            MoveReservationsFromStockToSourceRunner::class
+        );
     }
 
     /**
@@ -74,9 +76,7 @@ class LoadSourceReservationsWithOrderItemTest extends TestCase
         // Have an order
 
         // Invoice order
-        $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter('increment_id', 'created_order_for_test')
-            ->create();
+        $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', 'created_order_for_test')->create();
         /** @var OrderInterface $order */
         $order = current($this->orderRepository->getList($searchCriteria)->getItems());
         $this->invoiceOrder->execute($order->getEntityId());
