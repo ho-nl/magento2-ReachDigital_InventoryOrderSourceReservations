@@ -15,5 +15,5 @@ jobs:
             - run: yarn --frozen-lockfile
             - run: yarn semantic-release
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GITHUB_TOKEN: ${{ secrets.GH_TOKEN_WRITE_PRIVATE }}
                   SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_BACKEND }}
