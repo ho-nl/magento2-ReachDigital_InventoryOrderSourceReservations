@@ -119,7 +119,9 @@ searchCriteria[filterGroups][0][filters][0][value] = 'eu-1';
 Adds `source_reservations` as an extension attribute on an order item, which
 allows you to see the sources that are assigned to an order item.
 
-### TODO
+## Commits
 
-- Submit bugreport/PR to for properly fixing issue with
-  GetItemsToDeductFromShipment
+Commits are validated with https://github.com/conventional-changelog/commitlint
+
+Gittower: Gittower doesn't properly read your PATH variable and thus commit
+validation doesn't work. Use `gittower .` to open this repo.
