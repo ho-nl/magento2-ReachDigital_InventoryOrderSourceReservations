@@ -1,6 +1,9 @@
 {
     "name": "@reach-digital/magento2-inventory-source-reservations",
-    "repository": "git@github.com:ho-nl/magento2-ReachDigital_InventorySourceReservations.git",
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:ho-nl/magento2-ReachDigital_InventorySourceReservations.git"
+    },
     "author": "Paul Hachmang <paul@reachdigital.nl>",
     "private": true,
     "devDependencies": {
