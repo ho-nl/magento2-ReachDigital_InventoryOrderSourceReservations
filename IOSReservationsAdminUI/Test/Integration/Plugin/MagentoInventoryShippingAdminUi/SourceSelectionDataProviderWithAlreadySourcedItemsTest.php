@@ -1,90 +1,63 @@
 <?php
 declare(strict_types=1);
 
-namespace ReachDigital\IOSReservationsAdminUI\Test\Integration;
+namespace ReachDigital\IOSReservationsAdminUi\Test\Integration\Plugin\MagentoInventoryShippingAdminUi;
 
+use Exception;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\DataObject;
 use Magento\Framework\Registry;
-use Magento\InventoryReservations\Model\ResourceModel\GetReservationsQuantity;
-use Magento\InventorySales\Model\GetProductSalableQty;
 use Magento\InventoryShippingAdminUi\Ui\DataProvider\SourceSelectionDataProviderFactory;
-use Magento\InventorySourceDeductionApi\Model\GetSourceItemBySourceCodeAndSku;
 use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
 use Magento\Quote\Api\CartManagementInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Api\Data\AddressInterface;
 use Magento\Quote\Api\Data\AddressInterfaceFactory;
-use Magento\Sales\Api\Data\ShipmentCreationArgumentsInterface;
 use Magento\Sales\Api\InvoiceOrderInterface;
 use Magento\Sales\Api\OrderManagementInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\ShipOrderInterface;
-use Magento\Sales\Model\Convert\Order;
 use Magento\Store\Api\StoreRepositoryInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\TestFramework\ObjectManager;
 use PHPUnit\Framework\TestCase;
-use ReachDigital\IOSReservations\Model\GetOrderSourceReservations;
 use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource;
-use Magento\Sales\Api\Data\ShipmentCreationArgumentsExtensionInterfaceFactory;
-use ReachDigital\ISReservationsApi\Model\GetSourceReservationsQuantityInterface;
 
-class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
+class SourceSelectionDataProviderWithAlreadySourcedItemsTest extends TestCase
 {
-    /** @var SearchCriteriaBuilder */
-    private $searchCriteriaBuilder;
-
-    /** @var OrderRepositoryInterface */
+    /**
+     * @var OrderRepositoryInterface
+     */
     private $orderRepository;
 
-    /** @var InvoiceOrderInterface */
+    /**
+     * @var InvoiceOrderInterface
+     */
     private $invoiceOrder;
 
-    /** @var MoveReservationsFromStockToSource */
+    /**
+     * @var MoveReservationsFromStockToSource
+     */
     private $moveReservationsFromStockToSource;
 
-    /** @var GetDefaultSourceSelectionAlgorithmCodeInterface */
+    /**
+     * @var GetDefaultSourceSelectionAlgorithmCodeInterface
+     */
     private $getDefaultSourceSelectionAlgorithmCode;
-
-    /** @var GetOrderSourceReservations */
-    private $getOrderSourceReservations;
-
-    /** @var ShipOrderInterface */
-    private $shipOrder;
-
-    /** @var GetProductSalableQty */
-    private $getProductSalableQty;
-
-    /** @var Order */
-    private $orderConverter;
-
-    /** @var ShipmentCreationArgumentsInterface */
-    private $shipmentCreationArguments;
-
-    /** @var ShipmentCreationArgumentsExtensionInterfaceFactory */
-    private $shipmentCreationArgumentsExtensionInterfaceFactory;
-
-    /** @var GetSourceItemBySourceCodeAndSku */
-    private $getSourceItemBySourceCodeAndSku;
-
-    /** @var GetReservationsQuantity */
-    private $getStockReservationsQuantity;
-
-    /** @var GetSourceReservationsQuantityInterface */
-    private $getSourceReservationsQuantity;
 
     /**
      * @var CartRepositoryInterface
      */
     private $cartRepository;
+
     /**
      * @var ProductRepositoryInterface
      */
     private $productRepository;
+
     /**
      * @var CartManagementInterface
      */
@@ -120,7 +93,7 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
         /** @var ObjectManager $objectManager */
         $objectManager = Bootstrap::getObjectManager();
 
-        $this->searchCriteriaBuilder = $objectManager->get(SearchCriteriaBuilder::class);
+        $searchCriteriaBuilder = $objectManager->get(SearchCriteriaBuilder::class);
         $this->orderRepository = $objectManager->get(OrderRepositoryInterface::class);
         $this->orderManagement = $objectManager->get(OrderManagementInterface::class);
         $this->invoiceOrder = $objectManager->get(InvoiceOrderInterface::class);
@@ -128,18 +101,6 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
         $this->getDefaultSourceSelectionAlgorithmCode = $objectManager->get(
             GetDefaultSourceSelectionAlgorithmCodeInterface::class
         );
-        $this->getOrderSourceReservations = $objectManager->get(GetOrderSourceReservations::class);
-        $this->shipOrder = $objectManager->get(ShipOrderInterface::class);
-        $this->getProductSalableQty = $objectManager->create(GetProductSalableQty::class);
-
-        $this->orderConverter = $objectManager->get(Order::class);
-        $this->shipmentCreationArguments = $objectManager->get(ShipmentCreationArgumentsInterface::class);
-        $this->shipmentCreationArgumentsExtensionInterfaceFactory = $objectManager->get(
-            ShipmentCreationArgumentsExtensionInterfaceFactory::class
-        );
-        $this->getSourceItemBySourceCodeAndSku = $objectManager->get(GetSourceItemBySourceCodeAndSku::class);
-        $this->getStockReservationsQuantity = $objectManager->get(GetReservationsQuantity::class);
-        $this->getSourceReservationsQuantity = $objectManager->get(GetSourceReservationsQuantityInterface::class);
 
         $this->cartRepository = $objectManager->get(CartRepositoryInterface::class);
         $this->productRepository = $objectManager->get(ProductRepositoryInterface::class);
@@ -179,8 +140,10 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
      * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/simple_product.php
      * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/source_items_for_simple_on_multi_source.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory.php
+     *
+     * @throws Exception
      */
-    public function should_be_able_to_ship_although_product_is_not_salable_anymore(): void
+    public function admin_ui_create_shipment_should_use_source_reservations(): void
     {
         $order1 = $this->createOrder(5);
         $order2 = $this->createOrder(5);
@@ -205,7 +168,19 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
         $this->deleteOrder($order3);
     }
 
-    private function createOrder($qty): string
+    /**
+     * Create a simple order
+     *
+     * @param int $qty
+     * @return string
+     * @throws \Magento\Framework\Exception\CouldNotSaveException
+     * @throws \Magento\Framework\Exception\InputException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws \Magento\Framework\Validation\ValidationException
+     * @throws \ReachDigital\IOSReservationsApi\Exception\CouldNotCreateSourceSelectionRequestFromOrder
+     * @throws \ReachDigital\IOSReservationsApi\Exception\CouldNotFullySelectSourcesForOrder
+     */
+    private function createOrder(int $qty): string
     {
         $cartId = $this->cartManagement->createEmptyCart();
         $cart = $this->cartRepository->get($cartId);
