@@ -3,7 +3,8 @@
     "description": "N/A",
     "require": {
         "php": "~7.1.3||~7.2.0",
-        "magento/framework": "*"
+        "magento/framework": "*",
+        "reach-digital/magento2-inventory-source-reservations": "*"
     },
     "type": "magento2-module",
     "license": [
@@ -13,6 +14,7 @@
     "autoload": {
         "files": [
             "IOSReservations/registration.php",
+            "IOSReservationsAdminUi/registration.php",
             "IOSReservationsApi/registration.php",
             "IOSReservationsPriority/registration.php",
             "IOSReservationsPriorityAdminUI/registration.php",
@@ -20,6 +22,7 @@
         ],
         "psr-4": {
             "ReachDigital\\IOSReservations\\": "IOSReservations",
+            "ReachDigital\\IOSReservationsAdminUi\\": "IOSReservationsAdminUi",
             "ReachDigital\\IOSReservationsApi\\": "IOSReservationsApi",
             "ReachDigital\\IOSReservationsPriority\\": "IOSReservationsPriority",
             "ReachDigital\\IOSReservationsPriorityAdminUI\\": "IOSReservationsPriorityAdminUI",
