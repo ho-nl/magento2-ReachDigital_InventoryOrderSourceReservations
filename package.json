@@ -1,11 +1,11 @@
 {
     "name": "@reach-digital/magento2-inventory-source-reservations",
+    "private": true,
     "repository": {
         "type": "git",
         "url": "git@github.com:ho-nl/magento2-ReachDigital_InventoryOrderSourceReservations.git"
     },
     "author": "Paul Hachmang <paul@reachdigital.nl>",
-    "private": true,
     "devDependencies": {
         "@commitlint/cli": "^8.3.5",
         "@commitlint/config-conventional": "^8.3.4",
@@ -13,6 +13,11 @@
         "husky": "^4.2.5",
         "semantic-release": "^17.0.8",
         "semantic-release-slack-bot": "^1.6.2"
+    },
+    "commitlint": {
+        "extends": [
+            "@commitlint/config-conventional"
+        ]
     },
     "husky": {
         "hooks": {
@@ -82,11 +87,6 @@
             {
                 "name": "master"
             }
-        ]
-    },
-    "commitlint": {
-        "extends": [
-            "@commitlint/config-conventional"
         ]
     }
 }

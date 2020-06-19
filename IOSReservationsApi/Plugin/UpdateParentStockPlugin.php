@@ -21,12 +21,10 @@ class UpdateParentStockPlugin
     /**
      * @param ResourceConnection $resourceConnection
      */
-    public function __construct(
-        ResourceConnection $resourceConnection
-    ) {
+    public function __construct(ResourceConnection $resourceConnection)
+    {
         $this->resourceConnection = $resourceConnection;
     }
-
 
     /**
      * @param  \Magento\Inventory\Model\ResourceModel\SourceItem\SaveMultiple $subject

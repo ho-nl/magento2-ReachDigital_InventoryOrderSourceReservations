@@ -121,7 +121,8 @@ allows you to see the sources that are assigned to an order item.
 
 ## Commits
 
-Commits will be validated with https://github.com/conventional-changelog/commitlint
+Commits will be validated with
+https://github.com/conventional-changelog/commitlint
 
 Gittower: Gittower doesn't properly read your PATH variable and thus commit
 validation doesn't work. Use `gittower .` to open this repo.
