@@ -14,7 +14,7 @@
     "autoload": {
         "files": [
             "IOSReservations/registration.php",
-            "IOSReservationsAdminUi/registration.php",
+            "IOSReservationsAdminUI/registration.php",
             "IOSReservationsApi/registration.php",
             "IOSReservationsPriority/registration.php",
             "IOSReservationsPriorityAdminUI/registration.php",
@@ -22,7 +22,7 @@
         ],
         "psr-4": {
             "ReachDigital\\IOSReservations\\": "IOSReservations",
-            "ReachDigital\\IOSReservationsAdminUi\\": "IOSReservationsAdminUi",
+            "ReachDigital\\IOSReservationsAdminUI\\": "IOSReservationsAdminUI",
             "ReachDigital\\IOSReservationsApi\\": "IOSReservationsApi",
             "ReachDigital\\IOSReservationsPriority\\": "IOSReservationsPriority",
             "ReachDigital\\IOSReservationsPriorityAdminUI\\": "IOSReservationsPriorityAdminUI",

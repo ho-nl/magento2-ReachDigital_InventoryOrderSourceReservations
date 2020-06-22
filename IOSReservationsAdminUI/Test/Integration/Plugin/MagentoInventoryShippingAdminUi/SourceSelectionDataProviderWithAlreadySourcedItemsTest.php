@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace ReachDigital\IOSReservationsAdminUi\Test\Integration\Plugin\MagentoInventoryShippingAdminUi;
+namespace ReachDigital\IOSReservationsAdminUI\Test\Integration\Plugin\MagentoInventoryShippingAdminUi;
 
 use Exception;
 use Magento\Catalog\Api\ProductRepositoryInterface;

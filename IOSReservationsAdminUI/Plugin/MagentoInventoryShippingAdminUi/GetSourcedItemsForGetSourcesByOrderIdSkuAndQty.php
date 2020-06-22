@@ -1,6 +1,6 @@
 <?php
 
-namespace ReachDigital\IOSReservationsAdminUi\Plugin\MagentoInventoryShippingAdminUi;
+namespace ReachDigital\IOSReservationsAdminUI\Plugin\MagentoInventoryShippingAdminUi;
 
 use Closure;
 use Magento\Framework\Exception\NoSuchEntityException;
