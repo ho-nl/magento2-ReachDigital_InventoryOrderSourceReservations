@@ -11,25 +11,18 @@ namespace ReachDigital\IOSReservations\Plugin\MagentoSales;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\Data\OrderItemSearchResultInterface;
 use Magento\Sales\Api\OrderItemRepositoryInterface;
-use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
-use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadata;
+use ReachDigital\IOSReservations\Model\AddSourceReservationsToOrderItems;
 
 class LoadSourceReservationsWithOrderItem
 {
     /**
-     * @var GetReservationsByMetadata
+     * @var AddSourceReservationsToOrderItems
      */
-    private $getReservationsByMetadata;
+    private $addSourceReservationsToOrderItems;
 
-    /**
-     * @var EncodeMetaData
-     */
-    private $encodeMetaData;
-
-    public function __construct(GetReservationsByMetadata $getReservationsByMetadata, EncodeMetaData $encodeMetaData)
+    public function __construct(AddSourceReservationsToOrderItems $addSourceReservationsToOrderItems)
     {
-        $this->getReservationsByMetadata = $getReservationsByMetadata;
-        $this->encodeMetaData = $encodeMetaData;
+        $this->addSourceReservationsToOrderItems = $addSourceReservationsToOrderItems;
     }
 
     public function afterGet(
@@ -37,14 +30,7 @@ class LoadSourceReservationsWithOrderItem
         OrderItemRepositoryInterface $subject,
         OrderItemInterface $orderItem
     ): OrderItemInterface {
-        $extensionAttributes = $orderItem->getExtensionAttributes();
-        $orderId = $orderItem->getOrderId();
-        $orderItemId = $orderItem->getItemId();
-        $reservations = $this->getReservationsByMetadata->execute(
-            $this->encodeMetaData->execute(['order' => $orderId, 'order_item' => $orderItemId])
-        );
-        /** @noinspection NullPointerExceptionInspection - should always be set */
-        $extensionAttributes->setSourceReservations($reservations);
+        $this->addSourceReservationsToOrderItems->execute([$orderItem]);
         return $orderItem;
     }
 
@@ -53,9 +39,7 @@ class LoadSourceReservationsWithOrderItem
         OrderItemRepositoryInterface $subject,
         OrderItemSearchResultInterface $orderItemSearchResult
     ): OrderItemSearchResultInterface {
-        foreach ($orderItemSearchResult->getItems() as $item) {
-            $this->afterGet($subject, $item);
-        }
+        $this->addSourceReservationsToOrderItems->execute($orderItemSearchResult->getItems());
         return $orderItemSearchResult;
     }
 }
