@@ -58,7 +58,7 @@ class AddSourceReservationsToOrderItems
             if (!isset($byMeta[$reservation->getMetadata()])) {
                 $byMeta[$reservation->getMetadata()] = [];
             }
-            $byMeta[$reservation->getMetadata()][] = $reservation->getMetadata();
+            $byMeta[$reservation->getMetadata()][] = $reservation;
         }
 
         foreach ($orderItems as $orderItem) {

@@ -17,6 +17,7 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSourceRunner;
+use ReachDigital\ISReservationsApi\Api\Data\SourceReservationInterface;
 
 class LoadSourceReservationsWithOrderItemTest extends TestCase
 {
@@ -100,6 +101,9 @@ class LoadSourceReservationsWithOrderItemTest extends TestCase
             self::assertNotNull($extensionAttributes);
             $reservations = $extensionAttributes->getSourceReservations();
             self::assertCount(2, $reservations);
+            foreach ($reservations as $reservation) {
+                self::assertInstanceOf(SourceReservationInterface::class, $reservation);
+            }
         }
     }
 }
