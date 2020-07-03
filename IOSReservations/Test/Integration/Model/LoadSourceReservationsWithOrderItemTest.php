@@ -105,5 +105,19 @@ class LoadSourceReservationsWithOrderItemTest extends TestCase
                 self::assertInstanceOf(SourceReservationInterface::class, $reservation);
             }
         }
+
+        // Apply filter on order repository, with filter on existing source
+        $this->searchCriteriaBuilder->addFilter('assigned_source_code', 'eu-1');
+        $items = $orderRepo->getList($this->searchCriteriaBuilder->create());
+        self::assertCount(1, $items->getItems());
+        foreach ($items->getItems() as $order) {
+            foreach ($order->getItems() as $item) {
+                $reservations = $item->getExtensionAttributes()->getSourceReservations();
+                self::assertCount(2, $reservations);
+                foreach ($reservations as $reservation) {
+                    self::assertInstanceOf(SourceReservationInterface::class, $reservation);
+                }
+            }
+        }
     }
 }
