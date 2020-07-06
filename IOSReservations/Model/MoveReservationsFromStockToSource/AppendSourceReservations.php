@@ -8,7 +8,9 @@ declare(strict_types=1);
 
 namespace ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource;
 
-use Magento\InventoryCatalogApi\Model\GetSkusByProductIdsInterface;
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Validation\ValidationException;
 use Magento\InventorySourceSelectionApi\Api\Data\SourceSelectionResultInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order;
@@ -43,11 +45,6 @@ class AppendSourceReservations
     private $reservationBuilder;
 
     /**
-     * @var GetSkusByProductIdsInterface
-     */
-    private $getSkusByProductIds;
-
-    /**
      * @var EncodeMetaData
      */
     private $encodeMetaData;
@@ -71,9 +68,9 @@ class AppendSourceReservations
      * @param SourceSelectionResultInterface $sourceSelectionResult
      *
      * @return SourceReservationResultInterface
-     * @throws \Magento\Framework\Exception\CouldNotSaveException
-     * @throws \Magento\Framework\Exception\InputException
-     * @throws \Magento\Framework\Validation\ValidationException
+     * @throws CouldNotSaveException
+     * @throws InputException
+     * @throws ValidationException
      \     */
     public function execute(
         OrderInterface $order,
@@ -109,7 +106,7 @@ class AppendSourceReservations
      * @param SourceSelectionResultInterface $sourceSelectionResult
      *
      * @return mixed
-     * @throws \Magento\Framework\Validation\ValidationException
+     * @throws ValidationException
      */
     private function toOrderLinkObject(
         OrderInterface $order,
@@ -130,6 +127,9 @@ class AppendSourceReservations
                 continue;
             }
             foreach ($ssItems as $k => $ssItem) {
+                if ($ssItem->getSku() !== $orderItem->getSku()) {
+                    continue;
+                }
                 $resultItems[] = $this->sourceReservationResultItemFactory->create([
                     'reservation' => $this->reservationBuilder
                         ->setSku($ssItem->getSku())

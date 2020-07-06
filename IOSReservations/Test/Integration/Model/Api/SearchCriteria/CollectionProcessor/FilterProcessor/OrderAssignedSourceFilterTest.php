@@ -95,7 +95,7 @@ class OrderAssignedSourceFilterTest extends TestCase
         $orderRepo = Bootstrap::getObjectManager()->get(OrderRepositoryInterface::class);
         $searchCriteriaBuilder = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
 
-        // Apply filter on order repository, with filter on existant source
+        // Apply filter on order repository, with filter on existent source
         $searchCriteriaBuilder->addFilter('assigned_source_code', 'eu-1');
         $items = $orderRepo->getList($searchCriteriaBuilder->create());
         self::assertCount(1, $items);
@@ -108,7 +108,7 @@ class OrderAssignedSourceFilterTest extends TestCase
         $items = $orderRepo->getList($searchCriteriaBuilder->create());
         self::assertCount(1, $items);
 
-        // Apply filter on order repository, with filter for non-existant source
+        // Apply filter on order repository, with filter for non-existent source
         $searchCriteriaBuilder->addFilter('assigned_source_code', 'eu-fake');
         $items = $orderRepo->getList($searchCriteriaBuilder->create());
         self::assertCount(0, $items);

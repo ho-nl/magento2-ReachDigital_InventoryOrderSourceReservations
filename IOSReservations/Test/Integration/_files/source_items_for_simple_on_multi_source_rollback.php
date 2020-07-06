@@ -49,6 +49,36 @@ $sourcesItemsData = [
         SourceItemInterface::QUANTITY => 10,
         SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
     ],
+    [
+        SourceItemInterface::SOURCE_CODE => 'eu-1',
+        SourceItemInterface::SKU => 'simple2',
+        SourceItemInterface::QUANTITY => 2,
+        SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
+    ],
+    [
+        SourceItemInterface::SOURCE_CODE => 'eu-2',
+        SourceItemInterface::SKU => 'simple2',
+        SourceItemInterface::QUANTITY => 12,
+        SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
+    ],
+    [
+        SourceItemInterface::SOURCE_CODE => 'eu-3',
+        SourceItemInterface::SKU => 'simple2',
+        SourceItemInterface::QUANTITY => 12,
+        SourceItemInterface::STATUS => SourceItemInterface::STATUS_OUT_OF_STOCK,
+    ],
+    [
+        SourceItemInterface::SOURCE_CODE => 'eu-disabled',
+        SourceItemInterface::SKU => 'simple2',
+        SourceItemInterface::QUANTITY => 6,
+        SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
+    ],
+    [
+        SourceItemInterface::SOURCE_CODE => 'us-1',
+        SourceItemInterface::SKU => 'simple2',
+        SourceItemInterface::QUANTITY => 10,
+        SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
+    ],
 ];
 
 $sourceItems = [];

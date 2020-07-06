@@ -27,7 +27,6 @@ use PHPUnit\Framework\TestCase;
 use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface;
 use ReachDigital\IOSReservationsApi\Exception\CouldNotCreateSourceSelectionRequestFromOrder;
-use ReachDigital\IOSReservationsApi\Exception\SourceReservationForOrderInputException;
 use ReachDigital\ISReservationsApi\Model\GetSourceReservationsQuantityInterface;
 
 class MoveReservationsFromStockToSourceTest extends TestCase

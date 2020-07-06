@@ -22,14 +22,18 @@ $sourceItemsSave = Bootstrap::getObjectManager()->get(SourceItemsSaveInterface::
 $defaultSourceProvider = Bootstrap::getObjectManager()->get(DefaultSourceProviderInterface::class);
 
 /**
- * | *Sku*  | *Source Code* | *Qty* | *Info*        |
- * |--------|---------------|-------|---------------|
- * | simple | eu-1          | 2     |               |
- * | simple | eu-2          | 12    |               |
- * | simple | eu-3          | 12    | out of stock  |
- * | simple | eu-disabled   | 6     |               |
- * | simple | us-1          | 10    |               |
- *
+ * | *Sku*   | *Source Code* | *Qty* | *Info*        |
+ * |---------|---------------|-------|---------------|
+ * | simple  | eu-1          | 2     |               |
+ * | simple  | eu-2          | 12    |               |
+ * | simple  | eu-3          | 12    | out of stock  |
+ * | simple  | eu-disabled   | 6     |               |
+ * | simple  | us-1          | 10    |               |
+ * | simple2 | eu-1          | 2     |               |
+ * | simple2 | eu-2          | 12    |               |
+ * | simple2 | eu-3          | 12    | out of stock  |
+ * | simple2 | eu-disabled   | 6     |               |
+ * | simple2 | us-1          | 10    |               |
  */
 $sourcesItemsData = [
     [
@@ -59,6 +63,36 @@ $sourcesItemsData = [
     [
         SourceItemInterface::SOURCE_CODE => 'us-1',
         SourceItemInterface::SKU => 'simple',
+        SourceItemInterface::QUANTITY => 10,
+        SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
+    ],
+    [
+        SourceItemInterface::SOURCE_CODE => 'eu-1',
+        SourceItemInterface::SKU => 'simple2',
+        SourceItemInterface::QUANTITY => 2,
+        SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
+    ],
+    [
+        SourceItemInterface::SOURCE_CODE => 'eu-2',
+        SourceItemInterface::SKU => 'simple2',
+        SourceItemInterface::QUANTITY => 12,
+        SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
+    ],
+    [
+        SourceItemInterface::SOURCE_CODE => 'eu-3',
+        SourceItemInterface::SKU => 'simple2',
+        SourceItemInterface::QUANTITY => 12,
+        SourceItemInterface::STATUS => SourceItemInterface::STATUS_OUT_OF_STOCK,
+    ],
+    [
+        SourceItemInterface::SOURCE_CODE => 'eu-disabled',
+        SourceItemInterface::SKU => 'simple2',
+        SourceItemInterface::QUANTITY => 6,
+        SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
+    ],
+    [
+        SourceItemInterface::SOURCE_CODE => 'us-1',
+        SourceItemInterface::SKU => 'simple2',
         SourceItemInterface::QUANTITY => 10,
         SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
     ],
