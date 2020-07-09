@@ -8,12 +8,17 @@ declare(strict_types=1);
 
 namespace ReachDigital\IOSReservations\Plugin\MagentoInventorySales;
 
+use Closure;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Event\Observer;
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\InputException;
 use Magento\Framework\Serialize\SerializerInterface;
+use Magento\Framework\Validation\ValidationException;
 use Magento\InventoryReservationsApi\Model\ReservationInterface;
 use Magento\InventorySales\Observer\CatalogInventory\CancelOrderItemObserver;
 use Magento\Sales\Model\Order\Item as OrderItem;
+use Psr\Log\LoggerInterface;
 use ReachDigital\ISReservations\Model\AppendSourceReservations;
 use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
 use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadata;
@@ -45,6 +50,10 @@ class PreventSourceItemQuantityDeductionOnCancellation
      * @var SourceReservationBuilder
      */
     private $sourceReservationBuilder;
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
 
     public function __construct(
         SerializerInterface $serializer,
@@ -52,7 +61,8 @@ class PreventSourceItemQuantityDeductionOnCancellation
         GetReservationsByMetadata $getReservationsByMetadata,
         EncodeMetaData $encodeMetaData,
         AppendSourceReservations $appendSourceReservations,
-        SourceReservationBuilder $sourceReservationBuilder
+        SourceReservationBuilder $sourceReservationBuilder,
+        LoggerInterface $logger
     ) {
         $this->serializer = $serializer;
         $this->resource = $resource;
@@ -60,24 +70,30 @@ class PreventSourceItemQuantityDeductionOnCancellation
         $this->encodeMetaData = $encodeMetaData;
         $this->appendSourceReservations = $appendSourceReservations;
         $this->sourceReservationBuilder = $sourceReservationBuilder;
+        $this->logger = $logger;
     }
 
     /**
-     * Around plugin to prevent reservation item quantity deduction when order is cancelled and order is already assigned,
-     * can happen when assigning happens before invoicing, for instance when an order is authorised but not yet captured
+     * Around plugin to prevent reservation item quantity deduction when order is cancelled and order is already
+     * assigned, can happen when assigning happens before invoicing, for instance when an order is authorised but not
+     * yet captured.
      *
      * @param CancelOrderItemObserver $subject
-     * @param \Closure $proceed
+     * @param Closure $proceed
      * @param Observer $observer
      * @return mixed
-     * @throws \Magento\Framework\Exception\CouldNotSaveException
-     * @throws \Magento\Framework\Exception\InputException
-     * @throws \Magento\Framework\Validation\ValidationException
+     * @throws CouldNotSaveException
+     * @throws InputException
+     * @throws ValidationException
      */
-    public function aroundExecute(CancelOrderItemObserver $subject, \Closure $proceed, Observer $observer)
+    public function aroundExecute(CancelOrderItemObserver $subject, Closure $proceed, Observer $observer)
     {
         /** @var OrderItem $orderItem */
         $orderItem = $observer->getEvent()->getItem();
+
+        $this->logger->info(
+            "[IOSR] #{$orderItem->getOrder()->getId()} {$orderItem->getItemId()} - cancelling order item"
+        );
 
         $connection = $this->resource->getConnection();
         $reservationTable = $this->resource->getTableName('inventory_reservation');
@@ -99,9 +115,20 @@ class PreventSourceItemQuantityDeductionOnCancellation
         $assignedQty = $connection->fetchOne($select);
 
         if (!$assignedQty) {
+            $this->logger->info(
+                "[IOSR] #{$orderItem->getOrder()->getId()} {$orderItem->getItemId()} - no source reservation(s) found, reverting stock reservation(s)"
+            );
             // Not assigned yet, proceed adding order_canceled reservation
-            return $proceed($observer);
+            $proceed($observer);
+            $this->logger->info(
+                "[IOSR] #{$orderItem->getOrder()->getId()} {$orderItem->getItemId()} - stock reservations reverted"
+            );
+            return;
         }
+
+        $this->logger->info(
+            "[IOSR] #{$orderItem->getOrder()->getId()} {$orderItem->getItemId()} - source reservation(s) found, reverting source reservation"
+        );
 
         // Already assigned; skip adding order_canceled reservation,
         // nullify source reservations instead
@@ -123,6 +150,10 @@ class PreventSourceItemQuantityDeductionOnCancellation
         }
 
         $this->appendSourceReservations->execute($nullifications);
+
+        $this->logger->info(
+            "[IOSR] #{$orderItem->getOrder()->getId()} {$orderItem->getItemId()} - source reservation(s) reverted"
+        );
     }
 
     /**
