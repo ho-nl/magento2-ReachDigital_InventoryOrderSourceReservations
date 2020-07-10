@@ -91,9 +91,8 @@ class PreventSourceItemQuantityDeductionOnCancellation
         /** @var OrderItem $orderItem */
         $orderItem = $observer->getEvent()->getItem();
 
-        $this->logger->info(
-            "[IOSR] #{$orderItem->getOrder()->getId()} {$orderItem->getItemId()} - cancelling order item"
-        );
+        $logger = $this->createLogger($orderItem->getOrder()->getId(), $orderItem->getItemId());
+        $logger('start_cancellation');
 
         $connection = $this->resource->getConnection();
         $reservationTable = $this->resource->getTableName('inventory_reservation');
@@ -115,20 +114,15 @@ class PreventSourceItemQuantityDeductionOnCancellation
         $assignedQty = $connection->fetchOne($select);
 
         if (!$assignedQty) {
-            $this->logger->info(
-                "[IOSR] #{$orderItem->getOrder()->getId()} {$orderItem->getItemId()} - no source reservation(s) found, reverting stock reservation(s)"
-            );
+            $logger('revert_stock_start');
+
             // Not assigned yet, proceed adding order_canceled reservation
             $proceed($observer);
-            $this->logger->info(
-                "[IOSR] #{$orderItem->getOrder()->getId()} {$orderItem->getItemId()} - stock reservations reverted"
-            );
+            $logger('revert_stock_end');
             return;
         }
 
-        $this->logger->info(
-            "[IOSR] #{$orderItem->getOrder()->getId()} {$orderItem->getItemId()} - source reservation(s) found, reverting source reservation"
-        );
+        $logger('revert_source_start');
 
         // Already assigned; skip adding order_canceled reservation,
         // nullify source reservations instead
@@ -151,9 +145,8 @@ class PreventSourceItemQuantityDeductionOnCancellation
 
         $this->appendSourceReservations->execute($nullifications);
 
-        $this->logger->info(
-            "[IOSR] #{$orderItem->getOrder()->getId()} {$orderItem->getItemId()} - source reservation(s) reverted"
-        );
+        $logger('revert_source_end');
+        return;
     }
 
     /**
@@ -179,5 +172,19 @@ class PreventSourceItemQuantityDeductionOnCancellation
         }
 
         return $reservationsBySkuAndSource[$sku] ?? [];
+    }
+
+    private function createLogger($orderId, $orderItemId)
+    {
+        return function (string $stage) use ($orderId, $orderItemId) {
+            $this->logger->info(
+                json_encode([
+                    'module' => 'reach-digital/magento2-order-source-reservations',
+                    'order' => $orderId,
+                    'order_item' => $orderItemId,
+                    'stage' => 'revert_source_end',
+                ])
+            );
+        };
     }
 }
