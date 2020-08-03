@@ -23,6 +23,7 @@ use ReachDigital\ISReservations\Model\AppendSourceReservations;
 use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
 use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadata;
 use ReachDigital\ISReservations\Model\SourceReservationBuilder;
+use ReachDigital\ISReservationsApi\Api\Data\SourceReservationInterface;
 
 class PreventSourceItemQuantityDeductionOnCancellation
 {
@@ -182,7 +183,7 @@ class PreventSourceItemQuantityDeductionOnCancellation
                     'module' => 'reach-digital/magento2-order-source-reservations',
                     'order' => $orderId,
                     'order_item' => $orderItemId,
-                    'stage' => 'revert_source_end',
+                    'stage' => $stage,
                 ])
             );
         };
