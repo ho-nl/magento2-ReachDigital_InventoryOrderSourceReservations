@@ -12,7 +12,7 @@ use Magento\Framework\Phrase;
 
 class CouldNotCreateSourceSelectionRequestFromOrder extends LocalizedException
 {
-    protected function __construct(Phrase $phrase, Exception $cause = null, $code = 0)
+    function __construct(Phrase $phrase, Exception $cause = null, $code = 0)
     {
         parent::__construct($phrase, $cause, $code);
     }
