@@ -6,10 +6,12 @@ declare(strict_types=1);
  */
 namespace ReachDigital\IOSReservationsPriorityApi\Api;
 
+use ReachDigital\IOSReservationsPriorityApi\Api\Data\OrderSelectionAlgorithmInterface;
+
 interface GetOrderSelectionSelectionAlgorithmListInterface
 {
     /**
-     * @return \ReachDigital\IOSReservationsPriorityApi\Api\Data\OrderSelectionAlgorithmInterface[]
+     * @return OrderSelectionAlgorithmInterface[]
      */
     public function execute(): array;
 }

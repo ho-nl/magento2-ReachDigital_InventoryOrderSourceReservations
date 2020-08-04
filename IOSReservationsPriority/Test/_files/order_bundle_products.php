@@ -5,6 +5,7 @@
  */
 declare(strict_types=1);
 
+use Magento\Framework\DataObject;
 use Magento\Quote\Api\CartManagementInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Api\Data\AddressInterface;
@@ -30,7 +31,7 @@ $cartId = $cartManagement->createEmptyCart();
 $cart = $cartRepository->get($cartId);
 $cart->setCustomerEmail('admin@example.com');
 $cart->setCustomerIsGuest(true);
-/** @var AddressInterface $address */
+
 $address = $addressFactory->create([
     'data' => [
         AddressInterface::KEY_COUNTRY_ID => 'US',
@@ -70,7 +71,7 @@ foreach ($itemsToBuy as $sku => $qtyData) {
         'bundle_option' => $optionsData,
         'bundle_option_qty' => $optionsQtyData,
     ];
-    $request = new \Magento\Framework\DataObject($requestData);
+    $request = new DataObject($requestData);
     $cart->addProduct($product, $request);
 }
 

@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace ReachDigital\ISReservationsApi\Plugin;
 
 use Magento\Framework\App\ResourceConnection;
+use Magento\Inventory\Model\ResourceModel\SourceItem\SaveMultiple;
 
 class UpdateParentStockPlugin
 {
@@ -27,16 +28,13 @@ class UpdateParentStockPlugin
     }
 
     /**
-     * @param  \Magento\Inventory\Model\ResourceModel\SourceItem\SaveMultiple $subject
+     * @param  SaveMultiple $subject
      * @param  $result
      * @param  array                                                          $sourceItems
      * @return mixed
      */
-    public function afterExecute(
-        \Magento\Inventory\Model\ResourceModel\SourceItem\SaveMultiple $subject,
-        $result,
-        array $sourceItems
-    ) {
+    public function afterExecute(SaveMultiple $subject, $result, array $sourceItems)
+    {
         $connection = $this->resourceConnection->getConnection();
 
         //get SKU's

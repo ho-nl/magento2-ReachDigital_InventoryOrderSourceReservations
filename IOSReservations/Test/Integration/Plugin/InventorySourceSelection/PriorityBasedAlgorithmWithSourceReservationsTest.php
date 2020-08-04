@@ -8,6 +8,9 @@ declare(strict_types=1);
 
 namespace IOSReservations\Test\Integration\Plugin\InventorySourceSelection;
 
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Validation\ValidationException;
 use Magento\InventoryReservations\Model\ResourceModel\GetReservationsQuantity;
 use Magento\InventoryReservationsApi\Model\GetReservationsQuantityInterface;
 use Magento\InventorySourceSelection\Model\Algorithms\PriorityBasedAlgorithm;
@@ -24,9 +27,6 @@ use ReachDigital\ISReservations\Model\SourceReservationBuilder;
 
 class PriorityBasedAlgorithmWithSourceReservationsTest extends TestCase
 {
-    /** @var PriorityBasedAlgorithm */
-    private $priorityBasedAlgorithm;
-
     /** @var SourceReservationBuilder */
     private $sourceReservationBuilder;
 
@@ -178,9 +178,9 @@ class PriorityBasedAlgorithmWithSourceReservationsTest extends TestCase
     }
 
     /**
-     * @throws \Magento\Framework\Exception\CouldNotSaveException
-     * @throws \Magento\Framework\Exception\InputException
-     * @throws \Magento\Framework\Validation\ValidationException
+     * @throws CouldNotSaveException
+     * @throws InputException
+     * @throws ValidationException
      */
     private function appendReservation(string $sourceCode, string $sku, float $quantity, string $metaData): void
     {

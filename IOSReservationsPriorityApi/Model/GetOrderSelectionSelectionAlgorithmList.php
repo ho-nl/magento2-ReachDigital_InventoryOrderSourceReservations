@@ -6,6 +6,7 @@ declare(strict_types=1);
  */
 namespace ReachDigital\IOSReservationsPriorityApi\Model;
 
+use ReachDigital\IOSReservationsPriorityApi\Api\Data\OrderSelectionAlgorithmInterface;
 use ReachDigital\IOSReservationsPriorityApi\Api\Data\OrderSelectionAlgorithmInterfaceFactory;
 use ReachDigital\IOSReservationsPriorityApi\Api\GetOrderSelectionSelectionAlgorithmListInterface;
 
@@ -30,7 +31,7 @@ class GetOrderSelectionSelectionAlgorithmList implements GetOrderSelectionSelect
     }
 
     /**
-     * @return \ReachDigital\IOSReservationsPriorityApi\Api\Data\OrderSelectionAlgorithmInterface[]
+     * @return OrderSelectionAlgorithmInterface[]
      */
     public function execute(): array
     {

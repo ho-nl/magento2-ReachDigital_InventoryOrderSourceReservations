@@ -6,7 +6,6 @@ use Closure;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\InventoryApi\Api\SourceRepositoryInterface;
 use Magento\InventoryShippingAdminUi\Ui\DataProvider\GetSourcesByOrderIdSkuAndQty;
-use ReachDigital\IOSReservations\Model\GetOrderSourceReservations;
 use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
 use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadata;
 

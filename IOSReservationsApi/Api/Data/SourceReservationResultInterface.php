@@ -16,7 +16,7 @@ namespace ReachDigital\IOSReservationsApi\Api\Data;
 interface SourceReservationResultInterface
 {
     /**
-     * @return \ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultItemInterface[]
+     * @return SourceReservationResultItemInterface[]
      */
     public function getReservationItems(): array;
 

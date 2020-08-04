@@ -18,11 +18,12 @@ use Magento\Sales\Api\InvoiceOrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\TestFramework\ObjectManager;
+use PHPUnit\Framework\TestCase;
 use ReachDigital\IOSReservations\Model\GetOrderSourceReservations;
 use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource;
 use ReachDigital\IOSReservationsPriorityApi\Api\OrderSelectionServiceInterface;
 
-class ByDateCreatedAlgorithmTest extends \PHPUnit\Framework\TestCase
+class ByDateCreatedAlgorithmTest extends TestCase
 {
     /** @var SearchCriteriaBuilder */
     private $searchCriteriaBuilder;
@@ -35,9 +36,6 @@ class ByDateCreatedAlgorithmTest extends \PHPUnit\Framework\TestCase
 
     /** @var OrderSelectionServiceInterface */
     private $orderSelectionService;
-
-    /** @var SourceSelectionService */
-    private $sourceSelectionService;
 
     /** @var MoveReservationsFromStockToSource */
     private $moveReservationsFromStockToSource;
@@ -61,7 +59,6 @@ class ByDateCreatedAlgorithmTest extends \PHPUnit\Framework\TestCase
         $this->orderRepository = $objectManager->get(OrderRepositoryInterface::class);
         $this->invoiceOrder = $objectManager->get(InvoiceOrderInterface::class);
         $this->orderSelectionService = $objectManager->get(OrderSelectionServiceInterface::class);
-        $this->sourceSelectionService = $objectManager->get(SourceSelectionService::class);
         $this->moveReservationsFromStockToSource = $objectManager->get(MoveReservationsFromStockToSource::class);
         $this->getDefaultSourceSelectionAlgorithmCode = $objectManager->get(
             GetDefaultSourceSelectionAlgorithmCode::class

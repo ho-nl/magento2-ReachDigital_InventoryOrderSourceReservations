@@ -6,7 +6,6 @@ declare(strict_types=1);
  */
 namespace ReachDigital\IOSReservationsPriorityApi\Model;
 
-use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Sales\Api\Data\OrderSearchResultInterface;
 
 interface OrderSelectionInterface

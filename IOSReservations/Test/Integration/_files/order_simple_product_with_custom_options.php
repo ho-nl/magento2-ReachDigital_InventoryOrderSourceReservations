@@ -6,6 +6,7 @@
 declare(strict_types=1);
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\DataObject;
 use Magento\Quote\Api\CartManagementInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\TestFramework\Helper\Bootstrap;
@@ -40,7 +41,7 @@ foreach ($product->getOptions() as $option) {
     $requestData['options'][$option->getOptionId()] = $optionValuesByType[$option->getType()];
 }
 
-$request = new \Magento\Framework\DataObject($requestData);
+$request = new DataObject($requestData);
 $cart->addProduct($product, $request);
 
 $cartRepository->save($cart);

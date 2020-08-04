@@ -9,6 +9,8 @@ declare(strict_types=1);
 namespace ReachDigital\IOSReservations\Plugin\InventorySourceSelection;
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\InventoryApi\Api\GetSourcesAssignedToStockOrderedByPriorityInterface;
 use Magento\InventoryApi\Api\SourceItemRepositoryInterface;
@@ -78,8 +80,8 @@ class PriorityBasedAlgorithmWithSourceReservations implements SourceSelectionInt
     /**
      * @inheritdoc
      *
-     * @throws \Magento\Framework\Exception\InputException
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws InputException
+     * @throws LocalizedException
      */
     public function execute(InventoryRequestInterface $inventoryRequest): SourceSelectionResultInterface
     {
@@ -155,8 +157,8 @@ class PriorityBasedAlgorithmWithSourceReservations implements SourceSelectionInt
      * @param int $stockId
      * @return array
      *
-     * @throws \Magento\Framework\Exception\InputException
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws InputException
+     * @throws LocalizedException
      */
     private function getEnabledSourcesOrderedByPriorityByStockId(int $stockId): array
     {

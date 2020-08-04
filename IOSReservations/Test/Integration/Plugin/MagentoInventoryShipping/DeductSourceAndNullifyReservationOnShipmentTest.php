@@ -8,11 +8,8 @@ namespace ReachDigital\IOSReservations\Test\Integration\Plugin\InventorySales;
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\InventoryIndexer\Model\ResourceModel\GetStockItemData;
-use Magento\InventoryIndexer\Model\ResourceModel\GetStockItemDataCache;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\InventoryReservations\Model\ResourceModel\GetReservationsQuantity;
-use Magento\InventoryReservations\Model\ResourceModel\GetReservationsQuantityCache;
-use Magento\InventoryReservationsApi\Model\GetReservationsQuantityInterface;
 use Magento\InventorySales\Model\GetProductSalableQty;
 use Magento\InventorySourceDeductionApi\Model\GetSourceItemBySourceCodeAndSku;
 use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
@@ -258,7 +255,7 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
      * @param SourceReservationResultInterface $reservationResult
      *
      * @return float
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      */
     public function getCombinedSourcesQty(string $sku, SourceReservationResultInterface $reservationResult): float
     {

@@ -200,11 +200,7 @@ class AppendSourceReservationsTest extends TestCase
      * @param int $qty
      * @return string
      * @throws CouldNotSaveException
-     * @throws InputException
      * @throws NoSuchEntityException
-     * @throws ValidationException
-     * @throws CouldNotCreateSourceSelectionRequestFromOrder
-     * @throws CouldNotFullySelectSourcesForOrder
      */
     private function createOrder(int $qty): string
     {
@@ -245,9 +241,7 @@ class AppendSourceReservationsTest extends TestCase
         $cart->addProduct($product2, new DataObject(['product' => $product2->getId(), 'qty' => $qty]));
 
         $this->cartRepository->save($cart);
-        $orderId = (string) $this->cartManagement->placeOrder($cart->getId());
-
-        return $orderId;
+        return (string) $this->cartManagement->placeOrder($cart->getId());
     }
 
     private function deleteOrder($id)

@@ -9,6 +9,9 @@ namespace ReachDigital\IOSReservations\Plugin\MagentoSalesInventory;
 
 use Magento\CatalogInventory\Api\StockConfigurationInterface;
 use Magento\Sales\Api\CreditmemoRepositoryInterface;
+use Magento\Sales\Api\Data\CreditmemoCommentCreationInterface;
+use Magento\Sales\Api\Data\CreditmemoCreationArgumentsInterface;
+use Magento\Sales\Api\Data\CreditmemoItemCreationInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\RefundOrderInterface;
 use Magento\SalesInventory\Model\Order\ReturnProcessor;
@@ -61,11 +64,11 @@ class AlwaysAutoReturnToStockOrder extends ReturnToStockOrder
      * @param RefundOrderInterface $refundService
      * @param int $resultEntityId
      * @param int $orderId
-     * @param \Magento\Sales\Api\Data\CreditmemoItemCreationInterface[] $items
+     * @param CreditmemoItemCreationInterface[] $items
      * @param bool|null $notify
      * @param bool|null $appendComment
-     * @param \Magento\Sales\Api\Data\CreditmemoCommentCreationInterface|null $comment
-     * @param \Magento\Sales\Api\Data\CreditmemoCreationArgumentsInterface|null $arguments
+     * @param CreditmemoCommentCreationInterface|null $comment
+     * @param CreditmemoCreationArgumentsInterface|null $arguments
      * @return int
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
@@ -76,8 +79,8 @@ class AlwaysAutoReturnToStockOrder extends ReturnToStockOrder
         array $items = [],
         $notify = false,
         $appendComment = false,
-        \Magento\Sales\Api\Data\CreditmemoCommentCreationInterface $comment = null,
-        \Magento\Sales\Api\Data\CreditmemoCreationArgumentsInterface $arguments = null
+        CreditmemoCommentCreationInterface $comment = null,
+        CreditmemoCreationArgumentsInterface $arguments = null
     ): int {
         $order = $this->orderRepository->get($orderId);
 

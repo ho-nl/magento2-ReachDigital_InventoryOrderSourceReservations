@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace ReachDigital\IOSReservations\Model\SourceReservationResult;
 
+use LogicException;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultItemInterface;
 
@@ -25,7 +26,7 @@ class SourceReservationResult implements SourceReservationResultInterface
      * @param array $reservationItems
      * @param int   $orderId
      *
-     * @throws \LogicException
+     * @throws LogicException
      */
     public function __construct(array $reservationItems, int $orderId)
     {
@@ -33,7 +34,7 @@ class SourceReservationResult implements SourceReservationResultInterface
         $this->reservationItems = [];
         foreach ($reservationItems as $reservationItem) {
             if (!$reservationItem instanceof SourceReservationResultItemInterface) {
-                throw new \LogicException(__('Item must be instance of SourceReservationResultItemInterface'));
+                throw new LogicException(__('Item must be instance of SourceReservationResultItemInterface'));
             }
             $this->reservationItems[] = $reservationItem;
         }
