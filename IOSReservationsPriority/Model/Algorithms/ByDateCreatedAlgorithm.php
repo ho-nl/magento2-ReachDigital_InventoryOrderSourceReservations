@@ -10,7 +10,6 @@ namespace ReachDigital\IOSReservationsPriority\Model\Algorithms;
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Api\SortOrderBuilder;
-use Magento\Framework\App\ResourceConnection;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderSearchResultInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;

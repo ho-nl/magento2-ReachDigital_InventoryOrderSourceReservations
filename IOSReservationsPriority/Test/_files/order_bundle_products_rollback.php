@@ -6,13 +6,14 @@
 declare(strict_types=1);
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\Registry;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderManagementInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 
-/** @var \Magento\Framework\Registry $registry */
-$registry = \Magento\TestFramework\Helper\Bootstrap::getObjectManager()->get(\Magento\Framework\Registry::class);
+/** @var Registry $registry */
+$registry = Bootstrap::getObjectManager()->get(Registry::class);
 
 $registry->unregister('isSecureArea');
 $registry->register('isSecureArea', true);
@@ -24,7 +25,7 @@ $orderManagement = Bootstrap::getObjectManager()->get(OrderManagementInterface::
 /** @var SearchCriteriaBuilder $searchCriteriaBuilder */
 $searchCriteriaBuilder = Bootstrap::getObjectManager()->get(SearchCriteriaBuilder::class);
 $searchCriteria = $searchCriteriaBuilder->addFilter('increment_id', 'test_order_bundle_1')->create();
-/** @var OrderInterface $order */
+
 $order = current($orderRepository->getList($searchCriteria)->getItems());
 if ($order) {
     $orderManagement->cancel($order->getEntityId());

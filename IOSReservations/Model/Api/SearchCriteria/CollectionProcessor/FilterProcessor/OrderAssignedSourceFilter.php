@@ -7,9 +7,11 @@ declare(strict_types=1);
 
 namespace ReachDigital\IOSReservations\Model\Api\SearchCriteria\CollectionProcessor\FilterProcessor;
 
+use InvalidArgumentException;
 use Magento\Framework\Api\Filter;
 use Magento\Framework\Api\SearchCriteria\CollectionProcessor\FilterProcessor\CustomFilterInterface;
 use Magento\Framework\Data\Collection\AbstractDb;
+use Magento\Sales\Model\ResourceModel\Order\Collection;
 
 class OrderAssignedSourceFilter implements CustomFilterInterface
 {
@@ -34,7 +36,7 @@ class OrderAssignedSourceFilter implements CustomFilterInterface
      */
     public function apply(Filter $filter, AbstractDb $collection): bool
     {
-        if (!($collection instanceof \Magento\Sales\Model\ResourceModel\Order\Collection)) {
+        if (!($collection instanceof Collection)) {
             return false;
         }
 
@@ -61,7 +63,7 @@ class OrderAssignedSourceFilter implements CustomFilterInterface
         ];
 
         if (!array_key_exists($filter->getConditionType(), $conditionMap)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 (string) __('Unsupported filter condition: %1', $filter->getConditionType())
             );
         }

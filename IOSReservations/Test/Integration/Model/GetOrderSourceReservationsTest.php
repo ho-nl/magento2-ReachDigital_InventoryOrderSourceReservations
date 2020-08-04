@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace ReachDigital\IOSReservationsPriority\Test\Integration\Model;
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\InventoryReservations\Model\ResourceModel\GetReservationsQuantity;
 use Magento\InventoryReservationsApi\Model\GetReservationsQuantityInterface;
 use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
@@ -17,11 +18,12 @@ use Magento\Sales\Api\InvoiceOrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\TestFramework\ObjectManager;
+use PHPUnit\Framework\TestCase;
 use ReachDigital\IOSReservations\Model\GetOrderSourceReservations;
 use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource;
 use ReachDigital\IOSReservations\Model\SourceReservationResult\SourceReservationResultItem;
 
-class GetOrderSourceReservationsTest extends \PHPUnit\Framework\TestCase
+class GetOrderSourceReservationsTest extends TestCase
 {
     /** @var SearchCriteriaBuilder */
     private $searchCriteriaBuilder;
@@ -91,7 +93,7 @@ class GetOrderSourceReservationsTest extends \PHPUnit\Framework\TestCase
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product.php
      *
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     public function should_have_reservations_after_move(): void
     {

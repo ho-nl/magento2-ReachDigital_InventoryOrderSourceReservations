@@ -6,12 +6,13 @@ declare(strict_types=1);
  */
 namespace ReachDigital\IOSReservationsApi\Exception;
 
+use Exception;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Phrase;
 
 class CouldNotFullySelectSourcesForOrder extends LocalizedException
 {
-    protected function __construct(Phrase $phrase, \Exception $cause = null, $code = 0)
+    protected function __construct(Phrase $phrase, Exception $cause = null, $code = 0)
     {
         parent::__construct($phrase, $cause, $code);
     }

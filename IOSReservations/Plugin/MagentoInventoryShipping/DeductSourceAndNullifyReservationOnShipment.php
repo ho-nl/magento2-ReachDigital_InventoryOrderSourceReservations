@@ -8,6 +8,11 @@ declare(strict_types=1);
 
 namespace ReachDigital\IOSReservations\Plugin\MagentoInventoryShipping;
 
+use Closure;
+use Exception;
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Validation\ValidationException;
 use Magento\InventoryCatalogApi\Api\DefaultSourceProviderInterface;
 use Magento\InventoryCatalogApi\Model\IsSingleSourceModeInterface;
 use Magento\InventoryShipping\Model\GetItemsToDeductFromShipment;
@@ -16,6 +21,7 @@ use Magento\InventoryShipping\Observer\SourceDeductionProcessor;
 use Magento\InventorySourceDeductionApi\Model\SourceDeductionRequestInterface;
 use Magento\InventorySourceDeductionApi\Model\SourceDeductionServiceInterface;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Shipment;
 use ReachDigital\ISReservations\Model\AppendSourceReservations;
 use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
 use ReachDigital\ISReservations\Model\SourceReservationBuilder;
@@ -91,17 +97,17 @@ class DeductSourceAndNullifyReservationOnShipment
      * stock reservation nullification)
      *
      * @param SourceDeductionProcessor $subject
-     * @param \Closure                 $proceed
-     * @param EventObserver            $observer
+     * @param Closure $proceed
+     * @param EventObserver $observer
      *
-     * @throws \Magento\Framework\Exception\CouldNotSaveException
-     * @throws \Magento\Framework\Exception\InputException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
-     * @throws \Magento\Framework\Validation\ValidationException
+     * @throws CouldNotSaveException
+     * @throws InputException
+     * @throws ValidationException
+     * @throws Exception
      */
-    public function aroundExecute(SourceDeductionProcessor $subject, \Closure $proceed, EventObserver $observer): void
+    public function aroundExecute(SourceDeductionProcessor $subject, Closure $proceed, EventObserver $observer): void
     {
-        /** @var \Magento\Sales\Model\Order\Shipment $shipment */
+        /** @var Shipment $shipment */
         /** @noinspection PhpUndefinedMethodInspection */
         $shipment = $observer->getEvent()->getShipment();
         if ($shipment->getOrigData('entity_id')) {
@@ -115,6 +121,10 @@ class DeductSourceAndNullifyReservationOnShipment
             $sourceCode = $shipment->getExtensionAttributes()->getSourceCode();
         } elseif ($this->isSingleSourceMode->execute()) {
             $sourceCode = $this->defaultSourceProvider->getCode();
+        }
+
+        if (!$sourceCode) {
+            throw new Exception('Source code not set');
         }
 
         $shipmentItems = $this->getItemsToDeductFromShipment->execute($shipment);
@@ -133,9 +143,9 @@ class DeductSourceAndNullifyReservationOnShipment
     /**
      * @param SourceDeductionRequestInterface $sourceDeductionRequest
      *
-     * @throws \Magento\Framework\Exception\CouldNotSaveException
-     * @throws \Magento\Framework\Exception\InputException
-     * @throws \Magento\Framework\Validation\ValidationException
+     * @throws CouldNotSaveException
+     * @throws InputException
+     * @throws ValidationException
      */
     private function placeCompensatingSourceReservation(
         SourceDeductionRequestInterface $sourceDeductionRequest,

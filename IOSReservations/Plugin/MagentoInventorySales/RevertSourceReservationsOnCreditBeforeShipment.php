@@ -8,14 +8,16 @@ declare(strict_types=1);
 
 namespace ReachDigital\IOSReservations\Plugin\MagentoInventorySales;
 
+use Closure;
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\InventorySales\Model\ReturnProcessor\ProcessRefundItems;
-use Magento\InventorySalesApi\Api\Data\ItemToSellInterfaceFactory;
 use Magento\InventorySalesApi\Api\Data\SalesEventInterface;
 use Magento\InventorySalesApi\Api\Data\SalesEventInterfaceFactory;
 use Magento\InventorySalesApi\Api\Data\SalesChannelInterfaceFactory;
 use Magento\InventorySalesApi\Api\Data\SalesChannelInterface;
-use Magento\InventorySalesApi\Api\PlaceReservationsForSalesEventInterface;
-use Magento\InventorySalesApi\Model\ReturnProcessor\ProcessRefundItemsInterface;
 use Magento\InventorySalesApi\Model\ReturnProcessor\GetSourceDeductedOrderItemsInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Store\Api\WebsiteRepositoryInterface;
@@ -26,7 +28,7 @@ use ReachDigital\ISReservations\Model\AppendSourceReservations;
 use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
 use ReachDigital\ISReservations\Model\SourceReservationBuilder;
 use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadata;
-use ReachDigital\ISReservationsApi\Api\SourceReservationInterface;
+use ReachDigital\ISReservationsApi\Api\Data\SourceReservationInterface;
 
 class RevertSourceReservationsOnCreditBeforeShipment
 {
@@ -122,18 +124,18 @@ class RevertSourceReservationsOnCreditBeforeShipment
 
     /**
      * @param ProcessRefundItems $subject
-     * @param \Closure           $proceed
+     * @param Closure           $proceed
      * @param OrderInterface     $order
      * @param array              $itemsToRefund
      * @param array              $returnToStockItems
      *
-     * @throws \Magento\Framework\Exception\CouldNotSaveException
-     * @throws \Magento\Framework\Exception\InputException
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws CouldNotSaveException
+     * @throws InputException
+     * @throws LocalizedException
      */
     public function aroundExecute(
         ProcessRefundItems $subject,
-        \Closure $proceed,
+        Closure $proceed,
         OrderInterface $order,
         array $itemsToRefund,
         array $returnToStockItems
@@ -194,7 +196,6 @@ class RevertSourceReservationsOnCreditBeforeShipment
             }
         }
 
-        /** @var SalesEventInterface $salesEvent */
         $salesEvent = $this->salesEventFactory->create([
             'type' => SalesEventInterface::EVENT_CREDITMEMO_CREATED,
             'objectType' => SalesEventInterface::OBJECT_TYPE_ORDER,
@@ -265,7 +266,7 @@ class RevertSourceReservationsOnCreditBeforeShipment
      * @param OrderInterface $order
      *
      * @return SalesChannelInterface
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      */
     private function getSalesChannelForOrder(OrderInterface $order): SalesChannelInterface
     {

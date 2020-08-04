@@ -21,12 +21,12 @@ shipped and thus the source isn't deducted at that point.
 
 To implement a warehouse connector based on MSI, we need to know to what
 warehouse to send which products. The warehouse selection is done in MSI with
-the Souce Selection Algorithm. The SSA is triggered via the UI, right before
+the Source Selection Algorithm. The SSA is triggered via the UI, right before
 creating the shipment.
 
 The feature-gap here is that we need the result of the SSA, because we need to
-send an API call at some point to the warehouse... After we've send the API
-calls to the warehouse we cant have the result of the SSA be changed.
+send an API call at some point to the warehouse... After we've sent the API
+calls to the warehouse we can't have the result of the SSA be changed.
 
 1. If the SSA has been ran a single time we need to store the result, it can't
    change.
@@ -102,7 +102,7 @@ Credit Order when shipped:
 4. Create creditmemo:
    - 🔹
      [RevertSourceReservationsOnCreditBeforeShipment](https://github.com/ho-nl/magento2-ReachDigital_InventoryOrderSourceReservations/blob/master/IOSReservations/Plugin/MagentoInventorySales/RevertSourceReservationsOnCreditBeforeShipment.php)
-     will automatically reverty any source reservations.
+     will automatically revert any source reservations.
 
 ### REST Api / Internal Api
 

@@ -6,6 +6,7 @@
 declare(strict_types=1);
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\ObjectManagerInterface;
 use Magento\Inventory\Model\SourceItem\Command\GetSourceItemsBySku;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\InventoryReservations\Model\ResourceModel\GetReservationsQuantity;
@@ -24,12 +25,13 @@ use Magento\Sales\Model\InvoiceOrder;
 use Magento\Sales\Model\Order;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\TestFramework\ObjectManager;
+use PHPUnit\Framework\TestCase;
 use ReachDigital\IOSReservations\Model\GetOrderSourceReservations;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultItemInterface;
 use ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceInterface;
 use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsQuantityList;
 
-class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framework\TestCase
+class RevertSourceReservationsOnCreditBeforeShipmentTest extends TestCase
 {
     /** @var GetReservationsQuantityList */
     private $getReservationsQuantityList;
@@ -49,7 +51,7 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
     /** @var GetDefaultSourceSelectionAlgorithmCode */
     private $getDefaultSourceSelectionAlgorithmCode;
 
-    /** @var \Magento\Framework\ObjectManagerInterface */
+    /** @var ObjectManagerInterface */
     private $objectManager;
 
     /** @var GetReservationsQuantity */
@@ -57,12 +59,6 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
 
     /** @var GetSourceItemsBySku */
     private $getSourceItemsBySku;
-
-    /** @var ShipmentCreationArgumentsInterface */
-    private $shipmentCreationArguments;
-
-    /** @var ShipmentCreationArgumentsExtensionInterfaceFactory */
-    private $shipmentCreationArgumentsExtensionFactory;
 
     public function setUp()
     {
@@ -85,8 +81,8 @@ class RevertSourceReservationsOnCreditBeforeShipmentTest extends \PHPUnit\Framew
         );
         $this->getStockReservationsQuantity = $objectManager->get(GetReservationsQuantity::class);
         $this->getSourceItemsBySku = $objectManager->get(GetSourceItemsBySku::class);
-        $this->shipmentCreationArguments = $objectManager->get(ShipmentCreationArgumentsInterface::class);
-        $this->shipmentCreationArgumentsExtensionFactory = $objectManager->get(
+        $shipmentCreationArguments = $objectManager->get(ShipmentCreationArgumentsInterface::class);
+        $shipmentCreationArgumentsExtensionFactory = $objectManager->get(
             ShipmentCreationArgumentsExtensionInterfaceFactory::class
         );
         $this->objectManager = $objectManager;

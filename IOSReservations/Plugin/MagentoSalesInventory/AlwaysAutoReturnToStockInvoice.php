@@ -7,43 +7,52 @@ declare(strict_types=1);
 
 namespace ReachDigital\IOSReservations\Plugin\MagentoSalesInventory;
 
+use Magento\CatalogInventory\Api\StockConfigurationInterface;
+use Magento\Sales\Api\CreditmemoRepositoryInterface;
+use Magento\Sales\Api\Data\CreditmemoCommentCreationInterface;
+use Magento\Sales\Api\Data\CreditmemoCreationArgumentsInterface;
+use Magento\Sales\Api\Data\CreditmemoItemCreationInterface;
+use Magento\Sales\Api\InvoiceRepositoryInterface;
+use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Api\RefundInvoiceInterface;
+use Magento\SalesInventory\Model\Order\ReturnProcessor;
 use Magento\SalesInventory\Model\Plugin\Order\ReturnToStockInvoice;
 
 class AlwaysAutoReturnToStockInvoice extends ReturnToStockInvoice
 {
     /**
-     * @var \Magento\SalesInventory\Model\Order\ReturnProcessor
+     * @var ReturnProcessor
      */
     private $returnProcessor;
 
     /**
-     * @var \Magento\Sales\Api\CreditmemoRepositoryInterface
+     * @var CreditmemoRepositoryInterface
      */
     private $creditmemoRepository;
 
     /**
-     * @var \Magento\Sales\Api\OrderRepositoryInterface
+     * @var OrderRepositoryInterface
      */
     private $orderRepository;
 
     /**
-     * @var \Magento\Sales\Api\InvoiceRepositoryInterface
+     * @var InvoiceRepositoryInterface
      */
     private $invoiceRepository;
     /**
      * ReturnToStockInvoice constructor.
-     * @param \Magento\SalesInventory\Model\Order\ReturnProcessor $returnProcessor
-     * @param \Magento\Sales\Api\CreditmemoRepositoryInterface $creditmemoRepository
-     * @param \Magento\Sales\Api\OrderRepositoryInterface $orderRepository
-     * @param \Magento\Sales\Api\InvoiceRepositoryInterface $invoiceRepository
-     * @param \Magento\CatalogInventory\Api\StockConfigurationInterface $stockConfiguration
+     * @param ReturnProcessor $returnProcessor
+     * @param CreditmemoRepositoryInterface $creditmemoRepository
+     * @param OrderRepositoryInterface $orderRepository
+     * @param InvoiceRepositoryInterface $invoiceRepository
+     * @param StockConfigurationInterface $stockConfiguration
      */
     public function __construct(
-        \Magento\SalesInventory\Model\Order\ReturnProcessor $returnProcessor,
-        \Magento\Sales\Api\CreditmemoRepositoryInterface $creditmemoRepository,
-        \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
-        \Magento\Sales\Api\InvoiceRepositoryInterface $invoiceRepository,
-        \Magento\CatalogInventory\Api\StockConfigurationInterface $stockConfiguration
+        ReturnProcessor $returnProcessor,
+        CreditmemoRepositoryInterface $creditmemoRepository,
+        OrderRepositoryInterface $orderRepository,
+        InvoiceRepositoryInterface $invoiceRepository,
+        StockConfigurationInterface $stockConfiguration
     ) {
         parent::__construct(
             $returnProcessor,
@@ -59,28 +68,28 @@ class AlwaysAutoReturnToStockInvoice extends ReturnToStockInvoice
     }
 
     /**
-     * @param \Magento\Sales\Api\RefundInvoiceInterface $refundService
+     * @param RefundInvoiceInterface $refundService
      * @param int $resultEntityId
      * @param int $invoiceId
-     * @param \Magento\Sales\Api\Data\CreditmemoItemCreationInterface[] $items
+     * @param CreditmemoItemCreationInterface[] $items
      * @param bool|null $isOnline
      * @param bool|null $notify
      * @param bool|null $appendComment
-     * @param \Magento\Sales\Api\Data\CreditmemoCommentCreationInterface|null $comment
-     * @param \Magento\Sales\Api\Data\CreditmemoCreationArgumentsInterface|null $arguments
+     * @param CreditmemoCommentCreationInterface|null $comment
+     * @param CreditmemoCreationArgumentsInterface|null $arguments
      * @return int
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterExecute(
-        \Magento\Sales\Api\RefundInvoiceInterface $refundService,
+        RefundInvoiceInterface $refundService,
         $resultEntityId,
         $invoiceId,
         array $items = [],
         $isOnline = false,
         $notify = false,
         $appendComment = false,
-        \Magento\Sales\Api\Data\CreditmemoCommentCreationInterface $comment = null,
-        \Magento\Sales\Api\Data\CreditmemoCreationArgumentsInterface $arguments = null
+        CreditmemoCommentCreationInterface $comment = null,
+        CreditmemoCreationArgumentsInterface $arguments = null
     ): int {
         $invoice = $this->invoiceRepository->get($invoiceId);
         $order = $this->orderRepository->get($invoice->getOrderId());

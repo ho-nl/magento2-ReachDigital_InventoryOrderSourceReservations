@@ -8,7 +8,11 @@ use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\DataObject;
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Registry;
+use Magento\Framework\Validation\ValidationException;
 use Magento\InventoryShippingAdminUi\Ui\DataProvider\SourceSelectionDataProviderFactory;
 use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
 use Magento\Quote\Api\CartManagementInterface;
@@ -25,6 +29,8 @@ use Magento\TestFramework\Helper\Bootstrap;
 use Magento\TestFramework\ObjectManager;
 use PHPUnit\Framework\TestCase;
 use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource;
+use ReachDigital\IOSReservationsApi\Exception\CouldNotCreateSourceSelectionRequestFromOrder;
+use ReachDigital\IOSReservationsApi\Exception\CouldNotFullySelectSourcesForOrder;
 
 class SourceSelectionDataProviderWithAlreadySourcedItemsTest extends TestCase
 {
@@ -93,7 +99,6 @@ class SourceSelectionDataProviderWithAlreadySourcedItemsTest extends TestCase
         /** @var ObjectManager $objectManager */
         $objectManager = Bootstrap::getObjectManager();
 
-        $searchCriteriaBuilder = $objectManager->get(SearchCriteriaBuilder::class);
         $this->orderRepository = $objectManager->get(OrderRepositoryInterface::class);
         $this->orderManagement = $objectManager->get(OrderManagementInterface::class);
         $this->invoiceOrder = $objectManager->get(InvoiceOrderInterface::class);
@@ -173,12 +178,12 @@ class SourceSelectionDataProviderWithAlreadySourcedItemsTest extends TestCase
      *
      * @param int $qty
      * @return string
-     * @throws \Magento\Framework\Exception\CouldNotSaveException
-     * @throws \Magento\Framework\Exception\InputException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
-     * @throws \Magento\Framework\Validation\ValidationException
-     * @throws \ReachDigital\IOSReservationsApi\Exception\CouldNotCreateSourceSelectionRequestFromOrder
-     * @throws \ReachDigital\IOSReservationsApi\Exception\CouldNotFullySelectSourcesForOrder
+     * @throws CouldNotSaveException
+     * @throws InputException
+     * @throws NoSuchEntityException
+     * @throws ValidationException
+     * @throws CouldNotCreateSourceSelectionRequestFromOrder
+     * @throws CouldNotFullySelectSourcesForOrder
      */
     private function createOrder(int $qty): string
     {

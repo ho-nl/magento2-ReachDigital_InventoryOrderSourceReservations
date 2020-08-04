@@ -82,7 +82,7 @@ class GetItemsToDeductFromShipment extends \Magento\InventoryShipping\Model\GetI
         $byOrderId = $this->searchCriteriaBuilder->addFilter('order_id', $shipment->getOrderId())->create();
         $orderItems = $this->orderItemRepository->getList($byOrderId)->getItems();
 
-        /** @var \Magento\Sales\Model\Order\Shipment\Item $shipmentItem */
+        /** @var Item $shipmentItem */
         foreach ($shipment->getAllItems() as $shipmentItem) {
             if (!$shipmentItem->getOrderItemId() || !isset($orderItems[$shipmentItem->getOrderItemId()])) {
                 continue;

@@ -15,8 +15,6 @@ use Magento\InventorySourceSelection\Model\GetDefaultSourceSelectionAlgorithmCod
 use Magento\Sales\Api\Data\CreditmemoCreationArgumentsExtensionFactory;
 use Magento\Sales\Api\Data\CreditmemoCreationArgumentsInterface;
 use Magento\Sales\Api\Data\CreditmemoItemCreationInterface;
-use Magento\Sales\Api\Data\ShipmentCreationArgumentsExtensionInterfaceFactory;
-use Magento\Sales\Api\Data\ShipmentCreationArgumentsInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\RefundOrderInterface;
 use Magento\Sales\Model\InvoiceOrder;

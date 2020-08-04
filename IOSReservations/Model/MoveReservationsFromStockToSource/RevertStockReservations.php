@@ -8,11 +8,13 @@ declare(strict_types=1);
 
 namespace ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource;
 
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\SerializerInterface;
-use Magento\InventoryCatalogApi\Model\GetProductIdsBySkusInterface;
+use Magento\Framework\Validation\ValidationException;
 use Magento\InventoryReservationsApi\Model\AppendReservationsInterface;
 use Magento\InventoryReservationsApi\Model\ReservationBuilderInterface;
-use Magento\InventorySales\Model\SalesEventToArrayConverter;
 use Magento\InventorySalesApi\Model\StockByWebsiteIdResolverInterface;
 use Magento\InventorySourceSelectionApi\Api\Data\SourceSelectionResultInterface;
 use Magento\Sales\Api\Data\OrderInterface;
@@ -63,10 +65,10 @@ class RevertStockReservations
      * @param OrderInterface                 $order
      * @param SourceSelectionResultInterface $sourceSelectionResult
      *
-     * @throws \Magento\Framework\Exception\CouldNotSaveException
-     * @throws \Magento\Framework\Exception\InputException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
-     * @throws \Magento\Framework\Validation\ValidationException
+     * @throws CouldNotSaveException
+     * @throws InputException
+     * @throws NoSuchEntityException
+     * @throws ValidationException
      */
     public function execute(OrderInterface $order, SourceSelectionResultInterface $sourceSelectionResult): void
     {

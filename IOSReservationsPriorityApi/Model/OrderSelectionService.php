@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace ReachDigital\IOSReservationsPriorityApi\Model;
 
+use LogicException;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Sales\Api\Data\OrderSearchResultInterface;
 use ReachDigital\IOSReservationsPriorityApi\Api\OrderSelectionServiceInterface;
@@ -40,7 +41,7 @@ class OrderSelectionService implements OrderSelectionServiceInterface
     public function execute(?int $limit, string $algorithmCode): OrderSearchResultInterface
     {
         if (!isset($this->orderSelectionMethods[$algorithmCode])) {
-            throw new \LogicException(
+            throw new LogicException(
                 (string) __('There is no such Order Selection Algorithm implemented: %1', $algorithmCode)
             );
         }
@@ -49,7 +50,7 @@ class OrderSelectionService implements OrderSelectionServiceInterface
         /** @var OrderSelectionInterface $selection */
         $selection = $this->objectManager->create($orderSelectionClassName);
         if (false === $selection instanceof OrderSelectionInterface) {
-            throw new \LogicException(
+            throw new LogicException(
                 (string) __('%1 doesn\'t implement OrderSelectionInterface', $orderSelectionClassName)
             );
         }
