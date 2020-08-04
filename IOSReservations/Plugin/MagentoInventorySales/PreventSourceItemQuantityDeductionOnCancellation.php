@@ -114,7 +114,8 @@ class PreventSourceItemQuantityDeductionOnCancellation
 
         $assignedQty = $connection->fetchOne($select);
 
-        if (!$assignedQty) {
+        // If the cleanup has ran and it was already assigned the rows are removed.
+        if ($assignedQty !== null && $assignedQty == 0) {
             $logger('revert_stock_start');
 
             // Not assigned yet, proceed adding order_canceled reservation
@@ -138,6 +139,7 @@ class PreventSourceItemQuantityDeductionOnCancellation
             $this->sourceReservationBuilder->setMetadata(
                 $this->encodeMetaData->execute([
                     'order' => $orderItem->getOrderId(),
+                    'order_item' => $orderItem->getId(),
                     'refund_compensation' => null,
                 ])
             );
