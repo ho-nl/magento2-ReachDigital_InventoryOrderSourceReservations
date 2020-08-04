@@ -54,14 +54,6 @@ class CancelOrderItems
      */
     private $getItemsToCancelFromOrderItem;
 
-    /**
-     * @param Processor $priceIndexer
-     * @param SalesEventInterfaceFactory $salesEventFactory
-     * @param PlaceReservationsForSalesEventInterface $placeReservationsForSalesEvent
-     * @param SalesChannelInterfaceFactory $salesChannelFactory
-     * @param WebsiteRepositoryInterface $websiteRepository
-     * @param GetItemsToCancelFromOrderItem $getItemsToCancelFromOrderItem
-     */
     public function __construct(
         Processor $priceIndexer,
         SalesEventInterfaceFactory $salesEventFactory,

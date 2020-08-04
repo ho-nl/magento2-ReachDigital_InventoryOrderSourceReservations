@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace ReachDigital\IOSReservationsPriority\Test\Integration\Model;
+namespace ReachDigital\IOSReservations\Test\Integration\Model;
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Exception\LocalizedException;

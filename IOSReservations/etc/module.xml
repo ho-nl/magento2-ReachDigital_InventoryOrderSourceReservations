@@ -8,6 +8,8 @@
             <module name="Magento_Sales"/>
             <module name="Magento_InventorySourceSelection"/>
             <module name="ReachDigital_ISReservationsApi"/>
+            <module name="ReachDigital_IOSReservationsApi"/>
+            <module name="ReachDigital_IOSReservationsPriorityApi"/>
         </sequence>
     </module>
 </config>

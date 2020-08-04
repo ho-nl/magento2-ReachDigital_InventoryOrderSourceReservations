@@ -47,13 +47,6 @@ class GetItemsToDeductFromShipment extends \Magento\InventoryShipping\Model\GetI
      */
     private $searchCriteriaBuilder;
 
-    /**
-     * @param GetSkuFromOrderItemInterface $getSkuFromOrderItem
-     * @param Json $jsonSerializer
-     * @param ItemToDeductInterfaceFactory $itemToDeduct
-     * @param OrderItemRepositoryInterface|null $orderItemRepository
-     * @param SearchCriteriaBuilder|null $searchCriteriaBuilder
-     */
     public function __construct(
         GetSkuFromOrderItemInterface $getSkuFromOrderItem,
         Json $jsonSerializer,

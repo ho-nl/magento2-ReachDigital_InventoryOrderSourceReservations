@@ -24,11 +24,11 @@ use Magento\Store\Api\WebsiteRepositoryInterface;
 use Magento\InventorySourceDeductionApi\Model\ItemToDeductFactory;
 use Magento\InventorySourceDeductionApi\Model\SourceDeductionRequestFactory;
 use Magento\InventorySourceDeductionApi\Model\SourceDeductionService;
-use ReachDigital\ISReservations\Model\AppendSourceReservations;
-use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
-use ReachDigital\ISReservations\Model\SourceReservationBuilder;
-use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadata;
 use ReachDigital\ISReservationsApi\Api\Data\SourceReservationInterface;
+use ReachDigital\ISReservationsApi\Api\EncodeMetaDataInterface;
+use ReachDigital\ISReservationsApi\Api\GetReservationsByMetadataInterface;
+use ReachDigital\ISReservationsApi\Model\AppendSourceReservationsInterface;
+use ReachDigital\ISReservationsApi\Model\SourceReservationBuilderInterface;
 
 class RevertSourceReservationsOnCreditBeforeShipment
 {
@@ -68,34 +68,25 @@ class RevertSourceReservationsOnCreditBeforeShipment
     private $sourceDeductionService;
 
     /**
-     * @var GetReservationsByMetadata
+     * @var GetReservationsByMetadataInterface
      */
     private $getReservationsByMetadata;
 
     /**
-     * @var EncodeMetaData
+     * @var EncodeMetaDataInterface
      */
     private $encodeMetaData;
 
     /**
-     * @var SourceReservationBuilder
+     * @var SourceReservationBuilderInterface
      */
     private $sourceReservationBuilder;
 
     /**
-     * @var AppendSourceReservations
+     * @var AppendSourceReservationsInterface
      */
     private $appendReservations;
 
-    /**
-     * @param WebsiteRepositoryInterface $websiteRepository
-     * @param SalesChannelInterfaceFactory $salesChannelFactory
-     * @param SalesEventInterfaceFactory $salesEventFactory
-     * @param GetSourceDeductedOrderItemsInterface $getSourceDeductedOrderItems
-     * @param ItemToDeductFactory $itemToDeductFactory
-     * @param SourceDeductionRequestFactory $sourceDeductionRequestFactory
-     * @param SourceDeductionService $sourceDeductionService
-     */
     public function __construct(
         WebsiteRepositoryInterface $websiteRepository,
         SalesChannelInterfaceFactory $salesChannelFactory,
@@ -104,10 +95,10 @@ class RevertSourceReservationsOnCreditBeforeShipment
         ItemToDeductFactory $itemToDeductFactory,
         SourceDeductionRequestFactory $sourceDeductionRequestFactory,
         SourceDeductionService $sourceDeductionService,
-        GetReservationsByMetadata $getReservationsByMetadata,
-        EncodeMetaData $encodeMetaData,
-        SourceReservationBuilder $sourceReservationBuilder,
-        AppendSourceReservations $appendReservations
+        GetReservationsByMetadataInterface $getReservationsByMetadata,
+        EncodeMetaDataInterface $encodeMetaData,
+        SourceReservationBuilderInterface $sourceReservationBuilder,
+        AppendSourceReservationsInterface $appendReservations
     ) {
         $this->websiteRepository = $websiteRepository;
         $this->salesChannelFactory = $salesChannelFactory;

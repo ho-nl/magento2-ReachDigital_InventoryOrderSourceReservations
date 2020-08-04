@@ -39,14 +39,7 @@ class AlwaysAutoReturnToStockInvoice extends ReturnToStockInvoice
      * @var InvoiceRepositoryInterface
      */
     private $invoiceRepository;
-    /**
-     * ReturnToStockInvoice constructor.
-     * @param ReturnProcessor $returnProcessor
-     * @param CreditmemoRepositoryInterface $creditmemoRepository
-     * @param OrderRepositoryInterface $orderRepository
-     * @param InvoiceRepositoryInterface $invoiceRepository
-     * @param StockConfigurationInterface $stockConfiguration
-     */
+
     public function __construct(
         ReturnProcessor $returnProcessor,
         CreditmemoRepositoryInterface $creditmemoRepository,

@@ -6,13 +6,13 @@ use Closure;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\InventoryApi\Api\SourceRepositoryInterface;
 use Magento\InventoryShippingAdminUi\Ui\DataProvider\GetSourcesByOrderIdSkuAndQty;
-use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
-use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadata;
+use ReachDigital\ISReservationsApi\Api\EncodeMetaDataInterface;
+use ReachDigital\ISReservationsApi\Api\GetReservationsByMetadataInterface;
 
 class GetSourcedItemsForGetSourcesByOrderIdSkuAndQty
 {
     /**
-     * @var GetReservationsByMetadata
+     * @var GetReservationsByMetadataInterface
      */
     private $getReservationsByMetadata;
 
@@ -26,13 +26,13 @@ class GetSourcedItemsForGetSourcesByOrderIdSkuAndQty
      */
     private $sources;
     /**
-     * @var EncodeMetaData
+     * @var EncodeMetaDataInterface
      */
     private $encodeMetaData;
 
     public function __construct(
-        GetReservationsByMetadata $getReservationsByMetadata,
-        EncodeMetaData $encodeMetaData,
+        GetReservationsByMetadataInterface $getReservationsByMetadata,
+        EncodeMetaDataInterface $encodeMetaData,
         SourceRepositoryInterface $sourceRepository
     ) {
         $this->getReservationsByMetadata = $getReservationsByMetadata;

@@ -22,20 +22,20 @@ use Magento\InventorySourceDeductionApi\Model\SourceDeductionRequestInterface;
 use Magento\InventorySourceDeductionApi\Model\SourceDeductionServiceInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Shipment;
-use ReachDigital\ISReservations\Model\AppendSourceReservations;
-use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
-use ReachDigital\ISReservations\Model\SourceReservationBuilder;
 use Magento\Framework\Event\Observer as EventObserver;
+use ReachDigital\ISReservationsApi\Api\EncodeMetaDataInterface;
+use ReachDigital\ISReservationsApi\Model\AppendSourceReservationsInterface;
+use ReachDigital\ISReservationsApi\Model\SourceReservationBuilderInterface;
 
 class DeductSourceAndNullifyReservationOnShipment
 {
     /**
-     * @var AppendSourceReservations
+     * @var AppendSourceReservationsInterface
      */
     private $appendReservations;
 
     /**
-     * @var SourceReservationBuilder
+     * @var SourceReservationBuilderInterface
      */
     private $reservationBuilder;
 
@@ -65,19 +65,19 @@ class DeductSourceAndNullifyReservationOnShipment
     private $defaultSourceProvider;
 
     /**
-     * @var EncodeMetaData
+     * @var EncodeMetaDataInterface
      */
     private $encodeMetaData;
 
     public function __construct(
         IsSingleSourceModeInterface $isSingleSourceMode,
         DefaultSourceProviderInterface $defaultSourceProvider,
-        AppendSourceReservations $appendReservations,
-        SourceReservationBuilder $reservationBuilder,
+        AppendSourceReservationsInterface $appendReservations,
+        SourceReservationBuilderInterface $reservationBuilder,
         GetItemsToDeductFromShipment $getItemsToDeductFromShipment,
         SourceDeductionRequestFromShipmentFactory $sourceDeductionRequestFromShipmentFactory,
         SourceDeductionServiceInterface $sourceDeductionService,
-        EncodeMetaData $encodeMetaData
+        EncodeMetaDataInterface $encodeMetaData
     ) {
         $this->appendReservations = $appendReservations;
         $this->reservationBuilder = $reservationBuilder;

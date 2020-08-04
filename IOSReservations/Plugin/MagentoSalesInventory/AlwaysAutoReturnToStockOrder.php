@@ -39,14 +39,6 @@ class AlwaysAutoReturnToStockOrder extends ReturnToStockOrder
      */
     private $stockConfiguration;
 
-    /**
-     * ReturnToStockPlugin constructor.
-     *
-     * @param ReturnProcessor $returnProcessor
-     * @param CreditmemoRepositoryInterface $creditmemoRepository
-     * @param OrderRepositoryInterface $orderRepository
-     * @param StockConfigurationInterface $stockConfiguration
-     */
     public function __construct(
         ReturnProcessor $returnProcessor,
         CreditmemoRepositoryInterface $creditmemoRepository,
