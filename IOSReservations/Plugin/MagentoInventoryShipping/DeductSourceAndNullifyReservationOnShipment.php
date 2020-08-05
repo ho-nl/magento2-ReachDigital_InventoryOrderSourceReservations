@@ -136,7 +136,7 @@ class DeductSourceAndNullifyReservationOnShipment
                 $shipmentItems
             );
             $this->sourceDeductionService->execute($sourceDeductionRequest);
-            $this->placeCompensatingSourceReservation($sourceDeductionRequest, $shipment->getOrder());
+            $this->placeCompensatingSourceReservation($sourceDeductionRequest, $shipment);
         }
     }
 
@@ -149,18 +149,19 @@ class DeductSourceAndNullifyReservationOnShipment
      */
     private function placeCompensatingSourceReservation(
         SourceDeductionRequestInterface $sourceDeductionRequest,
-        Order $order
+        Shipment $shipment
     ): void {
         $reservations = [];
 
-        $metaData = $this->encodeMetaData->execute(['order' => $order->getEntityId()]);
+        $metaData = $this->encodeMetaData->execute([
+            'order' => $shipment->getOrderId(),
+            'shipment' => $shipment->getId(),
+        ]);
 
         foreach ($sourceDeductionRequest->getItems() as $item) {
             $this->reservationBuilder->setQuantity($item->getQty());
             $this->reservationBuilder->setSku($item->getSku());
-            /** @noinspection DisconnectedForeachInstructionInspection */
             $this->reservationBuilder->setSourceCode($sourceDeductionRequest->getSourceCode());
-            /** @noinspection DisconnectedForeachInstructionInspection */
             $this->reservationBuilder->setMetadata($metaData);
             $reservations[] = $this->reservationBuilder->build();
         }
