@@ -8,8 +8,13 @@ declare(strict_types=1);
 
 namespace ReachDigital\IOSReservations\Model;
 
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Validation\ValidationException;
 use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
 use Psr\Log\LoggerInterface;
+use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface;
 use ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceInterface;
 use ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceRunnerInterface;
 use ReachDigital\IOSReservationsApi\Exception\CouldNotCreateSourceSelectionRequestFromOrder;
@@ -60,6 +65,11 @@ class MoveReservationsFromStockToSourceRunner implements MoveReservationsFromSto
 
     /**
      * Assign the unassigned orders to their correct sources.
+     *
+     * @throws CouldNotSaveException
+     * @throws InputException
+     * @throws NoSuchEntityException
+     * @throws ValidationException
      */
     public function execute(): void
     {

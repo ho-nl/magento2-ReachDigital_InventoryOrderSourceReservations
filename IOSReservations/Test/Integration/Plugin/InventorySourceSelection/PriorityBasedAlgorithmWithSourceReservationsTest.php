@@ -22,15 +22,15 @@ use Magento\InventorySourceSelectionApi\Api\SourceSelectionServiceInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\TestFramework\ObjectManager;
 use PHPUnit\Framework\TestCase;
-use ReachDigital\ISReservations\Model\AppendSourceReservations;
-use ReachDigital\ISReservations\Model\SourceReservationBuilder;
+use ReachDigital\ISReservationsApi\Model\AppendSourceReservationsInterface;
+use ReachDigital\ISReservationsApi\Model\SourceReservationBuilderInterface;
 
 class PriorityBasedAlgorithmWithSourceReservationsTest extends TestCase
 {
-    /** @var SourceReservationBuilder */
+    /** @var SourceReservationBuilderInterface */
     private $sourceReservationBuilder;
 
-    /** @var AppendSourceReservations */
+    /** @var AppendSourceReservationsInterface */
     private $appendReservations;
 
     /** @var ItemRequestInterfaceFactory */
@@ -51,8 +51,8 @@ class PriorityBasedAlgorithmWithSourceReservationsTest extends TestCase
             GetReservationsQuantityInterface::class
         );
 
-        $this->sourceReservationBuilder = $objectManager->get(SourceReservationBuilder::class);
-        $this->appendReservations = $objectManager->get(AppendSourceReservations::class);
+        $this->sourceReservationBuilder = $objectManager->get(SourceReservationBuilderInterface::class);
+        $this->appendReservations = $objectManager->get(AppendSourceReservationsInterface::class);
         $this->itemRequestFactory = $objectManager->get(ItemRequestInterfaceFactory::class);
         $this->inventoryRequestFactory = $objectManager->get(InventoryRequestInterfaceFactory::class);
         $this->sourceSelectionService = $objectManager->get(SourceSelectionServiceInterface::class);

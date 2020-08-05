@@ -24,7 +24,6 @@ class OrderAssignedSourceFilter implements CustomFilterInterface
      * neq
      * like
      * nlike
-     * finset
      * in
      * notin
      *
@@ -71,8 +70,6 @@ class OrderAssignedSourceFilter implements CustomFilterInterface
         // Join source reservations to apply filter
         $select->joinInner(
             ['source_reservation' => $collection->getTable('inventory_source_reservation')],
-            // @fixme: Hardcoded metadata format. Should change ReachDigital\ISReservations\Model\MetaData\EncodeMetaData
-            // @fixme: API so we can use it for building query parts as well
             'source_reservation.metadata LIKE concat(\'order(\',main_table.entity_id,\')%\') AND ' .
                 $conditionMap[$filter->getConditionType()],
             []

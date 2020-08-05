@@ -9,19 +9,19 @@ declare(strict_types=1);
 namespace ReachDigital\IOSReservations\Model;
 
 use ReachDigital\IOSReservationsApi\Api\GetOrderSourceReservationsInterface;
-use ReachDigital\ISReservations\Model\MetaData\DecodeMetaData;
-use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
-use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadata;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterfaceFactory;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultItemInterface;
 use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultItemInterfaceFactory;
 use ReachDigital\ISReservationsApi\Api\Data\SourceReservationInterface;
+use ReachDigital\ISReservationsApi\Api\DecodeMetaDataInterface;
+use ReachDigital\ISReservationsApi\Api\EncodeMetaDataInterface;
+use ReachDigital\ISReservationsApi\Api\GetReservationsByMetadataInterface;
 
 class GetOrderSourceReservations implements GetOrderSourceReservationsInterface
 {
     /**
-     * @var GetReservationsByMetadata
+     * @var GetReservationsByMetadataInterface
      */
     private $getReservationsByMetadata;
 
@@ -36,21 +36,21 @@ class GetOrderSourceReservations implements GetOrderSourceReservationsInterface
     private $sourceReservationResultItemFactory;
 
     /**
-     * @var DecodeMetaData
+     * @var DecodeMetaDataInterface
      */
     private $decodeMetaData;
 
     /**
-     * @var EncodeMetaData
+     * @var EncodeMetaDataInterface
      */
     private $encodeMetaData;
 
     public function __construct(
-        GetReservationsByMetadata $getReservationsByMetadata,
+        GetReservationsByMetadataInterface $getReservationsByMetadata,
         SourceReservationResultInterfaceFactory $sourceReservationResultFactory,
         SourceReservationResultItemInterfaceFactory $sourceReservationResultItemFactory,
-        DecodeMetaData $decodeMetaData,
-        EncodeMetaData $encodeMetaData
+        DecodeMetaDataInterface $decodeMetaData,
+        EncodeMetaDataInterface $encodeMetaData
     ) {
         $this->getReservationsByMetadata = $getReservationsByMetadata;
         $this->sourceReservationResultFactory = $sourceReservationResultFactory;

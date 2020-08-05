@@ -20,14 +20,6 @@ class SourceReservationResult implements SourceReservationResultInterface
     /** @var int */
     private $orderId;
 
-    /**
-     * SourceReservationResult constructor.
-     *
-     * @param array $reservationItems
-     * @param int   $orderId
-     *
-     * @throws LogicException
-     */
     public function __construct(array $reservationItems, int $orderId)
     {
         $this->orderId = $orderId;

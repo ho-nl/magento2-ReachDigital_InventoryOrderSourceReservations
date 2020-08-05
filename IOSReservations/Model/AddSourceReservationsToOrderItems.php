@@ -3,29 +3,29 @@
 namespace ReachDigital\IOSReservations\Model;
 
 use Magento\Sales\Api\Data\OrderItemInterface;
-use ReachDigital\ISReservations\Model\MetaData\DecodeMetaData;
-use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
-use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadataList;
+use ReachDigital\ISReservationsApi\Api\DecodeMetaDataInterface;
+use ReachDigital\ISReservationsApi\Api\EncodeMetaDataInterface;
+use ReachDigital\ISReservationsApi\Api\GetReservationsByMetadataListInterface;
 
 class AddSourceReservationsToOrderItems
 {
     /**
-     * @var EncodeMetaData
+     * @var EncodeMetaDataInterface
      */
     private $encodeMetaData;
     /**
-     * @var GetReservationsByMetadataList
-     */
-    private $getReservationsByMetadataList;
-    /**
-     * @var DecodeMetaData
+     * @var DecodeMetaDataInterface
      */
     private $decodeMetaData;
+    /**
+     * @var GetReservationsByMetadataListInterface
+     */
+    private $getReservationsByMetadataList;
 
     public function __construct(
-        EncodeMetaData $encodeMetaData,
-        DecodeMetaData $decodeMetaData,
-        GetReservationsByMetadataList $getReservationsByMetadataList
+        EncodeMetaDataInterface $encodeMetaData,
+        DecodeMetaDataInterface $decodeMetaData,
+        GetReservationsByMetadataListInterface $getReservationsByMetadataList
     ) {
         $this->encodeMetaData = $encodeMetaData;
         $this->decodeMetaData = $decodeMetaData;

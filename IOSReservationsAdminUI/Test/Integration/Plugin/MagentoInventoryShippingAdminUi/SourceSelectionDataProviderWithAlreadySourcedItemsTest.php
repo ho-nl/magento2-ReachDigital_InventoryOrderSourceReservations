@@ -28,7 +28,7 @@ use Magento\Store\Model\StoreManagerInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\TestFramework\ObjectManager;
 use PHPUnit\Framework\TestCase;
-use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource;
+use ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceInterface;
 use ReachDigital\IOSReservationsApi\Exception\CouldNotCreateSourceSelectionRequestFromOrder;
 use ReachDigital\IOSReservationsApi\Exception\CouldNotFullySelectSourcesForOrder;
 
@@ -45,7 +45,7 @@ class SourceSelectionDataProviderWithAlreadySourcedItemsTest extends TestCase
     private $invoiceOrder;
 
     /**
-     * @var MoveReservationsFromStockToSource
+     * @var MoveReservationsFromStockToSourceInterface
      */
     private $moveReservationsFromStockToSource;
 
@@ -102,7 +102,9 @@ class SourceSelectionDataProviderWithAlreadySourcedItemsTest extends TestCase
         $this->orderRepository = $objectManager->get(OrderRepositoryInterface::class);
         $this->orderManagement = $objectManager->get(OrderManagementInterface::class);
         $this->invoiceOrder = $objectManager->get(InvoiceOrderInterface::class);
-        $this->moveReservationsFromStockToSource = $objectManager->get(MoveReservationsFromStockToSource::class);
+        $this->moveReservationsFromStockToSource = $objectManager->get(
+            MoveReservationsFromStockToSourceInterface::class
+        );
         $this->getDefaultSourceSelectionAlgorithmCode = $objectManager->get(
             GetDefaultSourceSelectionAlgorithmCodeInterface::class
         );

@@ -13,8 +13,8 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Model\Order\Item as OrderItem;
 use ReachDigital\IOSReservationsApi\Exception\CouldNotCreateSourceSelectionRequestFromOrder;
-use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
-use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadata;
+use ReachDigital\ISReservationsApi\Api\EncodeMetaDataInterface;
+use ReachDigital\ISReservationsApi\Api\GetReservationsByMetadataInterface;
 
 class GetSourceSelectionRequestFromOrderFactory
 {
@@ -38,29 +38,21 @@ class GetSourceSelectionRequestFromOrderFactory
      */
     private $getSkuFromOrderItem;
     /**
-     * @var GetReservationsByMetadata
+     * @var GetReservationsByMetadataInterface
      */
     private $getReservationsByMetadata;
     /**
-     * @var EncodeMetaData
+     * @var EncodeMetaDataInterface
      */
     private $encodeMetaData;
 
-    /**
-     * @param ItemRequestInterfaceFactory $itemRequestFactory
-     * @param InventoryRequestInterfaceFactory $inventoryRequestFactory
-     * @param StockByWebsiteIdResolverInterface $stockByWebsiteIdResolver
-     * @param GetSkuFromOrderItemInterface $getSkuFromOrderItem
-     * @param GetReservationsByMetadata $getReservationsByMetadata
-     * @param EncodeMetaData $encodeMetaData
-     */
     public function __construct(
         ItemRequestInterfaceFactory $itemRequestFactory,
         InventoryRequestInterfaceFactory $inventoryRequestFactory,
         StockByWebsiteIdResolverInterface $stockByWebsiteIdResolver,
         GetSkuFromOrderItemInterface $getSkuFromOrderItem,
-        GetReservationsByMetadata $getReservationsByMetadata,
-        EncodeMetaData $encodeMetaData
+        GetReservationsByMetadataInterface $getReservationsByMetadata,
+        EncodeMetaDataInterface $encodeMetaData
     ) {
         $this->itemRequestFactory = $itemRequestFactory;
         $this->inventoryRequestFactory = $inventoryRequestFactory;

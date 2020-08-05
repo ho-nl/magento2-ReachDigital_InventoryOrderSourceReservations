@@ -15,6 +15,9 @@ use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\Validation\ValidationException;
 use Magento\InventoryReservationsApi\Model\AppendReservationsInterface;
 use Magento\InventoryReservationsApi\Model\ReservationBuilderInterface;
+use Magento\InventorySales\Model\SalesEventToArrayConverter;
+use Magento\InventorySalesApi\Api\Data\SalesEventInterface;
+use Magento\InventorySalesApi\Api\Data\SalesEventInterfaceFactory;
 use Magento\InventorySalesApi\Model\StockByWebsiteIdResolverInterface;
 use Magento\InventorySourceSelectionApi\Api\Data\SourceSelectionResultInterface;
 use Magento\Sales\Api\Data\OrderInterface;
@@ -46,19 +49,31 @@ class RevertStockReservations
      * @var SerializerInterface
      */
     private $serializer;
+    /**
+     * @var SalesEventInterfaceFactory
+     */
+    private $salesEventFactory;
+    /**
+     * @var SalesEventToArrayConverter
+     */
+    private $salesEventToArrayConverter;
 
     public function __construct(
         AppendReservationsInterface $appendReservations,
         ReservationBuilderInterface $reservationBuilder,
         StockByWebsiteIdResolverInterface $stockByWebsiteIdResolver,
         StoreRepositoryInterface $storeRepository,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        SalesEventInterfaceFactory $salesEventFactory,
+        SalesEventToArrayConverter $salesEventToArrayConverter
     ) {
         $this->appendReservations = $appendReservations;
         $this->reservationBuilder = $reservationBuilder;
         $this->stockByWebsiteIdResolver = $stockByWebsiteIdResolver;
         $this->storeRepository = $storeRepository;
         $this->serializer = $serializer;
+        $this->salesEventFactory = $salesEventFactory;
+        $this->salesEventToArrayConverter = $salesEventToArrayConverter;
     }
 
     /**
@@ -77,23 +92,17 @@ class RevertStockReservations
             $store = $this->storeRepository->getById((int) $order->getStoreId());
             $stockId = (int) $this->stockByWebsiteIdResolver->execute((int) $store->getWebsiteId())->getStockId();
 
-            /**
-             * Please note to not change the metadata format only here, as it is used in
-             * @see \ReachDigital\IOSReservations\Plugin\MagentoInventorySales\PreventSourceItemQuantityDeductionOnCancellation::aroundExecute
-             */
+            $salesEvent = $this->salesEventFactory->create([
+                'type' => \ReachDigital\IOSReservationsApi\Api\SalesEventInterface::EVENT_ORDER_ASSIGNED,
+                'objectType' => SalesEventInterface::OBJECT_TYPE_ORDER,
+                'objectId' => (string) $order->getEntityId(),
+            ]);
+
             $reservations[] = $this->reservationBuilder
                 ->setSku($item->getSku())
                 ->setQuantity($item->getQtyToDeduct())
                 ->setStockId($stockId)
-                ->setMetadata(
-                    $this->serializer->serialize([
-                        // @fixme does it make sense to 'fake' a sales event here? Maybe order-source assignment should be implemented as an actual salesevent?
-                        // @see  \Magento\InventorySales\Model\PlaceReservationsForSalesEvent::execute
-                        'event_type' => 'order_assigned',
-                        'object_type' => 'order',
-                        'object_id' => $order->getEntityId(),
-                    ])
-                )
+                ->setMetadata($this->serializer->serialize($this->salesEventToArrayConverter->execute($salesEvent)))
                 ->build();
         }
         $this->appendReservations->execute($reservations);

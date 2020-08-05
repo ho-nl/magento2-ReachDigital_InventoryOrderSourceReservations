@@ -20,27 +20,27 @@ use Magento\InventorySales\Observer\CatalogInventory\CancelOrderItemObserver;
 use Magento\Sales\Model\Order\Item as OrderItem;
 use Psr\Log\LoggerInterface;
 use ReachDigital\IOSReservations\Model\MagentoInventorySales\CancelOrderItems;
-use ReachDigital\ISReservations\Model\AppendSourceReservations;
-use ReachDigital\ISReservations\Model\MetaData\EncodeMetaData;
-use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsByMetadata;
-use ReachDigital\ISReservations\Model\SourceReservationBuilder;
+use ReachDigital\ISReservationsApi\Api\EncodeMetaDataInterface;
+use ReachDigital\ISReservationsApi\Api\GetReservationsByMetadataInterface;
+use ReachDigital\ISReservationsApi\Model\AppendSourceReservationsInterface;
+use ReachDigital\ISReservationsApi\Model\SourceReservationBuilderInterface;
 
 class PreventSourceItemQuantityDeductionOnCancellation
 {
     /**
-     * @var GetReservationsByMetadata
+     * @var GetReservationsByMetadataInterface
      */
     private $getReservationsByMetadata;
     /**
-     * @var EncodeMetaData
+     * @var EncodeMetaDataInterface
      */
     private $encodeMetaData;
     /**
-     * @var AppendSourceReservations
+     * @var AppendSourceReservationsInterface
      */
     private $appendSourceReservations;
     /**
-     * @var SourceReservationBuilder
+     * @var SourceReservationBuilderInterface
      */
     private $sourceReservationBuilder;
     /**
@@ -57,10 +57,10 @@ class PreventSourceItemQuantityDeductionOnCancellation
     private $cancelOrderItems;
 
     public function __construct(
-        GetReservationsByMetadata $getReservationsByMetadata,
-        EncodeMetaData $encodeMetaData,
-        AppendSourceReservations $appendSourceReservations,
-        SourceReservationBuilder $sourceReservationBuilder,
+        GetReservationsByMetadataInterface $getReservationsByMetadata,
+        EncodeMetaDataInterface $encodeMetaData,
+        AppendSourceReservationsInterface $appendSourceReservations,
+        SourceReservationBuilderInterface $sourceReservationBuilder,
         GetItemsToCancelFromOrderItem $getItemsToCancelFromOrderItem,
         CancelOrderItems $cancelOrderItems,
         LoggerInterface $logger

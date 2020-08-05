@@ -25,11 +25,6 @@ class OrderSelectionAlgorithm implements OrderSelectionAlgorithmInterface
      */
     private $description;
 
-    /**
-     * @param string $code
-     * @param string $title
-     * @param string $description
-     */
     public function __construct(string $code, string $title, string $description)
     {
         $this->code = $code;

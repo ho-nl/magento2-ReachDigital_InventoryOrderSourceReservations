@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace ReachDigital\IOSReservationsPriority\Test\Integration\Model\MoveReservationsFromStockToSource;
+namespace ReachDigital\IOSReservations\Test\Integration\Model\MoveReservationsFromStockToSource;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
@@ -36,9 +36,7 @@ use Magento\TestFramework\Helper\Bootstrap;
 use Magento\TestFramework\ObjectManager;
 use PHPUnit\Framework\TestCase;
 use ReachDigital\IOSReservations\Model\MoveReservationsFromStockToSource;
-use ReachDigital\IOSReservationsApi\Exception\CouldNotCreateSourceSelectionRequestFromOrder;
-use ReachDigital\IOSReservationsApi\Exception\CouldNotFullySelectSourcesForOrder;
-use ReachDigital\ISReservations\Model\MetaData\DecodeMetaData;
+use ReachDigital\ISReservationsApi\Api\DecodeMetaDataInterface;
 
 class AppendSourceReservationsTest extends TestCase
 {
@@ -94,7 +92,7 @@ class AppendSourceReservationsTest extends TestCase
      */
     private $orderManagement;
     /**
-     * @var DecodeMetaData
+     * @var DecodeMetaDataInterface
      */
     private $decodeMetaData;
 
@@ -126,7 +124,7 @@ class AppendSourceReservationsTest extends TestCase
         $this->storeRepository = $objectManager->get(StoreRepositoryInterface::class);
         $this->storeManager = $objectManager->get(StoreManagerInterface::class);
         $this->orderManagement = $objectManager->get(OrderManagementInterface::class);
-        $this->decodeMetaData = $objectManager->get(DecodeMetaData::class);
+        $this->decodeMetaData = $objectManager->get(DecodeMetaDataInterface::class);
     }
 
     /**

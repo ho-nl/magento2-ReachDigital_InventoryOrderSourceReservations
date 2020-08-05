@@ -54,13 +54,6 @@ class PriorityBasedAlgorithmWithSourceReservations implements SourceSelectionInt
      */
     private $getSourceReservationsQuantity;
 
-    /**
-     * @param GetSourcesAssignedToStockOrderedByPriorityInterface $getSourcesAssignedToStockOrderedByPriority
-     * @param SourceSelectionItemInterfaceFactory $sourceSelectionItemFactory
-     * @param SourceSelectionResultInterfaceFactory $sourceSelectionResultFactory
-     * @param SearchCriteriaBuilder $searchCriteriaBuilder
-     * @param SourceItemRepositoryInterface $sourceItemRepository
-     */
     public function __construct(
         GetSourcesAssignedToStockOrderedByPriorityInterface $getSourcesAssignedToStockOrderedByPriority,
         SourceSelectionItemInterfaceFactory $sourceSelectionItemFactory,

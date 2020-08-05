@@ -4,6 +4,8 @@
  * See COPYING.txt for license details.
  */
 
+// Can probably be removed once this is in the mainline https://github.com/magento/inventory/pull/2054/files
+
 declare(strict_types=1);
 
 namespace ReachDigital\IOSReservations\Model\MagentoInventoryShipping;
@@ -47,13 +49,6 @@ class GetItemsToDeductFromShipment extends \Magento\InventoryShipping\Model\GetI
      */
     private $searchCriteriaBuilder;
 
-    /**
-     * @param GetSkuFromOrderItemInterface $getSkuFromOrderItem
-     * @param Json $jsonSerializer
-     * @param ItemToDeductInterfaceFactory $itemToDeduct
-     * @param OrderItemRepositoryInterface|null $orderItemRepository
-     * @param SearchCriteriaBuilder|null $searchCriteriaBuilder
-     */
     public function __construct(
         GetSkuFromOrderItemInterface $getSkuFromOrderItem,
         Json $jsonSerializer,
