@@ -4,6 +4,8 @@
  * See COPYING.txt for license details.
  */
 
+// Can probably be removed once this is in the mainline https://github.com/magento/inventory/pull/2054/files
+
 declare(strict_types=1);
 
 namespace ReachDigital\IOSReservations\Model\MagentoInventoryShipping;
