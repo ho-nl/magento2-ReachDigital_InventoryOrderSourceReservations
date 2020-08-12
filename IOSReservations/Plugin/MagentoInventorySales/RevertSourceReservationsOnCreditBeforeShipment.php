@@ -19,6 +19,7 @@ use Magento\InventorySalesApi\Api\Data\SalesEventInterfaceFactory;
 use Magento\InventorySalesApi\Api\Data\SalesChannelInterfaceFactory;
 use Magento\InventorySalesApi\Api\Data\SalesChannelInterface;
 use Magento\InventorySalesApi\Model\ReturnProcessor\GetSourceDeductedOrderItemsInterface;
+use Magento\InventorySalesApi\Model\ReturnProcessor\Request\ItemsToRefundInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Store\Api\WebsiteRepositoryInterface;
 use Magento\InventorySourceDeductionApi\Model\ItemToDeductFactory;
@@ -114,11 +115,19 @@ class RevertSourceReservationsOnCreditBeforeShipment
     }
 
     /**
-     * @param ProcessRefundItems $subject
+     *
      * @param Closure           $proceed
      * @param OrderInterface     $order
-     * @param array              $itemsToRefund
+     * @param ItemsToRefundInterface[]              $itemsToRefund
      * @param array              $returnToStockItems
+     */
+
+    /**
+     * @param ProcessRefundItems $subject
+     * @param OrderInterface $order
+     * @param ItemsToRefundInterface[] $itemsToRefund
+     * @param array $returnToStockItems
+     * @return void
      *
      * @throws CouldNotSaveException
      * @throws InputException
