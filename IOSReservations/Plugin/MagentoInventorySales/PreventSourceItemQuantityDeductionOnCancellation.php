@@ -17,9 +17,13 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Validation\ValidationException;
 use Magento\InventorySales\Model\GetItemsToCancelFromOrderItem;
 use Magento\InventorySales\Observer\CatalogInventory\CancelOrderItemObserver;
+use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order\Item as OrderItem;
 use Psr\Log\LoggerInterface;
 use ReachDigital\IOSReservations\Model\MagentoInventorySales\CancelOrderItems;
+use ReachDigital\IOSReservations\Model\NullifySourceReservations;
+use ReachDigital\ISReservations\Model\MetaData\DecodeMetaData;
+use ReachDigital\ISReservationsApi\Api\Data\SourceReservationInterface;
 use ReachDigital\ISReservationsApi\Api\EncodeMetaDataInterface;
 use ReachDigital\ISReservationsApi\Api\GetReservationsByMetadataInterface;
 use ReachDigital\ISReservationsApi\Model\AppendSourceReservationsInterface;
@@ -27,22 +31,6 @@ use ReachDigital\ISReservationsApi\Model\SourceReservationBuilderInterface;
 
 class PreventSourceItemQuantityDeductionOnCancellation
 {
-    /**
-     * @var GetReservationsByMetadataInterface
-     */
-    private $getReservationsByMetadata;
-    /**
-     * @var EncodeMetaDataInterface
-     */
-    private $encodeMetaData;
-    /**
-     * @var AppendSourceReservationsInterface
-     */
-    private $appendSourceReservations;
-    /**
-     * @var SourceReservationBuilderInterface
-     */
-    private $sourceReservationBuilder;
     /**
      * @var LoggerInterface
      */
@@ -55,23 +43,21 @@ class PreventSourceItemQuantityDeductionOnCancellation
      * @var CancelOrderItems
      */
     private $cancelOrderItems;
+    /**
+     * @var NullifySourceReservations
+     */
+    private $nullifySourceReservations;
 
     public function __construct(
-        GetReservationsByMetadataInterface $getReservationsByMetadata,
-        EncodeMetaDataInterface $encodeMetaData,
-        AppendSourceReservationsInterface $appendSourceReservations,
-        SourceReservationBuilderInterface $sourceReservationBuilder,
         GetItemsToCancelFromOrderItem $getItemsToCancelFromOrderItem,
         CancelOrderItems $cancelOrderItems,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        NullifySourceReservations $nullifySourceReservations
     ) {
-        $this->getReservationsByMetadata = $getReservationsByMetadata;
-        $this->encodeMetaData = $encodeMetaData;
-        $this->appendSourceReservations = $appendSourceReservations;
-        $this->sourceReservationBuilder = $sourceReservationBuilder;
         $this->logger = $logger;
         $this->getItemsToCancelFromOrderItem = $getItemsToCancelFromOrderItem;
         $this->cancelOrderItems = $cancelOrderItems;
+        $this->nullifySourceReservations = $nullifySourceReservations;
     }
 
     /**
@@ -92,60 +78,28 @@ class PreventSourceItemQuantityDeductionOnCancellation
         /** @var OrderItem $orderItem */
         $orderItem = $observer->getEvent()->getItem();
         $logger = $this->createLogger($orderItem->getOrder()->getId(), $orderItem->getItemId());
+
         $logger('cancellation_start');
 
         $itemsToCancel = $this->getItemsToCancelFromOrderItem->execute($orderItem);
-
         if (empty($itemsToCancel)) {
             return;
         }
 
-        foreach ($itemsToCancel as $itemToCancel) {
-            $sourceReservations = $this->getReservationsByMetadata->execute(
-                $this->encodeMetaData->execute(['order' => $orderItem->getOrderId()])
-            );
+        $logger('revert_source_start');
+        $remainingItemsToCancel = $this->nullifySourceReservations->execute(
+            (string) $orderItem->getOrderId(),
+            $itemsToCancel
+        );
+        $logger('revert_source_end');
 
-            $stockToCancel = $itemToCancel->getQuantity();
-            $sourceCancellations = [];
-            foreach ($sourceReservations as $sourceReservation) {
-                $sourceCancellations[] = $this->sourceReservationBuilder
-                    ->setSourceCode($sourceReservation->getSourceCode())
-                    ->setSku($sourceReservation->getSku())
-                    ->setQuantity($sourceReservation->getQuantity() * -1)
-                    ->setMetadata(
-                        $this->encodeMetaData->execute([
-                            'order' => $orderItem->getOrderId(),
-                            'order_item' => $orderItem->getId(),
-                            'refund_compensation' => null,
-                        ])
-                    )
-                    ->build();
-
-                $stockToCancel += $sourceReservation->getQuantity();
-            }
-
-            if ($sourceCancellations) {
-                $logger('revert_source_start');
-                $this->appendSourceReservations->execute($sourceCancellations);
-                $logger('revert_source_end');
-            }
-
-            // Set the remaining to be cancelled on the stock
-            $itemToCancel->setQuantity($stockToCancel);
-        }
-
-        $itemsToCancel = array_filter($itemsToCancel, function ($item) {
-            return $item->getQuantity() > 0;
-        });
-
-        if ($itemsToCancel) {
+        if ($remainingItemsToCancel) {
             $logger('revert_stock_start');
-            $this->cancelOrderItems->execute($itemsToCancel, $orderItem);
+            $this->cancelOrderItems->execute($remainingItemsToCancel, $orderItem);
             $logger('revert_stock_end');
         }
 
         $logger('cancellation_end');
-        return;
     }
 
     private function createLogger($orderId, $orderItemId)

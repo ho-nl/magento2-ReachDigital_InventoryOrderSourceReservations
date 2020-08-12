@@ -21,6 +21,8 @@ use Magento\TestFramework\ObjectManager;
 use PHPUnit\Framework\TestCase;
 use ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceInterface;
 use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsQuantityList;
+use ReachDigital\ISReservationsApi\Api\EncodeMetaDataInterface;
+use ReachDigital\ISReservationsApi\Api\GetReservationsByMetadataInterface;
 
 class PreventSourceItemQuantityDeductionOnCancellationTest extends TestCase
 {
@@ -53,6 +55,14 @@ class PreventSourceItemQuantityDeductionOnCancellationTest extends TestCase
 
     /** @var SourceItemsSaveInterface */
     private $sourceItemsSave;
+    /**
+     * @var GetReservationsByMetadataInterface
+     */
+    private $getReservationsByMetadata;
+    /**
+     * @var EncodeMetaDataInterface
+     */
+    private $encodeMetaData;
 
     public function setUp()
     {
@@ -77,6 +87,8 @@ class PreventSourceItemQuantityDeductionOnCancellationTest extends TestCase
         $this->cleanupReservations = $objectManager->get(CleanupReservationsInterface::class);
         $this->sourceItemRepository = $objectManager->get(SourceItemRepositoryInterface::class);
         $this->sourceItemsSave = $objectManager->get(SourceItemsSaveInterface::class);
+        $this->getReservationsByMetadata = $objectManager->get(GetReservationsByMetadataInterface::class);
+        $this->encodeMetaData = $objectManager->get(EncodeMetaDataInterface::class);
     }
 
     /**
@@ -352,6 +364,85 @@ class PreventSourceItemQuantityDeductionOnCancellationTest extends TestCase
 
         self::assertEquals(0, $this->getStockReservationsQuantity->execute('simple', 10));
         self::assertEquals(0, $this->getReservationsQuantityList->execute(['simple'])['simple']['quantity']);
+    }
+
+    /**
+     * @test
+     *
+     * @covers \ReachDigital\IOSReservations\Plugin\MagentoInventorySales\PreventSourceItemQuantityDeductionOnCancellation
+     *
+     * @magentoDbIsolation disabled
+     *
+     * Rolling back previous database mess
+     * @-magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product_rollback.php
+     * @-magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website_rollback.php
+     * @-magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory_rollback.php
+     * @-magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/source_items_for_simple_on_multi_source_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/simple_product_rollback.php
+     * @-magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/websites_with_stores_rollback.php
+     * @-magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links_rollback.php
+     * @-magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks_rollback.php
+     * @-magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-inventory-source-reservations/ISReservations/Test/Integration/_files/clean_all_reservations.php
+     *
+     * Filling database
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/websites_with_stores.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/stock_website_sales_channels.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/simple_product.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/source_items_for_simple_on_multi_source.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website.php
+     * @magentoDataFixture ../../../../vendor//reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/order_two_simple_products.php
+     */
+    public function should_revert_source_only_once_with_multiple_items()
+    {
+        // Reservation has been made for the order
+        self::assertEquals(-3, $this->getStockReservationsQuantity->execute('simple', 10));
+        self::assertEquals(-2, $this->getStockReservationsQuantity->execute('simple2', 10));
+
+        $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', 'created_order_for_test')->create();
+        $order = current($this->orderRepository->getList($searchCriteria)->getItems());
+
+        // Set order to 'processing' without invoice (authorise without capture)
+        $order->setStatus(Order::STATE_PROCESSING);
+        $order->setState(Order::STATE_PROCESSING);
+        $this->orderRepository->save($order);
+
+        // The actual source suddenly has less available
+        $item = $this->getSourceItem('simple', 'eu-1');
+        $item->setQuantity(1);
+        $item2 = $this->getSourceItem('simple', 'eu-2');
+        $item2->setQuantity(1);
+        $this->sourceItemsSave->execute([$item, $item2]);
+
+        // Run the SSA algorithm, with 2 results
+        $this->moveReservationsFromStockToSource->execute(
+            (int) $order->getEntityId(),
+            $this->getDefaultSourceSelectionAlgorithmCode->execute()
+        );
+
+        self::assertEquals(-1, $this->getStockReservationsQuantity->execute('simple', 10));
+        self::assertEquals(-2, $this->getReservationsQuantityList->execute(['simple'])['simple']['quantity']);
+        self::assertEquals(0, $this->getStockReservationsQuantity->execute('simple2', 10));
+        self::assertEquals(-2, $this->getReservationsQuantityList->execute(['simple2'])['simple2']['quantity']);
+
+        // Cancel order, but forgot to save.
+        $order->cancel();
+        $this->orderRepository->save($order);
+
+        self::assertEquals(0, $this->getReservationsQuantityList->execute(['simple'])['simple']['quantity']);
+        self::assertEquals(0, $this->getReservationsQuantityList->execute(['simple2'])['simple2']['quantity']);
+        self::assertEquals(0, $this->getStockReservationsQuantity->execute('simple', 10));
+        self::assertEquals(0, $this->getStockReservationsQuantity->execute('simple2', 10));
+
+        // Make sure we only have 6 rows in the inventory_source_reservation table
+        $sourceReservations = $this->getReservationsByMetadata->execute(
+            $this->encodeMetaData->execute(['order' => $order->getEntityId()])
+        );
+        self::assertCount(6, $sourceReservations);
     }
 
     private function getSummedSourceQty(string $sku): float
