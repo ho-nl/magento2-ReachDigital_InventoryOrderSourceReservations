@@ -5,6 +5,8 @@
  */
 declare(strict_types=1);
 
+namespace ReachDigital\IOSReservations\Test\Integration\Plugin\MagentoInventorySales;
+
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Inventory\Model\SourceItem\Command\GetSourceItemsBySku;
