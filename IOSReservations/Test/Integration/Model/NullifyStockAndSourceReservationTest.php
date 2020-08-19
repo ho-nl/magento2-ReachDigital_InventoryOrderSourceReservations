@@ -149,21 +149,19 @@ class NullifyStockAndSourceReservationTest extends TestCase
         self::assertEquals(0, $this->getStockReservationsQuantity->execute('simple2', 10));
         self::assertEquals(-2, $this->getSourceReservationsQuantityList->execute(['simple2'])['simple2']['quantity']);
 
-        $this->nullifyStockAndSourceReservations->execute((int) $order->getEntityId(), [
+        $result = $this->nullifyStockAndSourceReservations->execute((int) $order->getEntityId(), [
             $this->itemToCancelFactory->create(['sku' => 'simple', 'qty' => 1]),
             $this->itemToCancelFactory->create(['sku' => 'simple2', 'qty' => 1]),
         ]);
+        self::assertEmpty($result);
         foreach ($order->getItems() as $item) {
             $item->setQtyCanceled(1);
         }
         $this->orderRepository->save($order);
 
-        // @todo  If an order item gets cancelled and still has stock reservations it should first cancel the stock reservation.
-        //        self::assertEquals(0, $this->getStockReservationsQuantity->execute('simple', 10));
-        //        self::assertEquals(-2, $this->getSourceReservationsQuantityList->execute(['simple'])['simple']['quantity']);
-
-        self::assertEquals(-1, $this->getStockReservationsQuantity->execute('simple', 10));
-        self::assertEquals(-1, $this->getSourceReservationsQuantityList->execute(['simple'])['simple']['quantity']);
+        // If order item gets cancelled and still has stock reservations it should cancel the stock reservation first
+        self::assertEquals(0, $this->getStockReservationsQuantity->execute('simple', 10));
+        self::assertEquals(-2, $this->getSourceReservationsQuantityList->execute(['simple'])['simple']['quantity']);
         self::assertEquals(0, $this->getStockReservationsQuantity->execute('simple2', 10));
         self::assertEquals(-1, $this->getSourceReservationsQuantityList->execute(['simple2'])['simple2']['quantity']);
 

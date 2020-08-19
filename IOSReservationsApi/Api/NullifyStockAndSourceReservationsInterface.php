@@ -7,9 +7,10 @@ use Magento\InventorySalesApi\Api\Data\ItemToSellInterface;
 interface NullifyStockAndSourceReservationsInterface
 {
     /**
-     * Cancel items on order
+     * Cancel items on an order.
      *
      * @param ItemToSellInterface[] $itemsToNullify
+     * @return ItemToSellInterface[]
      */
-    public function execute(int $orderId, array $itemsToNullify): void;
+    public function execute(int $orderId, array $itemsToNullify): array;
 }

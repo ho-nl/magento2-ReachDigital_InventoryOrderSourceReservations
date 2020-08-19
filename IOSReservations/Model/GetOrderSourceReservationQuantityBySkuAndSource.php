@@ -39,10 +39,9 @@ class GetOrderSourceReservationQuantityBySkuAndSource
     }
 
     /**
-     * @param $orderId
      * @return array
      */
-    public function execute($orderId)
+    public function execute(int $orderId)
     {
         $reservations = $this->getReservationsByMetadata->execute(
             $this->encodeMetaData->execute(['order' => $orderId])

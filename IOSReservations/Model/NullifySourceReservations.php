@@ -65,10 +65,14 @@ class NullifySourceReservations
         $this->logger->info('nullify_source_reservations', [
             'module' => 'reach-digital/magento2-order-source-reservations',
             'order' => $orderId,
-            'items_to_nullify' => array_map(function ($item) {
+            'items' => array_map(function ($item) {
                 return [$item->getSku(), $item->getQuantity()];
             }, $itemsToNullify),
         ]);
+
+        if (empty($itemsToNullify)) {
+            return $itemsToNullify;
+        }
 
         $sourceCancellations = [];
         $sourceReservations = $this->getOrderSourceReservationQuantityBySkuAndSource->execute($orderId);
@@ -101,7 +105,7 @@ class NullifySourceReservations
                 }
             }
 
-            // Set the remaining to be cancelled on the stock
+            // Set the remaining qty so it can be processed somewhere else.
             $itemToNullify->setQuantity($qtyToCompensate);
         }
 
@@ -109,7 +113,7 @@ class NullifySourceReservations
             $this->appendSourceReservations->execute($sourceCancellations);
         }
 
-        // Cancel the remaining quantity
+        // Return the remaining qty
         return array_filter($itemsToNullify, function ($item) {
             return $item->getQuantity() > 0;
         });
