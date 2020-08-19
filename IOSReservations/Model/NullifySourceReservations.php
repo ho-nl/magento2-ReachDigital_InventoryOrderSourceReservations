@@ -97,7 +97,7 @@ class NullifySourceReservations
                     $sourceCancellations[] = $this->sourceReservationBuilder->build();
                     $qtyToCompensate -= $revertibleQty;
                 } else {
-                    break;
+                    continue;
                 }
             }
 
