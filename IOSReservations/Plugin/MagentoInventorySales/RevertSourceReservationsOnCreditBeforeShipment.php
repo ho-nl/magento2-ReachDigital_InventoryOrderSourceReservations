@@ -25,6 +25,7 @@ use Magento\Store\Api\WebsiteRepositoryInterface;
 use Magento\InventorySourceDeductionApi\Model\ItemToDeductFactory;
 use Magento\InventorySourceDeductionApi\Model\SourceDeductionRequestFactory;
 use Magento\InventorySourceDeductionApi\Model\SourceDeductionService;
+use ReachDigital\IOSReservations\Model\GetOrderSourceReservationQuantityBySkuAndSource;
 use ReachDigital\ISReservationsApi\Api\Data\SourceReservationInterface;
 use ReachDigital\ISReservationsApi\Api\EncodeMetaDataInterface;
 use ReachDigital\ISReservationsApi\Api\GetReservationsByMetadataInterface;
@@ -87,6 +88,10 @@ class RevertSourceReservationsOnCreditBeforeShipment
      * @var AppendSourceReservationsInterface
      */
     private $appendReservations;
+    /**
+     * @var GetOrderSourceReservationQuantityBySkuAndSource
+     */
+    private $getOrderSourceReservationQuantityBySkuAndSource;
 
     public function __construct(
         WebsiteRepositoryInterface $websiteRepository,
@@ -99,7 +104,8 @@ class RevertSourceReservationsOnCreditBeforeShipment
         GetReservationsByMetadataInterface $getReservationsByMetadata,
         EncodeMetaDataInterface $encodeMetaData,
         SourceReservationBuilderInterface $sourceReservationBuilder,
-        AppendSourceReservationsInterface $appendReservations
+        AppendSourceReservationsInterface $appendReservations,
+        GetOrderSourceReservationQuantityBySkuAndSource $getOrderSourceReservationQuantityBySkuAndSource
     ) {
         $this->websiteRepository = $websiteRepository;
         $this->salesChannelFactory = $salesChannelFactory;
@@ -112,6 +118,7 @@ class RevertSourceReservationsOnCreditBeforeShipment
         $this->encodeMetaData = $encodeMetaData;
         $this->sourceReservationBuilder = $sourceReservationBuilder;
         $this->appendReservations = $appendReservations;
+        $this->getOrderSourceReservationQuantityBySkuAndSource = $getOrderSourceReservationQuantityBySkuAndSource;
     }
 
     /**
@@ -143,7 +150,7 @@ class RevertSourceReservationsOnCreditBeforeShipment
         $salesChannel = $this->getSalesChannelForOrder($order);
         $deductedItems = $this->getSourceDeductedOrderItems->execute($order, $returnToStockItems);
         $backItemsPerSource = $nullifications = [];
-        $reservations = $this->getReservationsBySkuAndSource($order);
+        $reservations = $this->getOrderSourceReservationQuantityBySkuAndSource->execute($order->getEntityId());
 
         foreach ($itemsToRefund as $item) {
             $sku = $item->getSku();
@@ -215,30 +222,6 @@ class RevertSourceReservationsOnCreditBeforeShipment
         if (count($nullifications)) {
             $this->appendReservations->execute($nullifications);
         }
-    }
-
-    /**
-     * @param OrderInterface $order
-     *
-     * @return SourceReservationInterface[]
-     */
-    private function getReservationsBySkuAndSource(OrderInterface $order): array
-    {
-        $reservations = $this->getReservationsByMetadata->execute(
-            $this->encodeMetaData->execute(['order' => $order->getEntityId()])
-        );
-
-        $reservationsBySkuAndSource = [];
-        foreach ($reservations as $reservation) {
-            $sku = $reservation->getSku();
-            $sourceCode = $reservation->getSourceCode();
-
-            $reservationsBySkuAndSource[$sku] = $reservationsBySkuAndSource[$sku] ?? [];
-            $reservationsBySkuAndSource[$sku][$sourceCode] = $reservationsBySkuAndSource[$sku][$sourceCode] ?? 0;
-            $reservationsBySkuAndSource[$sku][$sourceCode] += $reservation->getQuantity();
-        }
-
-        return $reservationsBySkuAndSource;
     }
 
     /**

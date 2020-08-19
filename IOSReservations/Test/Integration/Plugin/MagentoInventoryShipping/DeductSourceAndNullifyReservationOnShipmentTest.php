@@ -4,7 +4,7 @@ declare(strict_types=1);
  * Copyright © Reach Digital (https://www.reachdigital.io/)
  * See LICENSE.txt for license details.
  */
-namespace ReachDigital\IOSReservations\Test\Integration\Plugin\InventorySales;
+namespace ReachDigital\IOSReservations\Test\Integration\Plugin\MagentoInventoryShipping;
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Exception\LocalizedException;

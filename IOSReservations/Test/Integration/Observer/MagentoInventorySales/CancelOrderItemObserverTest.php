@@ -5,6 +5,8 @@
  */
 declare(strict_types=1);
 
+namespace ReachDigital\IOSReservations\Test\Integration\Observer\MagentoInventorySales;
+
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Inventory\Model\SourceItem\Command\GetSourceItemsBySku;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
@@ -24,7 +26,7 @@ use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsQuantityList;
 use ReachDigital\ISReservationsApi\Api\EncodeMetaDataInterface;
 use ReachDigital\ISReservationsApi\Api\GetReservationsByMetadataInterface;
 
-class PreventSourceItemQuantityDeductionOnCancellationTest extends TestCase
+class CancelOrderItemObserverTest extends TestCase
 {
     /** @var GetReservationsQuantityList */
     private $getReservationsQuantityList;
@@ -95,20 +97,20 @@ class PreventSourceItemQuantityDeductionOnCancellationTest extends TestCase
      *
      * @test
      *
-     * @covers \ReachDigital\IOSReservations\Plugin\MagentoInventorySales\PreventSourceItemQuantityDeductionOnCancellation
+     * @covers \ReachDigital\IOSReservations\Observer\MagentoInventorySales\CancelOrderItemObserver
      *
      * @magentoDbIsolation disabled
      *
      * Rolling back previous database mess
-     * @-magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product_rollback.php
-     * @-magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website_rollback.php
-     * @-magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory_rollback.php
-     * @-magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/source_items_for_simple_on_multi_source_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_simple_product_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_eu_website_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-indexer/Test/_files/reindex_inventory_rollback.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/source_items_for_simple_on_multi_source_rollback.php
      * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/simple_product_rollback.php
      * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/websites_with_stores_rollback.php
-     * @-magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links_rollback.php
-     * @-magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks_rollback.php
-     * @-magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stock_source_links_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/stocks_rollback.php
+     * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources_rollback.php
      * @magentoDataFixture ../../../../vendor/reach-digital/magento2-inventory-source-reservations/ISReservations/Test/Integration/_files/clean_all_reservations.php
      *
      * Filling database
@@ -166,7 +168,7 @@ class PreventSourceItemQuantityDeductionOnCancellationTest extends TestCase
      *
      * @test
      *
-     * @covers \ReachDigital\IOSReservations\Plugin\MagentoInventorySales\PreventSourceItemQuantityDeductionOnCancellation
+     * @covers \ReachDigital\IOSReservations\Observer\MagentoInventorySales\CancelOrderItemObserver
      *
      * @magentoDbIsolation disabled
      *
@@ -239,7 +241,7 @@ class PreventSourceItemQuantityDeductionOnCancellationTest extends TestCase
      *
      * @test
      *
-     * @covers \ReachDigital\IOSReservations\Plugin\MagentoInventorySales\PreventSourceItemQuantityDeductionOnCancellation
+     * @covers \ReachDigital\IOSReservations\Observer\MagentoInventorySales\CancelOrderItemObserver
      *
      * @magentoDbIsolation disabled
      *
@@ -299,7 +301,7 @@ class PreventSourceItemQuantityDeductionOnCancellationTest extends TestCase
     /**
      * @test
      *
-     * @covers \ReachDigital\IOSReservations\Plugin\MagentoInventorySales\PreventSourceItemQuantityDeductionOnCancellation
+     * @covers \ReachDigital\IOSReservations\Observer\MagentoInventorySales\CancelOrderItemObserver
      *
      * @magentoDbIsolation disabled
      *
@@ -369,7 +371,7 @@ class PreventSourceItemQuantityDeductionOnCancellationTest extends TestCase
     /**
      * @test
      *
-     * @covers \ReachDigital\IOSReservations\Plugin\MagentoInventorySales\PreventSourceItemQuantityDeductionOnCancellation
+     * @covers \ReachDigital\IOSReservations\Observer\MagentoInventorySales\CancelOrderItemObserver
      *
      * @magentoDbIsolation disabled
      *
