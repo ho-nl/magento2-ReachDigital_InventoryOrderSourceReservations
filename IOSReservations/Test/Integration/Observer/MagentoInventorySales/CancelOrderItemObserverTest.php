@@ -431,7 +431,6 @@ class CancelOrderItemObserverTest extends TestCase
         self::assertEquals(0, $this->getStockReservationsQuantity->execute('simple2', 10));
         self::assertEquals(-2, $this->getReservationsQuantityList->execute(['simple2'])['simple2']['quantity']);
 
-        // Cancel order, but forgot to save.
         $order->cancel();
         $this->orderRepository->save($order);
 

@@ -53,7 +53,6 @@ class NullifySourceReservations
     /**
      * Will nullify source reservations if they are available. Will return items that are not nullified.
      *
-     * @param string $orderId
      * @param ItemToSellInterface[] $itemsToNullify
      * @return ItemToSellInterface[]
      *
@@ -61,7 +60,7 @@ class NullifySourceReservations
      * @throws InputException
      * @throws ValidationException
      */
-    public function execute(string $orderId, array $itemsToNullify)
+    public function execute(int $orderId, array $itemsToNullify): array
     {
         $this->logger->info('nullify_source_reservations', [
             'module' => 'reach-digital/magento2-order-source-reservations',

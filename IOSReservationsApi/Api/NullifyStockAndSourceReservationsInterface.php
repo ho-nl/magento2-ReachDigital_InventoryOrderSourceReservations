@@ -11,5 +11,5 @@ interface NullifyStockAndSourceReservationsInterface
      *
      * @param ItemToSellInterface[] $itemsToNullify
      */
-    public function execute(string $orderId, array $itemsToNullify): void;
+    public function execute(int $orderId, array $itemsToNullify): void;
 }

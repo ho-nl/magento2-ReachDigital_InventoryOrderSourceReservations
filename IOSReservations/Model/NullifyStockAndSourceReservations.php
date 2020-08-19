@@ -40,9 +40,9 @@ class NullifyStockAndSourceReservations implements NullifyStockAndSourceReservat
     /**
      * @inheritDoc
      */
-    public function execute(string $orderId, array $itemsToNullify): void
+    public function execute(int $orderId, array $itemsToNullify): void
     {
-        $remainingItemsToCancel = $this->nullifySourceReservations->execute((string) $orderId, $itemsToNullify);
+        $remainingItemsToCancel = $this->nullifySourceReservations->execute($orderId, $itemsToNullify);
         if ($remainingItemsToCancel) {
             $this->nullifyStockReservations->execute($orderId, $remainingItemsToCancel);
         }

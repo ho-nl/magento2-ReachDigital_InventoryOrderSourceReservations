@@ -46,6 +46,6 @@ class CancelOrderItemObserver implements ObserverInterface
         if (empty($itemsToCancel)) {
             return;
         }
-        $this->nullifyStockAndSourceReservations->execute((string) $orderItem->getOrderId(), $itemsToCancel);
+        $this->nullifyStockAndSourceReservations->execute((int) $orderItem->getOrderId(), $itemsToCancel);
     }
 }

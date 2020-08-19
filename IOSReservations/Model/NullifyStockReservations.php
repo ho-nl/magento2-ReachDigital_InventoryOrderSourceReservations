@@ -105,7 +105,6 @@ class NullifyStockReservations
     }
 
     /**
-     * @param string $orderId
      * @param ItemToSellInterface[] $itemsToNullify
      *
      * @throws CouldNotSaveException
@@ -113,9 +112,10 @@ class NullifyStockReservations
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    public function execute(string $orderId, array $itemsToNullify): void
+    public function execute(int $orderId, array $itemsToNullify): void
     {
         // @todo check if stock reservation is available before nullifying.
+        // @todo return ItemToSell[] for items that couldn't be returned
 
         $this->logger->info('nullify_stock_reservations', [
             'module' => 'reach-digital/magento2-order-source-reservations',
