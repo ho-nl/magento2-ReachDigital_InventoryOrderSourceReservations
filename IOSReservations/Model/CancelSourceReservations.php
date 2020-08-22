@@ -12,7 +12,7 @@ use ReachDigital\ISReservationsApi\Api\GetReservationsByMetadataInterface;
 use ReachDigital\ISReservationsApi\Model\AppendSourceReservationsInterface;
 use ReachDigital\ISReservationsApi\Model\SourceReservationBuilderInterface;
 
-class NullifySourceReservations
+class CancelSourceReservations
 {
     /**
      * @var EncodeMetaDataInterface

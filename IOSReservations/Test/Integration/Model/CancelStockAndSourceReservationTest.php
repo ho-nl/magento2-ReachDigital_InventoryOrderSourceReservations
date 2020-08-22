@@ -16,11 +16,11 @@ use Magento\Sales\Model\Order;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\TestFramework\ObjectManager;
 use PHPUnit\Framework\TestCase;
+use ReachDigital\IOSReservations\Model\CancelStockAndSourceReservations;
 use ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceInterface;
-use ReachDigital\IOSReservationsApi\Api\NullifyStockAndSourceReservationsInterface;
 use ReachDigital\ISReservations\Model\ResourceModel\GetReservationsQuantityList;
 
-class NullifyStockAndSourceReservationTest extends TestCase
+class CancelStockAndSourceReservationTest extends TestCase
 {
     /** @var GetReservationsQuantityList */
     private $getSourceReservationsQuantityList;
@@ -50,7 +50,7 @@ class NullifyStockAndSourceReservationTest extends TestCase
     private $sourceItemsSave;
 
     /**
-     * @var NullifyStockAndSourceReservationsInterface
+     * @var CancelStockAndSourceReservations
      */
     private $nullifyStockAndSourceReservations;
     /**
@@ -80,9 +80,7 @@ class NullifyStockAndSourceReservationTest extends TestCase
         $this->getSourceItemsBySku = $objectManager->get(GetSourceItemsBySku::class);
         $this->sourceItemRepository = $objectManager->get(SourceItemRepositoryInterface::class);
         $this->sourceItemsSave = $objectManager->get(SourceItemsSaveInterface::class);
-        $this->nullifyStockAndSourceReservations = $objectManager->get(
-            NullifyStockAndSourceReservationsInterface::class
-        );
+        $this->nullifyStockAndSourceReservations = $objectManager->get(CancelStockAndSourceReservations::class);
         $this->itemToCancelFactory = $objectManager->get(ItemToSellInterfaceFactory::class);
     }
 

@@ -10,9 +10,8 @@ use Magento\Framework\Validation\ValidationException;
 use Magento\InventorySales\Model\GetItemsToCancelFromOrderItem;
 use Magento\InventorySalesApi\Api\Data\ItemToSellInterface;
 use Psr\Log\LoggerInterface;
-use ReachDigital\IOSReservationsApi\Api\NullifyStockAndSourceReservationsInterface;
 
-class NullifyStockAndSourceReservations implements NullifyStockAndSourceReservationsInterface
+class CancelStockAndSourceReservations
 {
     /**
      * @var LoggerInterface
@@ -23,24 +22,24 @@ class NullifyStockAndSourceReservations implements NullifyStockAndSourceReservat
      */
     private $getItemsToCancelFromOrderItem;
     /**
-     * @var NullifyStockReservations
+     * @var CancelStockReservations
      */
-    private $nullifyStockReservations;
+    private $cancelStockReservations;
     /**
-     * @var NullifySourceReservations
+     * @var CancelSourceReservations
      */
-    private $nullifySourceReservations;
+    private $cancelSourceReservations;
 
     public function __construct(
         GetItemsToCancelFromOrderItem $getItemsToCancelFromOrderItem,
-        NullifyStockReservations $nullifyStockReservations,
-        LoggerInterface $logger,
-        NullifySourceReservations $nullifySourceReservations
+        CancelStockReservations $cancelStockReservations,
+        CancelSourceReservations $cancelSourceReservations,
+        LoggerInterface $logger
     ) {
-        $this->logger = $logger;
         $this->getItemsToCancelFromOrderItem = $getItemsToCancelFromOrderItem;
-        $this->nullifyStockReservations = $nullifyStockReservations;
-        $this->nullifySourceReservations = $nullifySourceReservations;
+        $this->cancelStockReservations = $cancelStockReservations;
+        $this->cancelSourceReservations = $cancelSourceReservations;
+        $this->logger = $logger;
     }
 
     /**
@@ -55,8 +54,8 @@ class NullifyStockAndSourceReservations implements NullifyStockAndSourceReservat
      */
     public function execute(int $orderId, array $itemsToNullify): array
     {
-        $itemsToNullify = $this->nullifyStockReservations->execute($orderId, $itemsToNullify);
-        $itemsToNullify = $this->nullifySourceReservations->execute($orderId, $itemsToNullify);
+        $itemsToNullify = $this->cancelStockReservations->execute($orderId, $itemsToNullify);
+        $itemsToNullify = $this->cancelSourceReservations->execute($orderId, $itemsToNullify);
 
         $this->logger->warning('remaining_items_to_cancel', [
             'module' => 'reach-digital/magento2-order-source-reservations',

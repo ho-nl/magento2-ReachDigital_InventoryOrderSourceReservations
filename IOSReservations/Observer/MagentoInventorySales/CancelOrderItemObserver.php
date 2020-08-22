@@ -12,7 +12,7 @@ use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\InventorySales\Model\GetItemsToCancelFromOrderItem;
 use Magento\Sales\Model\Order\Item as OrderItem;
-use ReachDigital\IOSReservationsApi\Api\NullifyStockAndSourceReservationsInterface;
+use ReachDigital\IOSReservations\Model\CancelStockAndSourceReservations;
 
 class CancelOrderItemObserver implements ObserverInterface
 {
@@ -21,13 +21,13 @@ class CancelOrderItemObserver implements ObserverInterface
      */
     private $getItemsToCancelFromOrderItem;
     /**
-     * @var NullifyStockAndSourceReservationsInterface
+     * @var CancelStockAndSourceReservations
      */
     private $nullifyStockAndSourceReservations;
 
     public function __construct(
         GetItemsToCancelFromOrderItem $getItemsToCancelFromOrderItem,
-        NullifyStockAndSourceReservationsInterface $nullifyStockAndSourceReservations
+        CancelStockAndSourceReservations $nullifyStockAndSourceReservations
     ) {
         $this->getItemsToCancelFromOrderItem = $getItemsToCancelFromOrderItem;
         $this->nullifyStockAndSourceReservations = $nullifyStockAndSourceReservations;

@@ -27,7 +27,7 @@ use Magento\Store\Api\StoreRepositoryInterface;
 use Magento\Store\Api\WebsiteRepositoryInterface;
 use Psr\Log\LoggerInterface;
 
-class NullifyStockReservations
+class CancelStockReservations
 {
     /**
      * @var Processor
