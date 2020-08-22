@@ -150,7 +150,7 @@ class RevertSourceReservationsOnCreditBeforeShipment
         $salesChannel = $this->getSalesChannelForOrder($order);
         $deductedItems = $this->getSourceDeductedOrderItems->execute($order, $returnToStockItems);
         $backItemsPerSource = $nullifications = [];
-        $reservations = $this->getOrderSourceReservationQuantityBySkuAndSource->execute($order->getEntityId());
+        $reservations = $this->getOrderSourceReservationQuantityBySkuAndSource->execute((int) $order->getEntityId());
 
         foreach ($itemsToRefund as $item) {
             $sku = $item->getSku();
