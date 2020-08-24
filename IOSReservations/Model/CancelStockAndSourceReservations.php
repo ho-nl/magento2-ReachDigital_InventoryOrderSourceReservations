@@ -43,7 +43,7 @@ class CancelStockAndSourceReservations
     }
 
     /**
-     * @param ItemToSellInterface[] $itemsToNullify
+     * @param ItemToSellInterface[] $itemsToCancel
      * @return ItemToSellInterface[]
      *
      * @throws CouldNotSaveException
@@ -52,19 +52,19 @@ class CancelStockAndSourceReservations
      * @throws NoSuchEntityException
      * @throws ValidationException
      */
-    public function execute(int $orderId, array $itemsToNullify): array
+    public function execute(int $orderId, array $itemsToCancel): array
     {
-        $itemsToNullify = $this->cancelStockReservations->execute($orderId, $itemsToNullify);
-        $itemsToNullify = $this->cancelSourceReservations->execute($orderId, $itemsToNullify);
+        $itemsToCancel = $this->cancelStockReservations->execute($orderId, $itemsToCancel);
+        $itemsToCancel = $this->cancelSourceReservations->execute($orderId, $itemsToCancel);
 
         $this->logger->warning('remaining_items_to_cancel', [
             'module' => 'reach-digital/magento2-order-source-reservations',
             'order' => $orderId,
             'items' => array_map(function ($item) {
                 return [$item->getSku(), $item->getQuantity()];
-            }, $itemsToNullify),
+            }, $itemsToCancel),
         ]);
 
-        return $itemsToNullify;
+        return $itemsToCancel;
     }
 }

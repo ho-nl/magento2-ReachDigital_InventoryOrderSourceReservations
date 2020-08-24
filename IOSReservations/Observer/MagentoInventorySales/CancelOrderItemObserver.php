@@ -23,14 +23,14 @@ class CancelOrderItemObserver implements ObserverInterface
     /**
      * @var CancelStockAndSourceReservations
      */
-    private $nullifyStockAndSourceReservations;
+    private $cancelStockAndSourceReservations;
 
     public function __construct(
         GetItemsToCancelFromOrderItem $getItemsToCancelFromOrderItem,
-        CancelStockAndSourceReservations $nullifyStockAndSourceReservations
+        CancelStockAndSourceReservations $cancelStockAndSourceReservations
     ) {
         $this->getItemsToCancelFromOrderItem = $getItemsToCancelFromOrderItem;
-        $this->nullifyStockAndSourceReservations = $nullifyStockAndSourceReservations;
+        $this->cancelStockAndSourceReservations = $cancelStockAndSourceReservations;
     }
 
     /**
@@ -46,6 +46,6 @@ class CancelOrderItemObserver implements ObserverInterface
         if (empty($itemsToCancel)) {
             return;
         }
-        $this->nullifyStockAndSourceReservations->execute((int) $orderItem->getOrderId(), $itemsToCancel);
+        $this->cancelStockAndSourceReservations->execute((int) $orderItem->getOrderId(), $itemsToCancel);
     }
 }

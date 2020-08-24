@@ -52,7 +52,7 @@ class CancelStockAndSourceReservationTest extends TestCase
     /**
      * @var CancelStockAndSourceReservations
      */
-    private $nullifyStockAndSourceReservations;
+    private $cancelStockAndSourceReservations;
     /**
      * @var ItemToSellInterfaceFactory
      */
@@ -80,7 +80,7 @@ class CancelStockAndSourceReservationTest extends TestCase
         $this->getSourceItemsBySku = $objectManager->get(GetSourceItemsBySku::class);
         $this->sourceItemRepository = $objectManager->get(SourceItemRepositoryInterface::class);
         $this->sourceItemsSave = $objectManager->get(SourceItemsSaveInterface::class);
-        $this->nullifyStockAndSourceReservations = $objectManager->get(CancelStockAndSourceReservations::class);
+        $this->cancelStockAndSourceReservations = $objectManager->get(CancelStockAndSourceReservations::class);
         $this->itemToCancelFactory = $objectManager->get(ItemToSellInterfaceFactory::class);
     }
 
@@ -147,7 +147,7 @@ class CancelStockAndSourceReservationTest extends TestCase
         self::assertEquals(0, $this->getStockReservationsQuantity->execute('simple2', 10));
         self::assertEquals(-2, $this->getSourceReservationsQuantityList->execute(['simple2'])['simple2']['quantity']);
 
-        $result = $this->nullifyStockAndSourceReservations->execute((int) $order->getEntityId(), [
+        $result = $this->cancelStockAndSourceReservations->execute((int) $order->getEntityId(), [
             $this->itemToCancelFactory->create(['sku' => 'simple', 'qty' => 1]),
             $this->itemToCancelFactory->create(['sku' => 'simple2', 'qty' => 1]),
         ]);
