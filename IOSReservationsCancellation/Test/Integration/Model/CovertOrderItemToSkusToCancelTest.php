@@ -3,7 +3,6 @@
 namespace ReachDigital\IOSReservationsCancellation\Test\Integration\Model;
 
 use Magento\Framework\Api\SearchCriteriaBuilder;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\TestFramework\Helper\Bootstrap;
@@ -33,7 +32,7 @@ class CovertOrderItemToSkusToCancelTest extends TestCase
     /**
      * @test
      *
-     * @covers \ReachDigital\IOSReservations\Model\GetOrderSourceReservations
+     * @covers \ReachDigital\IOSReservationsCancellation\Model\ConvertOrderItemToSkusToCancel
      *
      * @magentoDbIsolation disabled
      *

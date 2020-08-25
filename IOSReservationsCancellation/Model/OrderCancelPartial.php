@@ -9,6 +9,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Validation\ValidationException;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Item as OrderItem;
 use ReachDigital\IOSReservations\Model\CancelStockAndSourceReservations;
 use ReachDigital\IOSReservationsCancellationApi\Api\Data\ItemToCancelInterface;
@@ -27,34 +28,37 @@ class OrderCancelPartial implements OrderCancelPartialInterface
     /** @var ConvertOrderItemToSkusToCancel */
     private $convertToSkusToCancel;
 
+    /** @var UpdateOrderCancelledTotalsAndState */
+    private $updateOrderCancelledTotalsAndState;
+
     public function __construct(
         OrderRepositoryInterface $orderRepository,
         CancelStockAndSourceReservations $revertStockAndSourceReservations,
-        ConvertOrderItemToSkusToCancel $convertToSkusToCancel
+        ConvertOrderItemToSkusToCancel $convertToSkusToCancel,
+        UpdateOrderCancelledTotalsAndState $updateOrderCancelledTotalsAndState
     ) {
         $this->orderRepository = $orderRepository;
         $this->revertStockAndSourceReservations = $revertStockAndSourceReservations;
         $this->convertToSkusToCancel = $convertToSkusToCancel;
+        $this->updateOrderCancelledTotalsAndState = $updateOrderCancelledTotalsAndState;
     }
 
     /**
-     * @param int $orderId
      * @param ItemToCancelInterface[] $itemsToCancel
-     * @param bool $sendEmail
      *
-     * @throws LocalizedException
      * @throws CouldNotSaveException
      * @throws InputException
+     * @throws LocalizedException
      * @throws NoSuchEntityException
-     * @throws ValidationException
      * @throws OrderItemNoQuantityToCancel
      * @throws OrderItemNotExists
+     * @throws ValidationException
+     *
+     * @see Order::registerCancellation
      */
     public function execute(int $orderId, array $itemsToCancel, bool $sendEmail = false): void
     {
         $order = $this->orderRepository->get($orderId);
-
-        // @see Order::registerCancellation
         $this->assertCanCancelOrder($order);
 
         // Get the actual order item and convert to the underlying non-complex sku (get the simple of the configurable)
@@ -69,13 +73,9 @@ class OrderCancelPartial implements OrderCancelPartialInterface
 
             // Update the qtyCancelled on the order item
             $this->updateItemState($orderItem, $itemToCancel);
-
-            // Update the order totals when cancelled
         }
-
-        //Cancel complete order when nothing left to ship or cancel
-
-        //Send email upon full cancellation
+        $this->updateOrderCancelledTotalsAndState->execute($order);
+        $this->orderRepository->save($order);
     }
 
     /**
@@ -84,7 +84,7 @@ class OrderCancelPartial implements OrderCancelPartialInterface
     private function getOrderItemById(OrderInterface $order, int $itemId): OrderItem
     {
         foreach ($order->getItems() as /* @var OrderItem $item */ $item) {
-            if ((int) $item->getItemId() === $itemId && $order instanceof OrderItem) {
+            if (((int) $item->getItemId()) === $itemId && $item instanceof OrderItem) {
                 return $item;
             }
         }
@@ -105,37 +105,22 @@ class OrderCancelPartial implements OrderCancelPartialInterface
 
     private function updateItemState(OrderItem $item, ItemToCancelInterface $itemToCancel): void
     {
+        $this->setQuantityCancelled($item, $itemToCancel);
+        foreach ($item->getChildrenItems() as $item) {
+            $this->setQuantityCancelled($item, $itemToCancel);
+        }
+    }
+
+    private function setQuantityCancelled(OrderItem $item, ItemToCancelInterface $itemToCancel)
+    {
         $item->setQtyCanceled($item->getQtyCanceled() + $itemToCancel->getQuantity());
         $item->setTaxCanceled(
-            $item->getTaxCanceled() + ($item->getBaseTaxAmount() * $itemToCancel) / $item->getQtyOrdered()
+            $item->getTaxCanceled() +
+                ($item->getBaseTaxAmount() * $itemToCancel->getQuantity()) / $item->getQtyOrdered()
         );
         $item->setDiscountTaxCompensationCanceled(
             $item->getDiscountTaxCompensationCanceled() +
-                ($item->getDiscountTaxCompensationAmount() * $itemToCancel) / $item->getQtyOrdered()
+                ($item->getDiscountTaxCompensationAmount() * $itemToCancel->getQuantity()) / $item->getQtyOrdered()
         );
-
-        $order = $item->getOrder();
-
-        $order->setSubtotalCanceled($order->getSubtotal() - $order->getSubtotalInvoiced());
-        $order->setBaseSubtotalCanceled($order->getBaseSubtotal() - $order->getBaseSubtotalInvoiced());
-
-        $order->setTaxCanceled($order->getTaxAmount() - $order->getTaxInvoiced());
-        $order->setBaseTaxCanceled($order->getBaseTaxAmount() - $order->getBaseTaxInvoiced());
-
-        $order->setShippingCanceled($order->getShippingAmount() - $order->getShippingInvoiced());
-        $order->setBaseShippingCanceled($order->getBaseShippingAmount() - $order->getBaseShippingInvoiced());
-
-        $order->setDiscountCanceled(abs($order->getDiscountAmount()) - $order->getDiscountInvoiced());
-        $order->setBaseDiscountCanceled(abs($order->getBaseDiscountAmount()) - $order->getBaseDiscountInvoiced());
-
-        $order->setTotalCanceled($order->getGrandTotal() - $order->getTotalPaid());
-        $order->setBaseTotalCanceled($order->getBaseGrandTotal() - $order->getBaseTotalPaid());
-
-        $item->getPrice();
-        $item->getPriceInclTax();
-        $item->getRowTotal();
-        $item->getBaseRowTotal();
-        $item->getBaseRowTotalInclTax();
-        $item->getRowTotalInclTax();
     }
 }

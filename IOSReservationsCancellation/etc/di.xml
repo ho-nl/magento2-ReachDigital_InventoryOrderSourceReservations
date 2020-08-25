@@ -9,4 +9,7 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <preference for="ReachDigital\IOSReservationsCancellationApi\Api\Data\ItemToCancelInterface"
                 type="ReachDigital\IOSReservationsCancellation\Model\Data\ItemToCancel"/>
+
+    <preference for="ReachDigital\IOSReservationsCancellationApi\Api\OrderCancelPartialInterface"
+                type="ReachDigital\IOSReservationsCancellation\Model\OrderCancelPartial"/>
 </config>

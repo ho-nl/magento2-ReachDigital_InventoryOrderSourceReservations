@@ -15,7 +15,7 @@ class ItemToCancel extends AbstractExtensibleModel implements ItemToCancelInterf
 
     public function setItemId(int $id): void
     {
-        $this->setData(ItemToCancelInterface::ITEM_ID);
+        $this->setData(ItemToCancelInterface::ITEM_ID, $id);
     }
 
     public function getQuantity(): float
@@ -25,7 +25,7 @@ class ItemToCancel extends AbstractExtensibleModel implements ItemToCancelInterf
 
     public function setQuantity(float $quantity): void
     {
-        $this->setData(ItemToCancelInterface::QUANTITY);
+        $this->setData(ItemToCancelInterface::QUANTITY, $quantity);
     }
 
     /**
