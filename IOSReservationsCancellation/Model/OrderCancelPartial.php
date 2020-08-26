@@ -68,7 +68,7 @@ class OrderCancelPartial implements OrderCancelPartialInterface
      *
      * @see Order::registerCancellation
      */
-    public function execute(int $orderId, array $itemsToCancel, bool $sendEmail = false): void
+    public function execute(int $orderId, array $itemsToCancel): void
     {
         $order = $this->orderRepository->get($orderId);
         $this->assertCanCancelOrder($order);

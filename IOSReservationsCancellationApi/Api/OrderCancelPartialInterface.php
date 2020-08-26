@@ -20,5 +20,5 @@ interface OrderCancelPartialInterface
      *
      * @param $itemsToCancel ItemToCancelInterface[]
      */
-    public function execute(int $orderId, array $itemsToCancel, bool $sendEmail = false): void;
+    public function execute(int $orderId, array $itemsToCancel): void;
 }
