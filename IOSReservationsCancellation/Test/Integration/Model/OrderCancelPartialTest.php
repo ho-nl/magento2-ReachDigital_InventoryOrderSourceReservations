@@ -55,9 +55,6 @@ class OrderCancelPartialTest extends TestCase
      */
     private $sourceSelectionDataProviderFactory;
 
-    /** @var InvoiceService */
-    private $invoiceService;
-
     protected function setUp()
     {
         $objectManager = Bootstrap::getObjectManager();
@@ -76,7 +73,6 @@ class OrderCancelPartialTest extends TestCase
             GetDefaultSourceSelectionAlgorithmCode::class
         );
         $this->sourceSelectionDataProviderFactory = $objectManager->get(SourceSelectionDataProviderFactory::class);
-        $this->invoiceService = $objectManager->get(InvoiceService::class);
     }
 
     /**
@@ -87,7 +83,7 @@ class OrderCancelPartialTest extends TestCase
      * @magentoDbIsolation disabled
      *
      * @magentoDataFixture ../../../../vendor/reach-digital/magento2-inventory-source-reservations/ISReservations/Test/Integration/_files/clean_all_reservations.php
-     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/websites_with_stores.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/websites_with_stores.php
      * @magentoDataFixture Magento/ConfigurableProduct/_files/configurable_attribute.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-configurable-product/Test/_files/product_configurable.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources.php
@@ -166,7 +162,7 @@ class OrderCancelPartialTest extends TestCase
      * @magentoDbIsolation disabled
      *
      * @magentoDataFixture ../../../../vendor/reach-digital/magento2-inventory-source-reservations/ISReservations/Test/Integration/_files/clean_all_reservations.php
-     * @magentoDataFixture ../../../../vendor/magento/module-inventory-sales-api/Test/_files/websites_with_stores.php
+     * @magentoDataFixture ../../../../vendor/reach-digital/magento2-order-source-reservations/IOSReservations/Test/Integration/_files/websites_with_stores.php
      * @magentoDataFixture Magento/ConfigurableProduct/_files/configurable_attribute.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-configurable-product/Test/_files/product_configurable.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-api/Test/_files/sources.php
@@ -178,7 +174,7 @@ class OrderCancelPartialTest extends TestCase
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/create_quote_on_us_website.php
      * @magentoDataFixture ../../../../vendor/magento/module-inventory-shipping/Test/_files/order_configurable_product.php
      */
-    public function should_only_ship_available_when_partially_cancelled()
+    public function should_only_ship_and_invoice_available_when_partially_cancelled()
     {
         self::assertEquals(97, $this->getProductSalableQty->execute('simple_10', 20));
         self::assertEquals(-3, $this->getStockReservationsQuantity->execute('simple_10', 20));
@@ -226,5 +222,16 @@ class OrderCancelPartialTest extends TestCase
         self::assertEquals(2, $result['qtyAvailable']);
         self::assertEquals(2, $result['qtyToDeduct']);
 
+        // Invoice: It should only invoice qty 2 for the simple and configurable.
+        /** @var Order $order */
+        $order = $this->orderRepository->get($orderId);
+        $invoice = $order->prepareInvoice();
+
+        /** @var Collection $invoiceItems */
+        $invoiceItems = $invoice->getItems();
+        self::assertEquals(2, $invoiceItems->count());
+        foreach ($invoiceItems as $item) {
+            self::assertEquals(2, $item->getQty());
+        }
     }
 }

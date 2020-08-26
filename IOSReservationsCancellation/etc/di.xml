@@ -12,4 +12,10 @@
 
     <preference for="ReachDigital\IOSReservationsCancellationApi\Api\OrderCancelPartialInterface"
                 type="ReachDigital\IOSReservationsCancellation\Model\OrderCancelPartial"/>
+
+    <!-- \Magento\Sales\Model\Order still calls prepareInvoice while it shouldn't be allowed -->
+    <preference for="Magento\Sales\Api\InvoiceManagementInterface"
+                type="ReachDigital\IOSReservationsCancellation\Preference\InvoiceServiceWithPartialCancellations"/>
+    <preference for="Magento\Sales\Model\Service\InvoiceService"
+                type="ReachDigital\IOSReservationsCancellation\Preference\InvoiceServiceWithPartialCancellations"/>
 </config>
