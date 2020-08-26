@@ -154,9 +154,9 @@ class LoadSourceReservationsWithOrderTest extends TestCase
      */
     public function should_use_single_query_to_load_order_item_reservations(): void
     {
-        $order1 = $this->createOrder(5);
-        $order2 = $this->createOrder(5);
-        $order3 = $this->createOrder(4);
+        $order1 = $this->createOrder(2);
+        $order2 = $this->createOrder(2);
+        $order3 = $this->createOrder(2);
 
         $this->searchCriteriaBuilder->addFilter('entity_id', [$order1, $order2, $order3], 'in');
         $orderResult = $this->orderRepository->getList($this->searchCriteriaBuilder->create());
@@ -172,7 +172,7 @@ class LoadSourceReservationsWithOrderTest extends TestCase
         $order->getItems();
         self::assertCount(1, $order->getItems());
         foreach ($order->getItems() as $orderItem) {
-            self::assertCount(2, $orderItem->getExtensionAttributes()->getSourceReservations());
+            self::assertCount(1, $orderItem->getExtensionAttributes()->getSourceReservations());
         }
 
         $order = $this->orderRepository->get($order2);

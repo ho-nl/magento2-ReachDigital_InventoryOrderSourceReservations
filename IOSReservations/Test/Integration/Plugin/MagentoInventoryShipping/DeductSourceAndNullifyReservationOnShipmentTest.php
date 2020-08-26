@@ -136,6 +136,7 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
      */
     public function should_nullify_the_source_instead_of_the_stock(): void
     {
+        $srq = $this->getSourceReservationsQuantity;
         $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', 'created_order_for_test')->create();
         /** @var Order $order */
         $order = current($this->orderRepository->getList($searchCriteria)->getItems());
@@ -145,12 +146,9 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
 
         // Initial salableQty should be 11; initial qty of 14 (eu1 and eu2 sources, the other EU sources are either
         // disabled or marked out of stock) minus the 3 ordered
-        $salableQty =
-            $this->getProductSalableQty->execute('simple', 10) +
-            $this->getStockReservationsQuantity->execute('simple', 10) +
-            $this->getSourceReservationsQuantity->execute('simple', 'eu-1') +
-            $this->getSourceReservationsQuantity->execute('simple', 'eu-2');
-        self::assertEquals(11, $salableQty);
+        self::assertEquals(11, $this->getProductSalableQty->execute('simple', 10));
+        self::assertEquals(-3, $this->getStockReservationsQuantity->execute('simple', 10));
+        self::assertEquals(0, $srq->execute('simple', 'eu-1') + $srq->execute('simple', 'eu-2'));
 
         // Move reservation to source, salable qty should remain the same. Actual source quantity should not be affected yet
         $initialStockReservationsQty = $this->getStockReservationsQuantity->execute('simple', 10);
@@ -160,12 +158,9 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
         );
         $initialSourcesQty = $this->getCombinedSourcesQty('simple', $sourceSelectionResult);
 
-        $salableQty =
-            $this->getProductSalableQty->execute('simple', 10) +
-            $this->getStockReservationsQuantity->execute('simple', 10) +
-            $this->getSourceReservationsQuantity->execute('simple', 'eu-1') +
-            $this->getSourceReservationsQuantity->execute('simple', 'eu-2');
-        self::assertEquals(11, $salableQty);
+        self::assertEquals(11, $this->getProductSalableQty->execute('simple', 10));
+        self::assertEquals(0, $this->getStockReservationsQuantity->execute('simple', 10));
+        self::assertEquals(-3, $srq->execute('simple', 'eu-1') + $srq->execute('simple', 'eu-2'));
 
         // The qty should now be nullified from the stock reservations
         $currentStockReservationsQty = $this->getStockReservationsQuantity->execute('simple', 10);
@@ -241,11 +236,9 @@ class DeductSourceAndNullifyReservationOnShipmentTest extends TestCase
         $currentSourceReservationsQty = array_sum($currentSourceReservationsQty);
         self::assertEquals($initialSourceReservationsQty + 3, $currentSourceReservationsQty);
 
-        $reservationQty =
-            $this->getStockReservationsQuantity->execute('simple', 10) +
-            $this->getSourceReservationsQuantity->execute('simple', 'eu-1') +
-            $this->getSourceReservationsQuantity->execute('simple', 'eu-2');
-        self::assertEquals(0, $reservationQty);
+        self::assertEquals(11, $this->getProductSalableQty->execute('simple', 10));
+        self::assertEquals(0, $this->getStockReservationsQuantity->execute('simple', 10));
+        self::assertEquals(0, $srq->execute('simple', 'eu-1') + $srq->execute('simple', 'eu-2'));
     }
 
     /**
