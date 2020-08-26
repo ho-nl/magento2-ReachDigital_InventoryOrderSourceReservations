@@ -11,7 +11,6 @@ use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\ResourceModel\Order\Invoice\Item\Collection;
-use Magento\Sales\Model\Service\InvoiceService;
 use Magento\TestFramework\Helper\Bootstrap;
 use PHPUnit\Framework\TestCase;
 use ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceInterface;

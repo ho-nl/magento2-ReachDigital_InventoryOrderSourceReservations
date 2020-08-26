@@ -28,19 +28,31 @@ class OrderCancelPartial implements OrderCancelPartialInterface
     /** @var ConvertOrderItemToSkusToCancel */
     private $convertToSkusToCancel;
 
-    /** @var UpdateOrderCancelledTotalsAndState */
-    private $updateOrderCancelledTotalsAndState;
+    /** @var UpdateOrderCancelledTotals */
+    private $updateOrderCancelledTotals;
+    /**
+     * @var UpdateOrderCancelledState
+     */
+    private $updateOrderCancelledState;
+    /**
+     * @var OrderNothingLeftToCancel
+     */
+    private $orderNothingLeftToCancel;
 
     public function __construct(
         OrderRepositoryInterface $orderRepository,
         CancelStockAndSourceReservations $revertStockAndSourceReservations,
         ConvertOrderItemToSkusToCancel $convertToSkusToCancel,
-        UpdateOrderCancelledTotalsAndState $updateOrderCancelledTotalsAndState
+        OrderNothingLeftToCancel $orderNothingLeftToCancel,
+        UpdateOrderCancelledTotals $updateOrderCancelledTotals,
+        UpdateOrderCancelledState $updateOrderCancelledState
     ) {
         $this->orderRepository = $orderRepository;
         $this->revertStockAndSourceReservations = $revertStockAndSourceReservations;
         $this->convertToSkusToCancel = $convertToSkusToCancel;
-        $this->updateOrderCancelledTotalsAndState = $updateOrderCancelledTotalsAndState;
+        $this->orderNothingLeftToCancel = $orderNothingLeftToCancel;
+        $this->updateOrderCancelledTotals = $updateOrderCancelledTotals;
+        $this->updateOrderCancelledState = $updateOrderCancelledState;
     }
 
     /**
@@ -74,10 +86,12 @@ class OrderCancelPartial implements OrderCancelPartialInterface
             // Update the qtyCancelled on the order item
             $this->updateItemState($orderItem, $itemToCancel);
         }
-        $this->updateOrderCancelledTotalsAndState->execute($order);
-        if ($order->getState() == Order::STATE_CANCELED) {
+        $this->updateOrderCancelledTotals->execute($order);
+
+        if ($this->orderNothingLeftToCancel->execute($order)) {
             $order->cancel();
         }
+        $this->updateOrderCancelledState->updateState($order);
 
         $this->orderRepository->save($order);
     }

@@ -5,23 +5,21 @@ namespace ReachDigital\IOSReservationsCancellation\Model;
 use Magento\InventorySales\Model\GetItemsToCancelFromOrderItem;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order;
-use Magento\Sales\Model\Order\Item as OrderItem;
+use Magento\Sales\Model\Order\Config;
 
-class UpdateOrderCancelledTotalsAndState
+class UpdateOrderCancelledTotals
 {
     /**
      * @var GetItemsToCancelFromOrderItem
      */
     private $getItemsToCancelFromOrderItem;
     /**
-     * @var Order\Config
+     * @var Config
      */
     private $orderConfig;
 
-    public function __construct(
-        GetItemsToCancelFromOrderItem $getItemsToCancelFromOrderItem,
-        \Magento\Sales\Model\Order\Config $orderConfig
-    ) {
+    public function __construct(GetItemsToCancelFromOrderItem $getItemsToCancelFromOrderItem, Config $orderConfig)
+    {
         $this->getItemsToCancelFromOrderItem = $getItemsToCancelFromOrderItem;
         $this->orderConfig = $orderConfig;
     }
@@ -29,7 +27,7 @@ class UpdateOrderCancelledTotalsAndState
     /**
      * @see Order::registerCancellation
      */
-    public function execute(OrderInterface $order)
+    public function execute(OrderInterface $order): void
     {
         $subtotalCancelled = 0;
         $baseSubtotalCancelled = 0;
@@ -67,25 +65,5 @@ class UpdateOrderCancelledTotalsAndState
 
         $order->setTotalCanceled($subtotalCancelled);
         $order->setBaseTotalCanceled($baseSubtotalCancelled);
-
-        $this->updateOrderState($order);
-    }
-
-    /**
-     * @param OrderInterface $order
-     */
-    private function updateOrderState(OrderInterface $order): void
-    {
-        $allCancelled = true;
-        foreach ($order->getItems() as /** @var OrderItem $item */ $item) {
-            $toCancel = $this->getItemsToCancelFromOrderItem->execute($item);
-            if (!empty($toCancel)) {
-                $allCancelled = false;
-            }
-        }
-        if ($allCancelled) {
-            $order->setState(Order::STATE_CANCELED);
-            $order->setStatus($this->orderConfig->getStateDefaultStatus($order->getState()));
-        }
     }
 }
