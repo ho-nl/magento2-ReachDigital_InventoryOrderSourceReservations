@@ -1,6 +1,7 @@
 <?php
 
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Order;
 use ReachDigital\IOSReservationsCancellation\Model\Data\ItemToCancelFactory;
 use ReachDigital\IOSReservationsCancellationApi\Api\OrderCancelPartialInterface;
 
@@ -27,7 +28,7 @@ class OrderCancelPartialExample
         $this->itemToCancelFactory = $itemToCancelFactory;
     }
 
-    public function execute($orderId)
+    public function execute()
     {
         $order = $this->orderRepository->get(1234);
 
@@ -40,5 +41,9 @@ class OrderCancelPartialExample
             $this->itemToCancelFactory->create($itemId1, 1),
             $this->itemToCancelFactory->create($itemId2, 1),
         ]);
+
+        if ($order->getState() == Order::STATE_CANCELED) {
+            // Send special cancellation email
+        }
     }
 }

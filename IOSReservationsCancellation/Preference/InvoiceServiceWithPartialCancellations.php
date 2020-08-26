@@ -85,7 +85,7 @@ class InvoiceServiceWithPartialCancellations extends InvoiceService
             if (isset($preparedItemsQty[$orderItem->getId()])) {
                 $qty = $preparedItemsQty[$orderItem->getId()];
             } elseif ($orderItem->isDummy()) {
-                $qty = $orderItem->getQtyOrdered() || 1 - $orderItem->getQtyCanceled() || 0;
+                $qty = $orderItem->getQtyOrdered() ? $orderItem->getQtyOrdered() - $orderItem->getQtyCanceled() : 1;
             } elseif (empty($orderItemsQtyToInvoice)) {
                 $qty = $orderItem->getQtyToInvoice();
             } else {
