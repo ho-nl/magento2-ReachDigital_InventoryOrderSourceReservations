@@ -75,6 +75,10 @@ class OrderCancelPartial implements OrderCancelPartialInterface
             $this->updateItemState($orderItem, $itemToCancel);
         }
         $this->updateOrderCancelledTotalsAndState->execute($order);
+        if ($order->getState() == Order::STATE_CANCELED) {
+            $order->cancel();
+        }
+
         $this->orderRepository->save($order);
     }
 
