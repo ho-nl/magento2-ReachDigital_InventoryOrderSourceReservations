@@ -27,7 +27,7 @@ use Magento\Store\Api\StoreRepositoryInterface;
 use Magento\Store\Api\WebsiteRepositoryInterface;
 use Psr\Log\LoggerInterface;
 
-class NullifyStockReservations
+class CancelStockReservations
 {
     /**
      * @var Processor
@@ -118,7 +118,7 @@ class NullifyStockReservations
     }
 
     /**
-     * @param ItemToSellInterface[] $itemsToNullify
+     * @param ItemToSellInterface[] $itemsToCancel
      *
      * @return ItemToSellInterface[]
      * @throws CouldNotSaveException
@@ -126,39 +126,39 @@ class NullifyStockReservations
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    public function execute(int $orderId, array $itemsToNullify): array
+    public function execute(int $orderId, array $itemsToCancel): array
     {
-        $this->logger->info('nullify_stock_reservations', [
+        $this->logger->info('cancel_stock_reservations', [
             'module' => 'reach-digital/magento2-order-source-reservations',
             'order' => $orderId,
             'items' => array_map(function ($item) {
                 return [$item->getSku(), $item->getQuantity()];
-            }, $itemsToNullify),
+            }, $itemsToCancel),
         ]);
 
         $stockNullifications = [];
         $stockReservations = $this->getOrderStockReservationQuantityBySku->execute($orderId);
 
-        foreach ($itemsToNullify as $itemToNullify) {
-            $qtyToCompensate = $itemToNullify->getQuantity();
+        foreach ($itemsToCancel as $itemToCancel) {
+            $qtyToCompensate = $itemToCancel->getQuantity();
 
-            if (!isset($stockReservations[$itemToNullify->getSku()])) {
+            if (!isset($stockReservations[$itemToCancel->getSku()])) {
                 continue;
             }
 
             // See if, for this sku, we can revert some or all of $qtyToCompensate from existing stock reservation.
-            $revertibleQty = min($qtyToCompensate, -$stockReservations[$itemToNullify->getSku()] ?? 0);
+            $revertibleQty = min($qtyToCompensate, -$stockReservations[$itemToCancel->getSku()] ?? 0);
 
             if (!$this->isLtZero($revertibleQty)) {
                 $stockNullifications[] = $this->itemToSellFactory->create([
-                    'sku' => $itemToNullify->getSku(),
+                    'sku' => $itemToCancel->getSku(),
                     'qty' => $revertibleQty,
                 ]);
                 $qtyToCompensate -= $revertibleQty;
             }
 
             // Set the remaining qty so it can be processed somewhere else.
-            $itemToNullify->setQuantity($qtyToCompensate);
+            $itemToCancel->setQuantity($qtyToCompensate);
         }
 
         if ($stockNullifications) {
@@ -192,7 +192,7 @@ class NullifyStockReservations
         }
 
         // Return the remaining qty
-        return array_filter($itemsToNullify, function ($item) {
+        return array_filter($itemsToCancel, function ($item) {
             return $item->getQuantity() > 0;
         });
     }

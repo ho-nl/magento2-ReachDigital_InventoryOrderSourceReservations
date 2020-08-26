@@ -5,7 +5,6 @@ namespace ReachDigital\IOSReservationsAdminUI\Test\Integration\Plugin\MagentoInv
 
 use Exception;
 use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\DataObject;
 use Magento\Framework\Exception\CouldNotSaveException;

@@ -21,17 +21,13 @@ class LoadSourceReservationsWithOrder
         $this->addSourceReservationsToOrderItems = $addSourceReservationsToOrderItems;
     }
 
-    public function afterGet(
-        /** @noinspection PhpUnusedParameterInspection */
-        OrderRepositoryInterface $subject,
-        OrderInterface $order
-    ): OrderInterface {
+    public function afterGet(OrderRepositoryInterface $subject, OrderInterface $order): OrderInterface
+    {
         $this->addSourceReservationsToOrderItems->execute($order->getItems());
         return $order;
     }
 
     public function afterGetList(
-        /** @noinspection PhpUnusedParameterInspection */
         OrderRepositoryInterface $subject,
         OrderSearchResultInterface $orderSearchResult
     ): OrderSearchResultInterface {

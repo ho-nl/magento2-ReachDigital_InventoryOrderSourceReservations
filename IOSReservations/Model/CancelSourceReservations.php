@@ -12,7 +12,7 @@ use ReachDigital\ISReservationsApi\Api\GetReservationsByMetadataInterface;
 use ReachDigital\ISReservationsApi\Model\AppendSourceReservationsInterface;
 use ReachDigital\ISReservationsApi\Model\SourceReservationBuilderInterface;
 
-class NullifySourceReservations
+class CancelSourceReservations
 {
     /**
      * @var EncodeMetaDataInterface
@@ -53,43 +53,43 @@ class NullifySourceReservations
     /**
      * Will nullify source reservations if they are available. Will return items that are not nullified.
      *
-     * @param ItemToSellInterface[] $itemsToNullify
+     * @param ItemToSellInterface[] $itemsToCancel
      * @return ItemToSellInterface[]
      *
      * @throws CouldNotSaveException
      * @throws InputException
      * @throws ValidationException
      */
-    public function execute(int $orderId, array $itemsToNullify): array
+    public function execute(int $orderId, array $itemsToCancel): array
     {
-        $this->logger->info('nullify_source_reservations', [
+        $this->logger->info('cancel_source_reservations', [
             'module' => 'reach-digital/magento2-order-source-reservations',
             'order' => $orderId,
             'items' => array_map(function ($item) {
                 return [$item->getSku(), $item->getQuantity()];
-            }, $itemsToNullify),
+            }, $itemsToCancel),
         ]);
 
-        if (empty($itemsToNullify)) {
-            return $itemsToNullify;
+        if (empty($itemsToCancel)) {
+            return $itemsToCancel;
         }
 
         $sourceCancellations = [];
         $sourceReservations = $this->getOrderSourceReservationQuantityBySkuAndSource->execute($orderId);
 
-        foreach ($itemsToNullify as $itemToNullify) {
-            $qtyToCompensate = $itemToNullify->getQuantity();
+        foreach ($itemsToCancel as $itemToCancel) {
+            $qtyToCompensate = $itemToCancel->getQuantity();
 
-            if (!isset($sourceReservations[$itemToNullify->getSku()])) {
+            if (!isset($sourceReservations[$itemToCancel->getSku()])) {
                 continue;
             }
 
             // Compensate $qtyToCompensate on the available reservation qty's for each source
-            foreach ($sourceReservations[$itemToNullify->getSku()] as $sourceCode => $sourceReservationQty) {
+            foreach ($sourceReservations[$itemToCancel->getSku()] as $sourceCode => $sourceReservationQty) {
                 // See if, for this source, we can revert some or all of $qtyToRefund from existing sourceReservations.
                 $revertibleQty = min($qtyToCompensate, -$sourceReservationQty);
                 if (!$this->isLtZero($revertibleQty)) {
-                    $this->sourceReservationBuilder->setSku($itemToNullify->getSku());
+                    $this->sourceReservationBuilder->setSku($itemToCancel->getSku());
                     $this->sourceReservationBuilder->setQuantity($revertibleQty);
                     $this->sourceReservationBuilder->setSourceCode($sourceCode);
                     $this->sourceReservationBuilder->setMetadata(
@@ -106,7 +106,7 @@ class NullifySourceReservations
             }
 
             // Set the remaining qty so it can be processed somewhere else.
-            $itemToNullify->setQuantity($qtyToCompensate);
+            $itemToCancel->setQuantity($qtyToCompensate);
         }
 
         if ($sourceCancellations) {
@@ -114,7 +114,7 @@ class NullifySourceReservations
         }
 
         // Return the remaining qty
-        return array_filter($itemsToNullify, function ($item) {
+        return array_filter($itemsToCancel, function ($item) {
             return $item->getQuantity() > 0;
         });
     }

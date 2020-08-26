@@ -1,5 +1,22 @@
 # Order Source Reservations
 
+## Installation
+
+Make sure you have access to our private composer repository.
+
+```bash
+composer require reach-digital/magento2-order-source-reservations
+bin/magento module:enable ReachDigital_IOSReservationsApi
+bin/magento module:enable ReachDigital_IOSReservations
+bin/magento module:enable ReachDigital_IOSReservationsAdminUI
+bin/magento module:enable ReachDigital_IOSReservationsCancellationApi
+bin/magento module:enable ReachDigital_IOSReservationsCancellation
+bin/magento module:enable ReachDigital_IOSReservationsPriorityApi
+bin/magento module:enable ReachDigital_IOSReservationsPriority
+bin/magento module:enable ReachDigital_IOSReservationsPriorityAdminUI
+bin/magento setup:upgrade
+```
+
 ### Backstory
 
 We had a requirement to make a connection with a fulfillment warehouse, we

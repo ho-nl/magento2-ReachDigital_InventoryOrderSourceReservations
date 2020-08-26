@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="ReachDigital\IOSReservationsCancellationApi\Api\Data\ItemToCancelInterface"
+                type="ReachDigital\IOSReservationsCancellation\Model\Data\ItemToCancel"/>
+
+    <preference for="ReachDigital\IOSReservationsCancellationApi\Api\OrderCancelPartialInterface"
+                type="ReachDigital\IOSReservationsCancellation\Model\OrderCancelPartial"/>
+
+    <!-- \Magento\Sales\Model\Order still calls prepareInvoice while it shouldn't be allowed -->
+    <preference for="Magento\Sales\Api\InvoiceManagementInterface"
+                type="ReachDigital\IOSReservationsCancellation\Preference\InvoiceServiceWithPartialCancellations"/>
+    <preference for="Magento\Sales\Model\Service\InvoiceService"
+                type="ReachDigital\IOSReservationsCancellation\Preference\InvoiceServiceWithPartialCancellations"/>
+</config>
