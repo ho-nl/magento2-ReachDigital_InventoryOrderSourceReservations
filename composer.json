@@ -2,7 +2,7 @@
     "name": "reach-digital/magento2-order-source-reservations",
     "description": "N/A",
     "require": {
-        "php": "~7.1.3||~7.2.0||~7.3.0",
+        "php": "~7.1.3||~7.2.0||~7.3.0||~7.4.0",
         "magento/framework": "*",
         "reach-digital/magento2-inventory-source-reservations": "*"
     },
@@ -16,6 +16,8 @@
             "IOSReservations/registration.php",
             "IOSReservationsAdminUI/registration.php",
             "IOSReservationsApi/registration.php",
+            "IOSReservationsCancellation/registration.php",
+            "IOSReservationsCancellationApi/registration.php",
             "IOSReservationsPriority/registration.php",
             "IOSReservationsPriorityAdminUI/registration.php",
             "IOSReservationsPriorityApi/registration.php"
@@ -24,6 +26,8 @@
             "ReachDigital\\IOSReservations\\": "IOSReservations",
             "ReachDigital\\IOSReservationsAdminUI\\": "IOSReservationsAdminUI",
             "ReachDigital\\IOSReservationsApi\\": "IOSReservationsApi",
+            "ReachDigital\\IOSReservationsCancellation\\": "IOSReservationsCancellation",
+            "ReachDigital\\IOSReservationsCancellationApi\\": "IOSReservationsCancellationApi",
             "ReachDigital\\IOSReservationsPriority\\": "IOSReservationsPriority",
             "ReachDigital\\IOSReservationsPriorityAdminUI\\": "IOSReservationsPriorityAdminUI",
             "ReachDigital\\IOSReservationsPriorityApi\\": "IOSReservationsPriorityApi"

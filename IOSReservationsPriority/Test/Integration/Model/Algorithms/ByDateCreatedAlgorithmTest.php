@@ -12,7 +12,6 @@ use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\InventoryReservations\Model\ResourceModel\GetReservationsQuantity;
 use Magento\InventoryReservationsApi\Model\GetReservationsQuantityInterface;
 use Magento\InventorySourceSelection\Model\GetDefaultSourceSelectionAlgorithmCode;
-use Magento\InventorySourceSelectionApi\Model\SourceSelectionService;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\InvoiceOrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;

@@ -5,24 +5,15 @@ namespace ReachDigital\IOSReservations\Model;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Validation\ValidationException;
-use Magento\InventorySales\Model\GetItemsToCancelFromOrderItem;
 use Magento\InventorySalesApi\Api\Data\ItemToSellInterface;
-use Magento\InventorySalesApi\Model\ReturnProcessor\Request\ItemsToRefundInterface;
-use Magento\Sales\Api\Data\OrderInterface;
 use Psr\Log\LoggerInterface;
-use ReachDigital\IOSReservations\Model\MagentoInventorySales\CancelOrderItems;
-use ReachDigital\ISReservations\Model\MetaData\DecodeMetaData;
 use ReachDigital\ISReservationsApi\Api\EncodeMetaDataInterface;
 use ReachDigital\ISReservationsApi\Api\GetReservationsByMetadataInterface;
 use ReachDigital\ISReservationsApi\Model\AppendSourceReservationsInterface;
 use ReachDigital\ISReservationsApi\Model\SourceReservationBuilderInterface;
 
-class NullifySourceReservations
+class CancelSourceReservations
 {
-    /**
-     * @var GetReservationsByMetadataInterface
-     */
-    private $getReservationsByMetadata;
     /**
      * @var EncodeMetaDataInterface
      */
@@ -36,47 +27,69 @@ class NullifySourceReservations
      * @var SourceReservationBuilderInterface
      */
     private $sourceReservationBuilder;
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+    /**
+     * @var GetOrderSourceReservationQuantityBySkuAndSource
+     */
+    private $getOrderSourceReservationQuantityBySkuAndSource;
 
     public function __construct(
-        GetReservationsByMetadataInterface $getReservationsByMetadata,
         EncodeMetaDataInterface $encodeMetaData,
         AppendSourceReservationsInterface $appendSourceReservations,
         SourceReservationBuilderInterface $sourceReservationBuilder,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        GetOrderSourceReservationQuantityBySkuAndSource $getOrderSourceReservationQuantityBySkuAndSource
     ) {
-        $this->getReservationsByMetadata = $getReservationsByMetadata;
         $this->encodeMetaData = $encodeMetaData;
         $this->appendSourceReservations = $appendSourceReservations;
         $this->sourceReservationBuilder = $sourceReservationBuilder;
+        $this->logger = $logger;
+        $this->getOrderSourceReservationQuantityBySkuAndSource = $getOrderSourceReservationQuantityBySkuAndSource;
     }
 
     /**
-     * @param string $orderId
-     * @param ItemToSellInterface[] $itemsToNullify
+     * Will nullify source reservations if they are available. Will return items that are not nullified.
+     *
+     * @param ItemToSellInterface[] $itemsToCancel
      * @return ItemToSellInterface[]
      *
      * @throws CouldNotSaveException
      * @throws InputException
      * @throws ValidationException
      */
-    public function execute(string $orderId, array $itemsToNullify)
+    public function execute(int $orderId, array $itemsToCancel): array
     {
+        $this->logger->info('cancel_source_reservations', [
+            'module' => 'reach-digital/magento2-order-source-reservations',
+            'order' => $orderId,
+            'items' => array_map(function ($item) {
+                return [$item->getSku(), $item->getQuantity()];
+            }, $itemsToCancel),
+        ]);
+
+        if (empty($itemsToCancel)) {
+            return $itemsToCancel;
+        }
+
         $sourceCancellations = [];
-        $sourceReservations = $this->getReservationsBySkuAndSource($orderId);
+        $sourceReservations = $this->getOrderSourceReservationQuantityBySkuAndSource->execute($orderId);
 
-        foreach ($itemsToNullify as $itemToNullify) {
-            $qtyToCompensate = $itemToNullify->getQuantity();
+        foreach ($itemsToCancel as $itemToCancel) {
+            $qtyToCompensate = $itemToCancel->getQuantity();
 
-            if (!isset($sourceReservations[$itemToNullify->getSku()])) {
+            if (!isset($sourceReservations[$itemToCancel->getSku()])) {
                 continue;
             }
 
             // Compensate $qtyToCompensate on the available reservation qty's for each source
-            foreach ($sourceReservations[$itemToNullify->getSku()] as $sourceCode => $sourceReservationQty) {
+            foreach ($sourceReservations[$itemToCancel->getSku()] as $sourceCode => $sourceReservationQty) {
                 // See if, for this source, we can revert some or all of $qtyToRefund from existing sourceReservations.
                 $revertibleQty = min($qtyToCompensate, -$sourceReservationQty);
                 if (!$this->isLtZero($revertibleQty)) {
-                    $this->sourceReservationBuilder->setSku($itemToNullify->getSku());
+                    $this->sourceReservationBuilder->setSku($itemToCancel->getSku());
                     $this->sourceReservationBuilder->setQuantity($revertibleQty);
                     $this->sourceReservationBuilder->setSourceCode($sourceCode);
                     $this->sourceReservationBuilder->setMetadata(
@@ -88,41 +101,22 @@ class NullifySourceReservations
                     $sourceCancellations[] = $this->sourceReservationBuilder->build();
                     $qtyToCompensate -= $revertibleQty;
                 } else {
-                    break;
+                    continue;
                 }
             }
 
-            // Set the remaining to be cancelled on the stock
-            $itemToNullify->setQuantity($qtyToCompensate);
+            // Set the remaining qty so it can be processed somewhere else.
+            $itemToCancel->setQuantity($qtyToCompensate);
         }
 
         if ($sourceCancellations) {
             $this->appendSourceReservations->execute($sourceCancellations);
         }
 
-        // Cancel the remaining quantity
-        return array_filter($itemsToNullify, function ($item) {
+        // Return the remaining qty
+        return array_filter($itemsToCancel, function ($item) {
             return $item->getQuantity() > 0;
         });
-    }
-
-    private function getReservationsBySkuAndSource(string $orderId): array
-    {
-        $reservations = $this->getReservationsByMetadata->execute(
-            $this->encodeMetaData->execute(['order' => $orderId])
-        );
-
-        $reservationsBySkuAndSource = [];
-        foreach ($reservations as $reservation) {
-            $sku = $reservation->getSku();
-            $sourceCode = $reservation->getSourceCode();
-
-            $reservationsBySkuAndSource[$sku] = $reservationsBySkuAndSource[$sku] ?? [];
-            $reservationsBySkuAndSource[$sku][$sourceCode] = $reservationsBySkuAndSource[$sku][$sourceCode] ?? 0;
-            $reservationsBySkuAndSource[$sku][$sourceCode] += $reservation->getQuantity();
-        }
-
-        return $reservationsBySkuAndSource;
     }
 
     /**

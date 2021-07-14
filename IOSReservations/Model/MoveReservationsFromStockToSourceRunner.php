@@ -14,7 +14,6 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Validation\ValidationException;
 use Magento\InventorySourceSelectionApi\Api\GetDefaultSourceSelectionAlgorithmCodeInterface;
 use Psr\Log\LoggerInterface;
-use ReachDigital\IOSReservationsApi\Api\Data\SourceReservationResultInterface;
 use ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceInterface;
 use ReachDigital\IOSReservationsApi\Api\MoveReservationsFromStockToSourceRunnerInterface;
 use ReachDigital\IOSReservationsApi\Exception\CouldNotCreateSourceSelectionRequestFromOrder;

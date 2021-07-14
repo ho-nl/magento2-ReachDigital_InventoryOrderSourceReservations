@@ -5,7 +5,6 @@ namespace ReachDigital\IOSReservationsAdminUI\Test\Integration\Plugin\MagentoInv
 
 use Exception;
 use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\DataObject;
 use Magento\Framework\Exception\CouldNotSaveException;
@@ -152,9 +151,9 @@ class SourceSelectionDataProviderWithAlreadySourcedItemsTest extends TestCase
      */
     public function admin_ui_create_shipment_should_use_source_reservations(): void
     {
-        $order1 = $this->createOrder(5);
-        $order2 = $this->createOrder(5);
-        $order3 = $this->createOrder(4);
+        $order1 = $this->createOrder(2);
+        $order2 = $this->createOrder(2);
+        $order3 = $this->createOrder(2);
 
         $prophecy = $this->prophesize(Http::class);
         $prophecy->getParam('order_id')->willReturn($order1);

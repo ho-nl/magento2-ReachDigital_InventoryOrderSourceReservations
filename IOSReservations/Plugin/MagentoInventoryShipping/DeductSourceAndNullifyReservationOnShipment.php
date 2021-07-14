@@ -20,7 +20,6 @@ use Magento\InventoryShipping\Model\SourceDeductionRequestFromShipmentFactory;
 use Magento\InventoryShipping\Observer\SourceDeductionProcessor;
 use Magento\InventorySourceDeductionApi\Model\SourceDeductionRequestInterface;
 use Magento\InventorySourceDeductionApi\Model\SourceDeductionServiceInterface;
-use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Shipment;
 use Magento\Framework\Event\Observer as EventObserver;
 use ReachDigital\ISReservationsApi\Api\EncodeMetaDataInterface;

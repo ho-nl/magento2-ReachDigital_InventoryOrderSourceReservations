@@ -122,37 +122,30 @@ class MoveReservationsFromStockToSourceTest extends TestCase
      */
     public function should_move_reservation_from_stock_to_source(): void
     {
-        //There are 14 actually available in the source, order is placed with three.
-        $salableQty =
-            $this->getProductSalableQty->execute('simple', 10) +
-            $this->getStockReservationsQuantity->execute('simple', 10) +
-            $this->getSourceReservationsQuantity->execute('simple', 'eu-1') +
-            $this->getSourceReservationsQuantity->execute('simple', 'eu-2');
+        $srq = $this->getSourceReservationsQuantity;
 
-        self::assertEquals(11, $salableQty);
+        //There are 14 actually available in the source, order is placed with three.
+        self::assertEquals(11, $this->getProductSalableQty->execute('simple', 10));
+        self::assertEquals(-3, $this->getStockReservationsQuantity->execute('simple', 10));
+        self::assertEquals(0, $srq->execute('simple', 'eu-1') + $srq->execute('simple', 'eu-2'));
 
         $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', 'created_order_for_test')->create();
         /** @var OrderInterface $order */
         $order = current($this->orderRepository->getList($searchCriteria)->getItems());
         $this->invoiceOrder->execute($order->getEntityId());
 
-        $salableQty =
-            $this->getProductSalableQty->execute('simple', 10) +
-            $this->getStockReservationsQuantity->execute('simple', 10) +
-            $this->getSourceReservationsQuantity->execute('simple', 'eu-1') +
-            $this->getSourceReservationsQuantity->execute('simple', 'eu-2');
-        self::assertEquals(11, $salableQty);
+        self::assertEquals(11, $this->getProductSalableQty->execute('simple', 10));
+        self::assertEquals(-3, $this->getStockReservationsQuantity->execute('simple', 10));
+        self::assertEquals(0, $srq->execute('simple', 'eu-1') + $srq->execute('simple', 'eu-2'));
 
         $this->moveReservationsFromStockToSource->execute(
             (int) $order->getEntityId(),
             $this->getDefaultSourceSelectionAlgorithmCode->execute()
         );
 
-        $reservationQty =
-            $this->getStockReservationsQuantity->execute('simple', 10) +
-            $this->getSourceReservationsQuantity->execute('simple', 'eu-1') +
-            $this->getSourceReservationsQuantity->execute('simple', 'eu-2');
-        self::assertEquals(-3, $reservationQty);
+        self::assertEquals(11, $this->getProductSalableQty->execute('simple', 10));
+        self::assertEquals(0, $this->getStockReservationsQuantity->execute('simple', 10));
+        self::assertEquals(-3, $srq->execute('simple', 'eu-1') + $srq->execute('simple', 'eu-2'));
     }
 
     /**
@@ -244,9 +237,9 @@ class MoveReservationsFromStockToSourceTest extends TestCase
     public function should_partially_reserve_items_when_item_is_oversold()
     {
         // Have order placed with simple product qty 3
-
         // Reservation has been made for the order
         self::assertEquals(-3, $this->getStockReservationsQuantity->execute('simple', 10));
+        self::assertEquals(11, $this->getProductSalableQty->execute('simple', 10));
 
         // Invoicing doesn't make a difference
         $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', 'created_order_for_test')->create();

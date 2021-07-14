@@ -13,6 +13,7 @@
     <preference for="ReachDigital\IOSReservationsApi\Api\GetOrderSourceReservationsInterface" type="ReachDigital\IOSReservations\Model\GetOrderSourceReservations"/>
     <preference for="ReachDigital\IOSReservationsApi\Api\GetOrderSourceReservationConfigInterface" type="ReachDigital\IOSReservations\Model\GetOrderSourceReservationConfig"/>
     <preference for="Magento\InventoryShipping\Model\GetItemsToDeductFromShipment" type="ReachDigital\IOSReservations\Model\MagentoInventoryShipping\GetItemsToDeductFromShipment"/>
+
     <type name="Magento\InventoryShipping\Observer\SourceDeductionProcessor">
         <plugin name="move_shipment_stock_nullification_to_source"
                 type="ReachDigital\IOSReservations\Plugin\MagentoInventoryShipping\DeductSourceAndNullifyReservationOnShipment"/>
@@ -31,10 +32,6 @@
     <type name="Magento\InventorySales\Model\ReturnProcessor\DeductSourceItemQuantityOnRefund">
         <plugin name="prevent_source_item_quantity_deduction_on_refund"
                 type="ReachDigital\IOSReservations\Plugin\MagentoInventorySales\PreventSourceItemQuantityDeductionOnRefund"/>
-    </type>
-    <type name="Magento\InventorySales\Observer\CatalogInventory\CancelOrderItemObserver">
-        <plugin name="prevent_source_item_quantity_deduction_on_cancellation"
-                type="ReachDigital\IOSReservations\Plugin\MagentoInventorySales\PreventSourceItemQuantityDeductionOnCancellation"/>
     </type>
     <preference for="Magento\SalesInventory\Model\Plugin\Order\ReturnToStockOrder" type="ReachDigital\IOSReservations\Plugin\MagentoSalesInventory\AlwaysAutoReturnToStockOrder"/>
     <preference for="Magento\SalesInventory\Model\Plugin\Order\ReturnToStockInvoice" type="ReachDigital\IOSReservations\Plugin\MagentoSalesInventory\AlwaysAutoReturnToStockInvoice"/>
