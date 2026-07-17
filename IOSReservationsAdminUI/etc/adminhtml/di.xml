@@ -14,4 +14,13 @@
                 type="ReachDigital\IOSReservationsAdminUI\Plugin\MagentoSales\ShowSourceReservationOnOrderItem"
                 sortOrder="20"/>
     </type>
+    <!--
+        Fill the order grid's "Allocated sources" column from source
+        reservations when the order has not shipped yet (core only reads
+        inventory_shipment_source).
+    -->
+    <type name="Magento\InventoryShippingAdminUi\Model\ResourceModel\GetAllocatedSourcesForOrder">
+        <plugin name="reachdigital_iosreservations_allocated_sources_from_reservations"
+                type="ReachDigital\IOSReservationsAdminUI\Plugin\MagentoInventoryShippingAdminUi\AddReservedSourcesToAllocatedSources"/>
+    </type>
 </config>
