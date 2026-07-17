@@ -53,8 +53,8 @@ class GetItemsToDeductFromShipment extends \Magento\InventoryShipping\Model\GetI
         GetSkuFromOrderItemInterface $getSkuFromOrderItem,
         Json $jsonSerializer,
         ItemToDeductInterfaceFactory $itemToDeduct,
-        OrderItemRepositoryInterface $orderItemRepository = null,
-        SearchCriteriaBuilder $searchCriteriaBuilder = null
+        ?OrderItemRepositoryInterface $orderItemRepository = null,
+        ?SearchCriteriaBuilder $searchCriteriaBuilder = null
     ) {
         $this->jsonSerializer = $jsonSerializer;
         $this->itemToDeduct = $itemToDeduct;
