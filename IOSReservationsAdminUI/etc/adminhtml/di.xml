@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright © Reach Digital (https://www.reachdigital.io/)
+  ~ See LICENSE.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!--
+        Shows the reserved source per order line in the admin order view as an
+        extra `additional_options` row. sortOrder=20 keeps it below any
+        project/vendor plugins that prepend their own option rows.
+    -->
+    <type name="Magento\Sales\Model\Order\Item">
+        <plugin name="reachdigital_iosreservations_show_source_reservation_on_order_item"
+                type="ReachDigital\IOSReservationsAdminUI\Plugin\MagentoSales\ShowSourceReservationOnOrderItem"
+                sortOrder="20"/>
+    </type>
+</config>
